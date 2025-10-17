@@ -94,8 +94,8 @@ const pricing = {
 const faqs = [
 	{
 		id: 1,
-		question: 'Can I try LocalMoco before I buy?',
-		answer: 'Absolutely. Our Free plan is not a time-limited trial. It includes core features like AI survey generation and allows you to collect up to 50 responses per survey, so you can see the value for yourself. You can use it for as long as you like within the plan\'s limits.',
+		question: 'Can I try Guapital before I buy?',
+		answer: 'Absolutely. Our Free plan is not a time-limited trial. It includes core features and allows you to track your net worth, so you can see the value for yourself. You can use it for as long as you like within the plan\'s limits.',
 	},
 	{
 		id: 2,

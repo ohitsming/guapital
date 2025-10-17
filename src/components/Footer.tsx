@@ -69,7 +69,7 @@ function NewsletterForm() {
                 Sign up for early access.
             </h2>
             <p className="mt-4 text-sm text-neutral-700">
-                Join our early access list to get first dibs on LocalMoco.
+                Join our early access list to get first dibs on Guapital.
             </p>
             <div className="relative mt-6">
                 <input
@@ -111,7 +111,7 @@ export function Footer() {
                         <p><Link href={"/privacy"}>Privacy</Link></p>
                         <p><Link href={"/terms"}>Terms</Link></p>
                         <p className="text-sm text-neutral-700">
-                            LocalMoco LLC. {new Date().getFullYear()}
+                            Guapital LLC. {new Date().getFullYear()}
                         </p>
                     </div>
                 </div>

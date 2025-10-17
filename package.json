@@ -1,5 +1,5 @@
 {
-  "name": "localmoco",
+  "name": "guapital",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -17,7 +17,7 @@
     "@fortawesome/react-fontawesome": "^0.2.3",
     "@google/genai": "^1.22.0",
     "@google/generative-ai": "^0.24.1",
-    "@headlessui/react": "^2.2.7",
+    "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@leafac/rehype-shiki": "^2.2.1",
     "@mdx-js/loader": "^3.0.0",

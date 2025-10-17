@@ -2,25 +2,26 @@ import type { Metadata } from 'next'
 import '@/styles/tailwind.css'
 import { RootLayout } from '@/components/RootLayout'
 import { ToastProvider } from '@/components/toast/ToastProvider'
+import { WEB_NAME, WEB_DESC, WEB_LONG_DESC, URL } from '@/lib/constant'
 
 export const metadata: Metadata = {
   title: {
-    default: 'LocalMoco: Validate Market Fit with AI-Powered Surveys',
-    template: '%s | LocalMoco',
+    default: `${WEB_NAME}: ${WEB_DESC}`,
+    template: `%s | ${WEB_NAME}`,
   },
-  description: 'LocalMoco is an AI-powered tool that helps businesses create high-quality surveys and feedback forms in seconds. Stop guessing at what questions to ask and let AI build an effective survey based on your goals.',
-  keywords: ['AI', 'surveys', 'feedback', 'market research', 'business tools', 'generative AI', 'product validation', 'customer insights'],
+  description: WEB_LONG_DESC,
+  keywords: ['net worth', 'financial tracking', 'wealth management', 'personal finance', 'assets', 'liabilities', 'financial independence', 'Gen Z finance'],
   openGraph: {
-    title: 'LocalMoco: Validate Market Fit with AI-Powered Surveys',
-    description: 'LocalMoco is an AI-powered tool that helps businesses create high-quality surveys and feedback forms in seconds. Stop guessing at what questions to ask and let AI build an effective survey based on your goals.',
-    url: 'https://localmoco.io', // Replace with your actual domain
-    siteName: 'LocalMoco',
+    title: `${WEB_NAME}: ${WEB_DESC}`,
+    description: WEB_LONG_DESC,
+    url: URL,
+    siteName: WEB_NAME,
     images: [
       {
-        url: 'https://localmoco.io/og-image.jpg', // Replace with your actual OG image
+        url: `${URL}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: 'LocalMoco - AI Surveys',
+        alt: `${WEB_NAME} - Track Your Net Worth`,
       },
     ],
     locale: 'en_US',
@@ -28,14 +29,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LocalMoco: AI-Powered Survey & Feedback Tool',
-    description: 'LocalMoco is an AI-powered tool that helps businesses create high-quality surveys and feedback forms in seconds. Stop guessing at what questions to ask and let AI build an effective survey based on your goals.',
-    creator: '@localmoco', // Replace with your actual Twitter handle
-    images: ['https://localmoco.io/twitter-image.jpg'], // Replace with your actual Twitter image
+    title: `${WEB_NAME}: ${WEB_DESC}`,
+    description: WEB_LONG_DESC,
+    creator: '@guapital',
+    images: [`${URL}/twitter-image.jpg`],
   },
   viewport: 'width=device-width, initial-scale=1',
   themeColor: '#ffffff',
-  manifest: '/manifest.json', // Ensure you have a manifest.json if using PWA features
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',

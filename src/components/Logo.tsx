@@ -44,7 +44,7 @@ export function Logo({
                     alt="LocalMoco Logo"
                     width={600}
                     height={600}
-                    className="h-16 w-16 object-cover transform scale-255 ml-20 xl:ml-0"
+                    className="h-16 w-16 object-cover transform scale-285 ml-20 xl:ml-0"
                 />
             </div>
             {/* <svg

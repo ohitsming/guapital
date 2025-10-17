@@ -1,103 +1,67 @@
-# LocalMoco: AI-Powered Survey & Feedback Tool
+# Project Guapital: Personal Net Worth Tracker
 
-**LocalMoco** is an AI-powered tool that helps businesses create high-quality surveys and feedback forms in seconds. Stop guessing at what questions to ask and let AI build an effective survey based on your goals.
+## 1. Core Concept
 
----
+Project Guapital is a modern, privacy-first financial application designed to help users, particularly from Gen Z, understand and track their net worth. The core mission is to provide a clear, simple, and motivating picture of one's financial health, moving beyond simple budgeting to focus on wealth generation.
 
-## 🌎 Project Overview
+The app will be built on the principle of manual entry first, promoting mindfulness about financial assets and liabilities. Future iterations will introduce gamification and social features in a secure, opt-in, and anonymous manner.
 
-For most businesses, finding the right market fit is a critical challenge. The biggest hurdle in validating ideas and understanding customer needs isn't just gathering feedback, but asking the *right* questions to get actionable data. LocalMoco solves this by using generative AI to transform your business goals into a well-structured, unbiased survey, helping you confidently validate market fit and drive product success.
-
-**The core workflow is simple:**
-
-1.  **Describe Your Goal:** Tell the AI what you want to learn. For example:
-    *   *"Test a new logo for my coffee brand."*
-    *   *"Get feedback on a new feature for my SaaS app."*
-    *   *"Understand customer satisfaction with my e-commerce store."*
-2.  **Generate Survey:** The AI engine drafts a survey with relevant, unbiased, and effective questions.
-3.  **Distribute & Analyze:** Share your survey via a simple link and watch the results come in through a clean, easy-to-understand dashboard.
-
-This approach saves time, reduces bias, and dramatically increases the quality of insights you receive.
+- **Target Audience:** Gen Z and young millennials seeking financial clarity and independence.
+- **Core Value:** Simplicity, Privacy, and Motivation.
 
 ---
 
-## Execution Roadmap
+## 2. Tech Stack
 
-### 📧 Phase 0: Email List Generation
-*   **Goal: Build an initial audience and generate interest for the upcoming launch.**
-*   [x] Pivot current application to focus on Business.
-*   [x] Set up a landing page with an email signup form.
-*   [ ] Implement email marketing automation for early bird sign-ups.
-*   [ ] Drive traffic to the landing page through targeted campaigns.
-
-### 🚀 Phase 1: The AI Survey Builder
-*   **Goal: Onboard the first 100 users to the free tier and validate the AI survey generator.**
-*   [ ] Refine the AI survey generation engine.
-*   [ ] Build out the core survey creation, distribution, and analytics loop.
-*   [ ] Develop a robust free tier to encourage adoption.
-
-### 🛡️ Phase 2: Monetization & Pro Tools
-*   **Goal: Convert 10% of free users to the Business Pro subscription.**
-*   [ ] Launch the **Business Pro** subscription with Stripe.
-*   [ ] Build advanced AI analytics and data export features.
-*   [ ] Create pre-built survey templates for common use cases.
-
-### 💸 Phase 3: The Earner Panel
-*   **Goal: Successfully process the first paid campaigns to the earner panel.**
-*   [ ] Build the infrastructure for the opt-in earner marketplace.
-*   [ ] Implement a business wallet and payment system for panel responses.
-*   [ ] Develop an onboarding flow for earners.
+- **Framework:** Next.js
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Database & Auth:** Supabase
+- **Deployment:** AWS Amplify
 
 ---
 
-## 🧱 Tech Stack
+## 3. Project Plan & Milestones
 
-| Layer       | Stack                    |
-|-------------|--------------------------|
-| Frontend    | Next.js + Tailwind CSS   |
-| Backend     | Supabase (DB + Auth + RLS) |
-| **AI**      | **Gemini for Survey Generation & Analysis** |
-| Payments    | Stripe                   |
+### Milestone 1: The Core Net Worth MVP
 
----
+**Goal:** Create a functional, single-user application to calculate and track net worth.
 
-## USP
+| Feature ID | Description | Status |
+| :--- | :--- | :--- |
+| MVP-01 | **User Authentication:** Allow users to sign up and log in securely using Supabase Auth. | To Do |
+| MVP-02 | **Database Schema:** Create `assets` and `liabilities` tables in Supabase linked to user IDs. | To Do |
+| MVP-03 | **Asset Management:** Full CRUD (Create, Read, Update, Delete) functionality for user assets (e.g., Cash, Stocks, Crypto, Real Estate). | To Do |
+| MVP-04 | **Liability Management:** Full CRUD functionality for user liabilities (e.g., Student Loans, Credit Card Debt, Mortgages). | To Do |
+| MVP-05 | **Net Worth Dashboard:** A clean, protected UI page that displays: Total Assets, Total Liabilities, and the calculated Net Worth. | To Do |
 
-1. Core USP: Go from Goal to Questions, Instantly.
-    * Pain Solved: The "Blank Page" problem.
-    * Your Feature: A user types a simple goal ("I want to test a new pricing model for my SaaS product"), and your AI generates a statistically sound, 
-        unbiased, and well-structured survey. This is your hook.
+### Milestone 2: Insights and Historical Tracking
 
-2. AI-Powered Analysis & Reporting.
-    * Pain Solved: Analysis paralysis.
-    * Your Feature: This is your knockout punch. After responses are collected, the AI doesn't just give the user a CSV file. It automatically:
-        * Analyzes sentiment of open-ended responses.
-        * Identifies key themes and clusters similar comments.
-        * Generates a summary report in plain English, complete with charts and key takeaways (e.g., "73% of users found the pricing confusing, with many 
-            mentioning the 'Pro' tier as the main point of friction.").
-    * Why it Wins: Google Forms and SurveyMonkey make the user do all this work manually. You do it for them.
+**Goal:** Provide users with deeper insights into their financial journey.
 
----
+| Feature ID | Description | Status |
+| :--- | :--- | :--- |
+| H-01 | **Net Worth History:** Automatically snapshot net worth data periodically (e.g., monthly). | To Do |
+| H-02 | **Historical Chart:** Display a chart showing the user's net worth progression over time. | To Do |
+| H-03 | **Categorization:** Allow users to categorize their assets and liabilities for more granular analysis. | To Do |
+| H-04 | **Summary View:** A dashboard view showing the breakdown of assets and liabilities by category (e.g., a pie chart). | To Do |
 
-## 💰 Business Model & Pricing Strategy
+### Milestone 3: Gamification & Motivation
 
-LocalMoco operates on a Freemium model with two paid subscription tiers: Pro and Business. Our pricing is designed to scale with the needs of our users, from individuals exploring AI-powered survey generation to growing teams requiring advanced features and collaboration.
+**Goal:** Introduce opt-in, privacy-preserving features to motivate users.
 
-### 1. Free Tier
-*   **Price:** $0/month
-*   **Includes:** Unlimited Surveys, 50 Responses per Survey, Basic Analytics, 500 AI Credits/month.
-*   **Justification:** Allows users to experience the core AI survey generation capabilities and validate the tool's value without commitment.
-
-### 2. Pro Subscription
-*   **Price:** $19/month (or $190 annually)
-*   **Includes:** 2,500 Responses per Survey, AI-Powered Analysis (coming soon), Data Export (CSV) (coming soon), Custom Branding (coming soon), 10,000 AI Credits/month.
-*   **Justification:** Designed for professionals needing higher response volumes and more AI capacity. The current pricing reflects a temporary adjustment to acknowledge that some advanced features (AI-Powered Analysis, Data Export, Custom Branding) are still under development. This makes the Pro tier more accessible while we build out its full capabilities.
-
-### 3. Business Subscription
-*   **Price:** $49/month (or $490 annually)
-*   **Includes:** 10,000 Responses per Survey, Team Collaboration (coming soon), Slack & Sheets Integrations (coming soon), 50,000 AI Credits/month.
-*   **Justification:** Tailored for teams requiring extensive response limits, significant AI credits, and future collaboration/integration features. Similar to the Pro tier, the current pricing is adjusted to reflect the "coming soon" status of team collaboration and integrations, ensuring value for the current feature set while anticipating future enhancements.
-
-Our pricing strategy aims to provide immediate value through our powerful AI survey generator, with future feature releases progressively enhancing the value proposition of our paid tiers.
+| Feature ID | Description | Status |
+| :--- | :--- | :--- |
+| G-01 | **Investment Rate Metric:** Track the percentage of income a user invests each month. | To Do |
+| G-02 | **Anonymous Percentile Ranking:** Implement the opt-in system for users to see their anonymous percentile ranking for metrics like `Investment Rate` and `Net Worth`. | To Do |
+| G-03 | **Contextual Filters:** Allow users to filter percentile rankings by relevant cohorts like age and income bracket. | To Do |
+| G-04 | **Achievements System:** Award badges for hitting financial milestones (e.g., "Net Worth Positive," "Debt-Free," "Investor"). | To Do |
 
 ---
+
+## 4. Future Ideas & Backlog
+
+- Plaid integration for automatic account syncing.
+- Multi-currency support.
+- Financial goal setting and tracking (e.g., "Save for a down payment").
+- More advanced data visualizations.

@@ -1,8 +1,6 @@
-export const URL = process.env.NEXT_PUBLIC_ENV_URL || "https://localmoco.io";
-export const WEB_NAME = "LocalMoco"
-export const WEB_DESC = "Explore The LocalMoco Platform"
-export const WEB_LONG_DESC = "LocalMoco is a micro-survey platform connecting creators who need insight with users who get paid for their opinion. Validate your idea and make better decisions.";
-export const BUSINESS_NAME = "Businesses"
-export const CONSUMER_NAME = "Earners"
-export const COMPANY_INFO_ADDRESS = "info@localmoco.io"
-export const COMPANY_SUPPORT_ADDRESS = "support@localmoco.io"
+export const URL = process.env.NEXT_PUBLIC_ENV_URL || "https://guapital.com";
+export const WEB_NAME = "Guapital"
+export const WEB_DESC = "Track your guap, build your wealth."
+export const WEB_LONG_DESC = "Guapital is a modern, privacy-first financial application to help you understand and track your net worth, empowering you to build wealth with clarity and confidence.";
+export const COMPANY_INFO_ADDRESS = "info@guapital.com"
+export const COMPANY_SUPPORT_ADDRESS = "support@guapital.com"

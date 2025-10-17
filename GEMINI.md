@@ -1,54 +1,48 @@
-# Project Gemini Configuration: LocalMoco
+# Project Gemini Configuration: Guapital
 
-This document outlines the strategic direction and conventions for the LocalMoco project for the Gemini assistant.
+This document outlines the strategic direction and conventions for the Guapital project for the Gemini assistant.
 
 ---
 
 ## Core Project Strategy
 
-*   **Project:** LocalMoco
-*   **Core Strategy (Pivot as of Oct 2025):** The project has pivoted from a two-sided marketplace to a "business-first," single-player tool. This is to solve the classic chicken-and-egg problem inherent in marketplace models.
-*   **Primary Value Proposition:** An **AI-powered survey builder**. The key differentiator against competitors like SurveyMonkey or Google Forms is the use of generative AI to create effective surveys from simple, goal-oriented prompts.
-*   **Target Audience:** Businesses, entrepreneurs, product managers, and marketers who need to gather user feedback quickly and efficiently.
+*   **Project:** Guapital
+*   **Core Strategy:** The project's objective is to build a modern, privacy-first financial application designed to help users (particularly Gen Z) understand and track their net worth.
+*   **Primary Value Proposition:** To provide a clear, simple, and motivating picture of one's financial health, moving beyond simple budgeting to focus on wealth generation.
+*   **Target Audience:** Gen Z and young millennials seeking financial clarity and independence.
 
 ## Development Plan & Phases
 
-1.  **Phase 1 (Current Focus): AI Survey Builder.**
-    *   **Goal:** Build and market the best AI-driven survey creation tool.
-    *   **My Role:** Assist in developing AI-centric features, refining the business-focused UI/UX, and implementing a simplified, business-first roadmap.
+### Phase 1 (Current Focus): The Core Net Worth MVP
+*   **Goal:** Create a functional, single-user application to calculate and track net worth.
+*   **My Role:** Implement user authentication, define the database schema, build the API layer for asset/liability management, and create the main dashboard UI.
 
-2.  **Phase 2 (Future): The Earner Panel.**
-    *   **Goal:** Introduce an "opt-in" marketplace as a powerful upsell/add-on feature.
-    *   **Mechanism:** Businesses with existing surveys can choose to pay a fee to have them filled out by a pre-vetted panel of "earners."
+### Phase 2 (Future): Insights and Historical Tracking
+*   **Goal:** Provide users with deeper insights into their financial journey.
+*   **Tasks:** Implement net worth snapshotting, display historical data on charts, and allow for categorization of assets and liabilities.
+
+### Phase 3 (Future): Gamification & Motivation
+*   **Goal:** Introduce opt-in, privacy-preserving features to motivate users.
+*   **Tasks:** Implement tracking for an "Investment Rate" metric, build an anonymous percentile ranking system, and create an achievements/badges system for financial milestones.
 
 ## Technical Conventions
 
-*   **Tech Stack:** Next.js, TypeScript, Tailwind CSS, Supabase (DB/Auth), Stripe (Payments), Gemini (AI).
-*   **Focus:** When developing, prioritize features that enhance the survey creation and analysis experience for the business user.
-*   **Language:** Use clear, business-centric language in UI/UX copy. Avoid marketplace-specific terms like "earner" or "task" in the primary business-facing UI, unless it's in the context of the Phase 2 panel.
+*   **Framework:** Next.js
+*   **Language:** TypeScript
+*   **Styling:** Tailwind CSS
+*   **Database & Auth:** Supabase
+*   **Deployment:** AWS Amplify
 
 ---
 
-## Pivot Execution Roadmap
+## Execution Roadmap
 
-### Phase 1: Streamline the UI to be "Business-First"
-*   **Goal:** Remove all user-facing elements related to the "earner" marketplace.
+### Milestone 1: The Core Net Worth MVP
+*   **Goal:** Complete all tasks required for a functional Minimum Viable Product.
 *   **Tasks:**
-    *   [ ] Deprecate earner-specific pages (`/earner`, `/dashboard/onboarding-earner`, `/dashboard/(protected)/earner`).
-    *   [ ] Remove "For Earners" links from navigation and footer.
-    *   [ ] Remove `SwitchToEarnerButton` and `SwitchToBusinessButton` components.
-    *   [ ] Rewrite landing page (`/`) content to focus on the AI Survey Builder.
-
-### Phase 2: Simplify Onboarding and Core Workflow
-*   **Goal:** Create a frictionless path for a business user to sign up and generate a survey.
-*   **Tasks:**
-    *   [ ] Make the business onboarding flow the single, default experience.
-    *   [ ] Ensure onboarding flows directly into the survey creation process.
-
-### Phase 3: Build Out the AI Survey Experience
-*   **Goal:** Deliver a robust and user-friendly survey creation, distribution, and analysis loop.
-*   **Tasks:**
-    *   [ ] Enhance the AI survey generator (`/api/gemini/generate-survey`).
-    *   [ ] Build the UI for survey creation.
-    *   [ ] Implement survey sharing/distribution via a public link.
-    *   [ ] Create the dashboard for viewing and analyzing survey results.
+    *   [ ] **Rebranding** Rebrand the current project into a fincial networth tracking app.
+    *   [ ] **Database Schema:** Create `assets` and `liabilities` tables in Supabase linked to user IDs.
+    *   [ ] **User Authentication:** Ensure signup and login are fully functional.
+    *   [ ] **API Layer:** Build API routes for full CRUD (Create, Read, Update, Delete) functionality for both assets and liabilities.
+    *   [ ] **Frontend - Asset/Liability Management:** Create UI components to list, add, edit, and delete assets and liabilities.
+    *   [ ] **Frontend - Dashboard:** Develop the main dashboard page that displays the calculated Net Worth and houses the management components.

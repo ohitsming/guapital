@@ -24,19 +24,19 @@ const navigation = [
 // Adapted from the "Our Culture" section
 const values = [
   {
-    name: 'User-Centric AI',
+    name: 'Privacy First',
     description:
-      'Our AI is designed to understand your goals and generate surveys that yield actionable insights, making complex research simple and accessible.',
+      'Your financial data is yours alone. We prioritize privacy and security, ensuring your information remains confidential and protected.',
   },
   {
-    name: 'Efficiency & Clarity',
+    name: 'Simplicity & Clarity',
     description:
-      'We believe in making the feedback process fast, clear, and effective. Our platform is built for speed, ensuring you get the data you need without unnecessary complexity.',
+      'We believe in making financial tracking simple and accessible. Our platform provides a clear picture of your net worth without unnecessary complexity.',
   },
   {
-    name: 'Trustworthy Insights',
+    name: 'Mindful Wealth Building',
     description:
-      'We are committed to providing reliable and unbiased data. Our systems are designed for transparency and integrity, so you can make confident decisions.',
+      'We promote mindfulness through manual entry of financial data, helping you stay engaged with your financial decisions and build wealth with intention.',
   },
 ]
 
@@ -144,10 +144,10 @@ export default function AboutPage() { // Renamed from Example to AboutPage
               <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
                 <div className="relative w-full lg:max-w-xl lg:shrink-0 xl:max-w-2xl">
                   <h1 className="text-pretty text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl dark:text-white">
-                    AI-Powered Surveys, Instant Insights
+                    Track Your Net Worth, Build Your Wealth
                   </h1>
                   <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:max-w-md sm:text-xl/8 lg:max-w-none dark:text-gray-400">
-                    The biggest challenge in gathering feedback isn&apos;t distribution, it&apos;s asking the right questions. Bad questions lead to bad data. LocalMoco solves this by using generative AI to turn your goals into a well-structured survey.
+                    The biggest challenge in building wealth isn&apos;t earning more, it&apos;s understanding where you stand. Guapital helps Gen Z and young millennials track their net worth with clarity and confidence, promoting mindful financial decisions.
                   </p>
                 </div>
                 <div className="mt-14 flex justify-end gap-8 sm:-mt-44 sm:justify-start sm:pl-20 lg:mt-0 lg:pl-0">
@@ -212,7 +212,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
             <div className="mt-6 flex flex-col gap-x-8 gap-y-20 lg:flex-row">
               <div className="lg:w-full lg:max-w-2xl lg:flex-auto">
                 <p className="text-xl/8 text-gray-600 dark:text-gray-300">
-                  For most businesses, finding the right market fit is a critical challenge. LocalMoco is an AI-powered tool that helps businesses create high-quality surveys and feedback forms in seconds, specifically designed to help you validate market fit. Stop guessing at what questions to ask and let AI build an effective survey based on your goals.
+                  For most Gen Z and young millennials, building wealth starts with understanding where they stand financially. Guapital is a modern, privacy-first financial application that helps you track your net worth with clarity and confidence. Manual entry promotes mindfulness about your financial assets and liabilities, empowering you to make informed decisions about your financial future.
                 </p>
               </div>
               {/* Removed stats section */}
@@ -236,7 +236,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
               Our Values
             </h2>
             <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
-              We are a team obsessed with empowering businesses to gather high-quality insights effortlessly. Our culture is built on three core principles.
+              We are a team obsessed with empowering individuals to take control of their financial future. Our culture is built on three core principles.
             </p>
           </div>
           <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 text-base/7 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -288,7 +288,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
             ))}
           </div>
           <p className="mt-10 text-center text-sm/6 text-gray-600 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} LocalMoco, Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} Guapital LLC. All rights reserved.
           </p>
         </div>
       </footer>
