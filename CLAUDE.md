@@ -22,7 +22,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Styling:** Tailwind CSS v4
 - **Database & Auth:** Supabase
 - **Deployment:** AWS Amplify
-- **Additional:** MDX support for content, Stripe integration, Framer Motion for animations
+- **Financial Data:** Plaid (account aggregation), Alchemy (crypto tracking)
+- **Charting:** Recharts
+- **Additional:** MDX support for content, Stripe integration, Framer Motion for animations, date-fns, axios
 
 ## Development Commands
 
@@ -49,21 +51,41 @@ npm run prepare          # Setup Husky git hooks
 ```
 src/
 ├── app/                          # Next.js App Router pages & API routes
-│   ├── api/supabase/            # All Supabase API endpoints
-│   │   ├── auth/                # Authentication callbacks & OAuth
-│   │   ├── general/             # General endpoints (interests, onboarding status)
-│   │   └── settings/            # User profile & settings management
+│   ├── api/
+│   │   ├── plaid/               # Plaid integration endpoints
+│   │   │   ├── create-link-token/   # Generate Plaid Link token
+│   │   │   ├── exchange-token/      # Exchange public token for access token
+│   │   │   ├── sync-accounts/       # Sync account balances
+│   │   │   ├── sync-transactions/   # Sync transactions
+│   │   │   └── accounts/            # Get/delete accounts
+│   │   ├── crypto/              # Crypto wallet tracking endpoints
+│   │   │   ├── wallets/         # Add/get/delete crypto wallets
+│   │   │   └── sync-wallet/     # Sync wallet balances via Alchemy
+│   │   └── supabase/            # Legacy Supabase API endpoints
+│   │       ├── auth/            # Authentication callbacks & OAuth
+│   │       ├── general/         # General endpoints (interests, onboarding status)
+│   │       └── settings/        # User profile & settings management
 │   ├── auth/                    # Auth-related pages (callbacks, confirmations)
 │   ├── login/                   # Login & password reset pages
 │   ├── signup/                  # Signup flow pages
 │   └── [other-pages]/           # Marketing pages (about, pricing, terms, etc.)
 ├── components/                   # React components
-│   ├── business-onboarding/     # Business onboarding flow
-│   ├── earner-onboarding/       # Earner onboarding flow
+│   ├── plaid/                   # Plaid integration components
+│   │   └── PlaidLinkButton.tsx  # Plaid Link connection button
+│   ├── accounts/                # Account management components
+│   │   └── AccountsList.tsx     # Display connected accounts
+│   ├── business-onboarding/     # Business onboarding flow (legacy)
+│   ├── earner-onboarding/       # Earner onboarding flow (legacy)
 │   ├── settings/                # Settings-related components
 │   └── toast/                   # Toast notification system
 ├── lib/                         # Core utilities & business logic
 │   ├── interfaces/              # TypeScript interfaces for domain models
+│   │   ├── plaid.ts             # Plaid accounts & transactions
+│   │   ├── crypto.ts            # Crypto wallets & holdings
+│   │   ├── asset.ts             # Manual assets
+│   │   ├── networth.ts          # Net worth calculations
+│   │   ├── percentile.ts        # Percentile rankings
+│   │   └── budget.ts            # Budgeting features
 │   ├── types/                   # TypeScript type definitions
 │   ├── context/                 # React Context providers
 │   ├── stripe/                  # Stripe-related utilities
@@ -74,9 +96,32 @@ src/
     ├── supabase/                # Supabase client factories
     │   ├── client.ts            # Browser client creation
     │   └── server.ts            # Server-side client creation
+    ├── formatters.ts            # Currency, percentage, date formatting
     ├── avatarUtils.ts
     └── timeUtils.ts
 ```
+
+### Database Schema
+
+The complete database schema is defined in `supabase/migrations/001_create_guapital_schema.sql` and includes:
+
+**Core Tables:**
+- `plaid_items` - Stores Plaid access tokens and institution metadata
+- `plaid_accounts` - Individual bank/investment accounts from Plaid
+- `plaid_transactions` - Transaction history from Plaid
+- `crypto_wallets` - User's crypto wallet addresses
+- `crypto_holdings` - Token balances for each wallet
+- `manual_assets` - Manually entered assets (real estate, vehicles, etc.)
+- `manual_asset_history` - Edit history for manual assets
+- `net_worth_snapshots` - Daily snapshots for historical tracking
+- `user_demographics` - Age brackets for percentile rankings
+- `user_settings` - User preferences and settings
+
+**Security:**
+- Row Level Security (RLS) enabled on all tables
+- Users can only access their own data
+- Proper indexes for performance
+- Helper functions for net worth calculations
 
 ### Authentication & Database Pattern
 
@@ -131,7 +176,14 @@ The project has extensive MDX support configured for blog/work content:
 Required environment variables (in `.env.local`):
 - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
-- `NEXT_PUBLIC_ENV_URL`: Public-facing URL (optional, defaults to https://guapital.com)
+- `NEXT_PUBLIC_ENV_URL`: Public-facing URL (defaults to http://localhost:3000 in dev)
+- `PLAID_CLIENT_ID`: Plaid client ID
+- `PLAID_SECRET`: Plaid secret key (sandbox/development/production)
+- `PLAID_ENV`: Plaid environment (sandbox, development, or production)
+- `ALCHEMY_API_KEY`: Alchemy API key for crypto wallet tracking
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Stripe publishable key
+- `STRIPE_SECRET_KEY`: Stripe secret key
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret
 
 ## Development Guidelines
 
@@ -149,6 +201,16 @@ Required environment variables (in `.env.local`):
 - Tailwind CSS v4 with PostCSS
 - Custom animations using Framer Motion
 - Utility-first approach with custom components for common patterns (Button, TextField, SelectField)
+
+#### Color Palette: Modern Wealth
+- **Primary Color:** `Dark Teal`
+  - **Hex:** `#004D40`
+  - **Rationale:** Combines the calming trust of blue with the growth/money association of green. It feels modern, sophisticated, and secure.
+- **Accent Color:** `Vibrant Gold/Amber`
+  - **Hex:** `#FFC107`
+  - **Rationale:** Associated with wealth, optimism, and energy. Excellent for calls-to-action.
+- **Background (Light):** `Off-white` (`#F7F9F9`)
+- **Background (Dark):** `Near-black` (`#12181B`)
 
 ## Ideal Customer Profile (ICP)
 
@@ -177,6 +239,85 @@ Required environment variables (in `.env.local`):
 - People with <$10K net worth (product won't resonate yet)
 - Ultra-wealthy ($5M+) who need complex tax optimization
 - Active traders needing real-time portfolio analytics
+
+## Current Implementation Status
+
+### ✅ Completed Features
+
+**1. Project Foundation**
+- Complete database schema with RLS policies
+- TypeScript interfaces for all domain models
+- Environment configuration and documentation
+- Utility functions (formatters, date handling)
+
+**2. Account Aggregation (Plaid) - PARTIAL**
+- ✅ API routes for link token creation (`/api/plaid/create-link-token`)
+- ✅ API routes for token exchange (`/api/plaid/exchange-token`)
+- ✅ API routes for syncing accounts (`/api/plaid/sync-accounts`)
+- ✅ API routes for syncing transactions (`/api/plaid/sync-transactions`)
+- ✅ API routes for fetching/deleting accounts (`/api/plaid/accounts`)
+- ✅ PlaidLinkButton component for connecting accounts
+- ✅ AccountsList component for viewing connected accounts
+- ⏳ Need: Main dashboard integration
+
+**3. Crypto Wallet Tracking - PARTIAL**
+- ✅ API routes for managing wallets (`/api/crypto/wallets`)
+- ✅ API routes for syncing balances via Alchemy (`/api/crypto/sync-wallet`)
+- ✅ Support for Ethereum, Polygon, Base, Arbitrum, Optimism
+- ⏳ Need: UI components for wallet management
+- ⏳ Need: Display crypto holdings
+
+### 🚧 In Progress / To Do
+
+**4. Manual Asset Entry - NOT STARTED**
+- ⏳ API routes for CRUD operations
+- ⏳ Form component for adding/editing assets
+- ⏳ Asset history tracking UI
+
+**5. Net Worth Dashboard - NOT STARTED**
+- ⏳ API route for calculating current net worth
+- ⏳ API route for fetching historical snapshots
+- ⏳ Dashboard page with big number display
+- ⏳ Trend charts (30/90/365 days) using Recharts
+- ⏳ Assets vs Liabilities breakdown (pie/bar charts)
+- ⏳ Category breakdown visualization
+
+**6. Percentile Ranking (Gamification) - NOT STARTED**
+- ⏳ API route for calculating percentile
+- ⏳ Demographics form (age, opt-in)
+- ⏳ Ranking display component
+- ⏳ Social sharing functionality
+
+**7. Basic Budgeting (Lite) - NOT STARTED**
+- ⏳ API route for spending by category
+- ⏳ Monthly spending view
+- ⏳ "Guilt-free spending" toggle
+- ⏳ Simple categorization UI
+
+**8. Main Application Pages - NOT STARTED**
+- ⏳ Dashboard page (`/app/dashboard/page.tsx`)
+- ⏳ Accounts page
+- ⏳ Budget page
+- ⏳ Settings page
+- ⏳ Onboarding flow
+
+### Next Steps
+
+**Immediate Priority:**
+1. Complete crypto wallet UI components
+2. Build manual asset entry system
+3. Create net worth calculation API endpoint
+4. Build main dashboard with charts
+5. Implement percentile ranking
+6. Add basic budgeting view
+
+**Before Launch:**
+- Apply database migration to Supabase
+- Configure Plaid sandbox account
+- Configure Alchemy API key
+- Test complete user flow
+- Add error handling and loading states
+- Mobile responsiveness testing
 
 ## Project Roadmap
 
@@ -506,6 +647,72 @@ Only add features if:
 - Database backups and disaster recovery
 - User data privacy (no selling data, ever)
 
+## Setup Instructions
+
+### 1. Database Setup
+
+Run the database migration in your Supabase dashboard:
+
+```bash
+# Go to Supabase Dashboard → SQL Editor
+# Copy and run the contents of: supabase/migrations/001_create_guapital_schema.sql
+```
+
+This will create all tables, RLS policies, indexes, and helper functions.
+
+### 2. Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your keys:
+
+```bash
+cp .env.example .env.local
+```
+
+**Required for Phase 1:**
+- Supabase URL and anon key (already configured)
+- Plaid credentials (get from https://dashboard.plaid.com)
+- Alchemy API key (get from https://www.alchemy.com)
+
+**Optional (for later phases):**
+- Stripe keys (for payments)
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+Dependencies include:
+- `plaid` - Plaid Node.js SDK
+- `react-plaid-link` - Plaid Link React component
+- `recharts` - Charting library
+- `axios` - HTTP client
+- `date-fns` - Date utilities
+
+### 4. Run Development Server
+
+```bash
+npm run dev
+```
+
+Visit http://localhost:3000
+
+### 5. Test Plaid Integration
+
+1. Sign up / log in
+2. Navigate to accounts page
+3. Click "Connect Bank Account"
+4. Use Plaid sandbox credentials:
+   - Username: `user_good`
+   - Password: `pass_good`
+5. Select any bank and accounts to link
+
+### 6. Test Crypto Wallet Tracking
+
+1. Add a crypto wallet (any valid Ethereum address)
+2. System will sync via Alchemy API
+3. View balances and holdings
+
 ## Notes
 
 - The project is transitioning from "LocalMoco" (survey platform) to "Guapital" (net worth tracker) - actively removing legacy code
@@ -513,6 +720,29 @@ Only add features if:
 - Feature flags system in place for gradual rollout
 - Toast notification system available globally via ToastProvider
 - **Bootstrap Philosophy:** Build for 1,000 users first, not 1,000,000. Optimize for learning speed over scale.
+
+## Implementation Progress Tracking
+
+**Phase 1 Completion: ~30%**
+
+| Feature | Backend | Frontend | Status |
+|---------|---------|----------|--------|
+| Account Aggregation (Plaid) | ✅ Complete | ✅ Complete | Ready for integration |
+| Crypto Wallet Tracking | ✅ Complete | ⏳ Pending | Backend ready |
+| Manual Asset Entry | ⏳ Pending | ⏳ Pending | Not started |
+| Net Worth Dashboard | ⏳ Pending | ⏳ Pending | Not started |
+| Percentile Ranking | ⏳ Pending | ⏳ Pending | Not started |
+| Basic Budgeting | ⏳ Pending | ⏳ Pending | Not started |
+
+**Estimated Time to MVP:**
+- Crypto wallet UI: 1-2 days
+- Manual assets: 2-3 days
+- Net worth dashboard: 5-7 days
+- Percentile ranking: 3-4 days
+- Basic budgeting: 3-4 days
+- Integration & testing: 3-5 days
+
+**Total: 17-25 days of focused development**
 
 ## Strategic Context
 

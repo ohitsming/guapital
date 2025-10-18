@@ -44,10 +44,9 @@ function classNames(...classes: any) {
 
 interface SharedDashboardLayoutProps {
     children: React.ReactNode;
-    navigation: NavItem[]; // Prop for specific navigation links
 }
 
-export default function SharedDashboardLayout({ children, navigation }: SharedDashboardLayoutProps) {
+export default function SharedDashboardLayout({ children }: SharedDashboardLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [userProfile, setUserProfile] = useState<any>(null)
     const supabase = createClient()
@@ -109,36 +108,7 @@ export default function SharedDashboardLayout({ children, navigation }: SharedDa
                                     />
                                 </Link>
                             </div>
-                            <nav className="flex flex-1 flex-col">
-                                <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                                    <li>
-                                        <ul role="list" className="-mx-2 space-y-1">
-                                            {navigation.map((item) => (
-                                                <li key={item.name}>
-                                                    <Link
-                                                        href={item.href}
-                                                        className={classNames(
-                                                            pathname === item.href
-                                                                ? 'bg-gray-50 text-neutral-600'
-                                                                : 'text-gray-700 hover:bg-gray-50 hover:text-neutral-600',
-                                                            'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-                                                        )}
-                                                    >
-                                                        <item.icon
-                                                            aria-hidden="true"
-                                                            className={classNames(
-                                                                pathname === item.href ? 'text-neutral-600' : 'text-gray-400 group-hover:text-neutral-600',
-                                                                'size-6 shrink-0',
-                                                            )}
-                                                        />
-                                                        {item.name}
-                                                    </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </nav>
+                            
                         </div>
                     </DialogPanel>
                 </div>
@@ -154,36 +124,7 @@ export default function SharedDashboardLayout({ children, navigation }: SharedDa
                         </Link>
 
                     </div>
-                    <nav className="flex flex-1 flex-col">
-                        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                            <li>
-                                <ul role="list" className="-mx-2 space-y-1">
-                                    {navigation.map((item) => (
-                                        <li key={item.name}>
-                                            <Link
-                                                href={item.href}
-                                                className={classNames(
-                                                    pathname === item.href
-                                                        ? 'bg-gray-50 text-neutral-600'
-                                                        : 'text-gray-700 hover:bg-gray-50 hover:text-neutral-600',
-                                                    'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
-                                                )}
-                                            >
-                                                <item.icon
-                                                    aria-hidden="true"
-                                                    className={classNames(
-                                                        pathname === item.href ? 'text-neutral-600' : 'text-gray-400 group-hover:text-neutral-600',
-                                                        'size-6 shrink-0',
-                                                    )}
-                                                />
-                                                {item.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </li>
-                        </ul>
-                    </nav>
+                    
                 </div>
             </div>
 

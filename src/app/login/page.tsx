@@ -6,8 +6,8 @@ import { LoginForm } from '@/components/LoginForm'
 import { createClient } from '@/utils/supabase/server'
 
 export const metadata: Metadata = {
-    title: 'Login - LocalMoco',
-    description: 'Log in to your LocalMoco account.',
+    title: 'Login - Guapital',
+    description: 'Log in to your Guapital account.',
 }
 
 export default async function Login() {
@@ -24,7 +24,7 @@ export default async function Login() {
             <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md">
                     <h2 className="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-                        Welcome back to LocalMoco.
+                        Welcome back to Guapital.
                     </h2>
                 </div>
 

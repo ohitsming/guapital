@@ -3,13 +3,12 @@
 import Image from 'next/image'
 import { } from '@headlessui/react'
 import {
-    ArrowPathIcon,
-    CheckIcon,
     CloudArrowUpIcon,
-    Cog6ToothIcon,
-    FingerPrintIcon,
     LockClosedIcon,
-    ServerIcon,
+    ChartPieIcon,
+    TrophyIcon,
+    CubeIcon,
+    PencilSquareIcon,
 } from '@heroicons/react/20/solid'
 import dashboard_screenshot from '@/images/screenshots/dashboard_screenshot.png'
 
@@ -22,24 +21,24 @@ export default function Example() {
                     <div className="mx-auto max-w-2xl py-16 sm:py-48 lg:py-26">
                         <div className="hidden sm:mb-8 sm:flex sm:justify-center">
                             <div className="relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:text-gray-400 dark:ring-white/10 dark:hover:ring-white/20">
-                                Announcing our next round of funding.{' '}
-                                <a href="#" className="font-semibold text-indigo-600 dark:text-indigo-400">
+                                Now in open beta.{' '}
+                                <a href="/signup" className="font-semibold text-primary-700 dark:text-primary-300">
                                     <span aria-hidden="true" className="absolute inset-0" />
-                                    Read more <span aria-hidden="true">&rarr;</span>
+                                    Sign up for early access <span aria-hidden="true">&rarr;</span>
                                 </a>
                             </div>
                         </div>
                         <div className="text-center">
                             <h1 className="text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl dark:text-white">
-                                Guapital: Track Your Net Worth
+                                Track your guap. Build your wealth.
                             </h1>
                             <p className="mt-8 text-pretty text-lg font-medium text-gray-600 sm:text-xl/8 dark:text-gray-400">
-                                A modern, privacy-first financial application designed to help Gen Z and young millennials understand and track their net worth. Focus on wealth generation with simplicity, privacy, and motivation.
+                                The single, reliable source of truth for your net worth. Guapital is a modern, privacy-first app for Gen Z wealth-builders to track traditional and crypto assets in one place. No budget-shaming, just wealth-building.
                             </p>
                             <div className="mt-10 flex items-center justify-center gap-x-6">
                                 <a
                                     href="/signup"
-                                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+                                    className="rounded-md bg-accent px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-accent-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:bg-accent-500 dark:hover:bg-accent-400 dark:focus-visible:outline-accent-500"
                                 >
                                     Get started
                                 </a>
@@ -56,12 +55,12 @@ export default function Example() {
             <div className="mt-32 sm:mt-56">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl sm:text-center">
-                        <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Unlock Your Financial Potential</h2>
+                        <h2 className="text-base/7 font-semibold text-primary-700 dark:text-primary-300">A modern tool for modern wealth</h2>
                         <p className="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-balance sm:text-5xl dark:text-white">
-                            Everything you need to master your net worth.
+                            Finally, a complete picture of your financial health.
                         </p>
                         <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-                            Guapital provides a clear, simple, and motivating picture of your financial health, focusing on wealth generation.
+                            From stocks and savings to crypto and collectibles, see it all in one beautifully designed dashboard. We focus on wealth generation, not penny-pinching.
                         </p>
                     </div>
                 </div>
@@ -92,61 +91,61 @@ export default function Example() {
                             <dt className="inline font-semibold text-gray-900 dark:text-white">
                                 <CloudArrowUpIcon
                                     aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
                                 />
-                                Core Net Worth Tracking
+                                Unified Account Aggregation
                             </dt>{' '}
-                            <dd className="inline">Full CRUD functionality for user assets and liabilities.</dd>
+                            <dd className="inline">Securely connect your bank accounts, brokerages, and credit cards with Plaid. See your traditional assets update automatically.</dd>
+                        </div>
+                        <div className="relative pl-9">
+                            <dt className="inline font-semibold text-gray-900 dark:text-white">
+                                <CubeIcon
+                                    aria-hidden="true"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
+                                />
+                                First-Class Crypto Tracking
+                            </dt>{' '}
+                            <dd className="inline">Connect your crypto wallets from Ethereum, Polygon, Base, and more. We're built for the modern investor.</dd>
+                        </div>
+                        <div className="relative pl-9">
+                            <dt className="inline font-semibold text-gray-900 dark:text-white">
+                                <PencilSquareIcon
+                                    aria-hidden="true"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
+                                />
+                                Manual Asset Entry
+                            </dt>{' '}
+                            <dd className="inline">Track your real estate, vehicles, private equity, and other off-line assets with our simple manual entry system.</dd>
+                        </div>
+                        <div className="relative pl-9">
+                            <dt className="inline font-semibold text-gray-900 dark:text-white">
+                                <ChartPieIcon
+                                    aria-hidden="true"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
+                                />
+                                The Big Picture Dashboard
+                            </dt>{' '}
+                            <dd className="inline">Visualize your net worth, asset allocation, and historical growth with our clean, intuitive dashboard and charts.</dd>
+                        </div>
+                        <div className="relative pl-9">
+                            <dt className="inline font-semibold text-gray-900 dark:text-white">
+                                <TrophyIcon
+                                    aria-hidden="true"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
+                                />
+                                Anonymous Percentile Ranking
+                            </dt>{' '}
+                            <dd className="inline">Opt-in to see how you stack up. Anonymously compare your net worth with peers in your age and income bracket.</dd>
                         </div>
                         <div className="relative pl-9">
                             <dt className="inline font-semibold text-gray-900 dark:text-white">
                                 <LockClosedIcon
                                     aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
+                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
                                 />
-                                Net Worth Dashboard
+                                Privacy by Design
                             </dt>{' '}
-                            <dd className="inline">A clean UI displaying Total Assets, Total Liabilities, and calculated Net Worth.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <ArrowPathIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
-                                />
-                                Historical Tracking
-                            </dt>{' '}
-                            <dd className="inline">Automatically snapshot net worth data and visualize progression over time.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <FingerPrintIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
-                                />
-                                Gamification & Motivation
-                            </dt>{' '}
-                            <dd className="inline">Opt-in anonymous percentile ranking for Investment Rate and Net Worth.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <Cog6ToothIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
-                                />
-                                Achievements System
-                            </dt>{' '}
-                            <dd className="inline">Earn badges for hitting financial milestones like "Debt-Free" or "Investor."</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <ServerIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-indigo-600 dark:text-indigo-400"
-                                />
-                                Privacy-First Approach
-                            </dt>{' '}
-                            <dd className="inline">Manual entry promotes mindfulness about financial assets and liabilities.</dd>
+                            <dd className="inline">We will never sell your data. Our business is funded by subscriptions from users who love our product, not by selling out your privacy.</dd>
                         </div>
                     </dl>
                 </div>
@@ -194,14 +193,12 @@ export default function Example() {
                                 </svg>
                                 <blockquote className="text-xl/8 font-semibold text-white sm:text-2xl/9 dark:text-gray-100">
                                     <p>
-                                        Gravida quam mi erat tortor neque molestie. Auctor aliquet at porttitor a enim nunc suscipit
-                                        tincidunt nunc. Et non lorem tortor posuere. Nunc eu scelerisque interdum eget tellus non nibh
-                                        scelerisque bibendum.
+                                        "Guapital is exactly what I've been looking for. It's the only app that seamlessly tracks my Robinhood, Coinbase, and real estate in one place. Seeing my net worth trend upwards is the best motivation."
                                     </p>
                                 </blockquote>
                                 <figcaption className="mt-8 text-base">
-                                    <div className="font-semibold text-white dark:text-gray-100">Judith Black</div>
-                                    <div className="mt-1 text-gray-400">CEO of Tuple</div>
+                                    <div className="font-semibold text-white dark:text-gray-100">Sarah J., 29</div>
+                                    <div className="mt-1 text-gray-400">Product Manager</div>
                                 </figcaption>
                             </figure>
                         </div>

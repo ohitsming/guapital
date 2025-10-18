@@ -3,6 +3,38 @@
 @import './typography.css' layer(components);
 
 @theme {
+  /* Color Palette: Modern Wealth */
+  /* Primary Color: Dark Teal - trust, growth, modern, secure */
+  --color-primary: #004d40;
+  --color-primary-50: #e0f2f1;
+  --color-primary-100: #b2dfdb;
+  --color-primary-200: #80cbc4;
+  --color-primary-300: #4db6ac;
+  --color-primary-400: #26a69a;
+  --color-primary-500: #009688;
+  --color-primary-600: #00897b;
+  --color-primary-700: #00796b;
+  --color-primary-800: #00695c;
+  --color-primary-900: #004d40;
+
+  /* Accent Color: Vibrant Gold/Amber - wealth, optimism, energy */
+  --color-accent: #ffc107;
+  --color-accent-50: #fff8e1;
+  --color-accent-100: #ffecb3;
+  --color-accent-200: #ffe082;
+  --color-accent-300: #ffd54f;
+  --color-accent-400: #ffca28;
+  --color-accent-500: #ffc107;
+  --color-accent-600: #ffb300;
+  --color-accent-700: #ffa000;
+  --color-accent-800: #ff8f00;
+  --color-accent-900: #ff6f00;
+
+  /* Background Colors */
+  --color-background-light: #f7f9f9;
+  --color-background-dark: #12181b;
+
+  /* Text Sizes */
   --text-*: initial;
   --text-xs: 0.75rem;
   --text-xs--line-height: 1rem;
@@ -27,8 +59,10 @@
   --text-7xl: 4rem;
   --text-7xl--line-height: 4.5rem;
 
+  /* Border Radius */
   --radius-4xl: 2.5rem;
 
+  /* Fonts */
   --font-sans: Mona Sans, ui-sans-serif, system-ui, sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
