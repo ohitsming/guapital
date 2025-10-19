@@ -116,7 +116,7 @@ export default function AccountsList() {
             <div className="text-center p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                 <p className="text-gray-500 text-sm mb-2">No accounts connected yet.</p>
                 <p className="text-xs text-gray-400">
-                    Click "Connect Account" above to get started.
+                    Click &ldquo;Connect Account&rdquo; above to get started.
                 </p>
             </div>
         )

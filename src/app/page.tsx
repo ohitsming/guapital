@@ -105,7 +105,7 @@ export default function Example() {
                                 />
                                 First-Class Crypto Tracking
                             </dt>{' '}
-                            <dd className="inline">Connect your crypto wallets from Ethereum, Polygon, Base, and more. We're built for the modern investor.</dd>
+                            <dd className="inline">Connect your crypto wallets from Ethereum, Polygon, Base, and more. We&apos;re built for the modern investor.</dd>
                         </div>
                         <div className="relative pl-9">
                             <dt className="inline font-semibold text-gray-900 dark:text-white">
@@ -193,7 +193,7 @@ export default function Example() {
                                 </svg>
                                 <blockquote className="text-xl/8 font-semibold text-white sm:text-2xl/9 dark:text-gray-100">
                                     <p>
-                                        "Guapital is exactly what I've been looking for. It's the only app that seamlessly tracks my Robinhood, Coinbase, and real estate in one place. Seeing my net worth trend upwards is the best motivation."
+                                        &ldquo;Guapital is exactly what I&apos;ve been looking for. It&apos;s the only app that seamlessly tracks my Robinhood, Coinbase, and real estate in one place. Seeing my net worth trend upwards is the best motivation.&rdquo;
                                     </p>
                                 </blockquote>
                                 <figcaption className="mt-8 text-base">

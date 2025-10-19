@@ -197,6 +197,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
 
       fetchHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, asset]);
 
   const fetchHistory = async () => {

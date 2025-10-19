@@ -13,7 +13,7 @@ const GetStartedView: React.FC = () => {
           Welcome to Guapital!
         </h1>
         <p className="text-lg text-gray-600">
-          Let's start tracking your net worth. Choose how you'd like to begin:
+          Let&apos;s start tracking your net worth. Choose how you&apos;d like to begin:
         </p>
       </div>
 
@@ -68,7 +68,7 @@ const GetStartedView: React.FC = () => {
             Add Assets Manually
           </h2>
           <p className="text-gray-600 mb-6 text-center">
-            Track assets that can't be connected automatically, like real estate, vehicles,
+            Track assets that can&apos;t be connected automatically, like real estate, vehicles,
             collectibles, or crypto wallets.
           </p>
           <div className="flex justify-center">

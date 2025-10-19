@@ -104,6 +104,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
 
   useEffect(() => {
     fetchAssets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDeleteManualAsset = async (assetId: string) => {
