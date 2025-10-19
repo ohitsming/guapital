@@ -18,74 +18,79 @@ const pricing = {
 		{
 			id: 'free',
 			name: 'Free',
-			description: 'For individuals to try out the core AI survey generation features.',
+			description: 'Try net worth tracking with unlimited manual entry. See the value before you automate.',
 			price: { monthly: '$0', annually: '$0' },
-			highlights: ['Unlimited Surveys', '50 Responses per Survey', 'Basic Analytics', '500 AI Credits/month'],
+			highlights: ['Unlimited manual entry', 'Up to 2 crypto wallets', '30-day history', 'Net worth trends & charts'],
 			featured: false,
 			href: '/signup',
 		},
 		{
-			id: 'pro',
-			name: 'Pro',
-			description: 'For professionals who need to analyze feedback and make decisions.',
-			price: { monthly: '$19', annually: '$190' },
+			id: 'premium',
+			name: 'Premium',
+			description: 'For wealth builders who want automated tracking and insights.',
+			price: { monthly: '$19', annually: '$180' },
 			highlights: [
-				'2,500 Responses per Survey',
-				'AI-Powered Analysis',
-				'Data Export (CSV)',
-				'Custom Branding',
-				'10,000 AI Credits/month',
+				'Unlimited connected accounts',
+				'Full account sync (Plaid)',
+				'Up to 5 crypto wallets',
+				'365-day history',
+				'Percentile ranking',
+				'AI transaction categorization',
 			],
 			featured: true,
 			href: '/signup',
 		},
 		{
-			id: 'business',
-			name: 'Business',
-			description: 'For teams that need to collaborate and integrate feedback into their workflows.',
-			price: { monthly: '$49', annually: '$490' },
+			id: 'pro',
+			name: 'Pro',
+			description: 'For serious wealth builders managing complex portfolios.',
+			price: { monthly: '$49', annually: '$470' },
 			highlights: [
-				'10,000 Responses per Survey',
-				'Team Collaboration',
-				'Slack & Sheets Integrations',
-				'50,000 AI Credits/month',
+				'Everything in Premium',
+				'Unlimited crypto wallets',
+				'Manual asset tracking',
+				'Priority support (24h)',
+				'CSV export for taxes',
+				'Early access to features',
 			],
 			featured: false,
-			href: '/contact',
+			href: '/signup',
 		},
 	],
 	sections: [
 		{
-			name: 'Core Features',
+			name: 'Account Tracking',
 			features: [
-				{ name: 'Surveys', tiers: { Free: 'Unlimited', Pro: 'Unlimited', Business: 'Unlimited' } },
-				{ name: 'Questions per Survey', tiers: { Free: '10', Pro: 'Unlimited', Business: 'Unlimited' } },
-				{ name: 'Responses per Survey', tiers: { Free: '50', Pro: '2,500', Business: '10,000' } },
+				{ name: 'Connected Accounts', tiers: { Free: 'Unlimited (manual)', Premium: 'Unlimited (auto-sync)', Pro: 'Unlimited (auto-sync)' } },
+				{ name: 'Automatic Sync (Plaid)', tiers: { Free: false, Premium: true, Pro: true } },
+				{ name: 'Crypto Wallets', tiers: { Free: 'Up to 2', Premium: 'Up to 5', Pro: 'Unlimited' } },
+				{ name: 'Manual Asset Entry', tiers: { Free: 'Basic accounts', Premium: true, Pro: true } },
 			],
 		},
 		{
-			name: 'AI Features',
+			name: 'Dashboard & Analytics',
 			features: [
-				{ name: 'AI Survey Generation', tiers: { Free: true, Pro: true, Business: true } },
-				{ name: 'AI-Powered Analysis', tiers: { Free: false, Pro: 'Coming soon', Business: 'Coming soon' } },
-				{ name: 'AI Credits per month', tiers: { Free: '500', Pro: '10,000', Business: '50,000' } },
+				{ name: 'Net Worth Dashboard', tiers: { Free: true, Premium: true, Pro: true } },
+				{ name: 'Historical Data', tiers: { Free: '30 days', Premium: '365 days', Pro: 'Unlimited' } },
+				{ name: 'Percentile Ranking', tiers: { Free: false, Premium: true, Pro: true } },
+				{ name: 'Transaction Categorization', tiers: { Free: 'Basic', Premium: 'AI-Powered', Pro: 'AI-Powered' } },
 			],
 		},
 		{
-			name: 'Analytics & Reporting',
+			name: 'Advanced Features',
 			features: [
-				{ name: 'Basic Analytics', tiers: { Free: true, Pro: true, Business: true } },
-				{ name: 'Advanced Analytics', tiers: { Free: false, Pro: 'Coming soon', Business: 'Coming soon' } },
-				{ name: 'Data Exports (CSV)', tiers: { Free: false, Pro: 'Coming soon', Business: 'Coming soon' } },
+				{ name: 'Budgeting Tools', tiers: { Free: false, Premium: 'Basic', Pro: 'Advanced' } },
+				{ name: 'Tax Export (CSV)', tiers: { Free: false, Premium: false, Pro: true } },
+				{ name: 'API Access', tiers: { Free: false, Premium: false, Pro: 'Coming soon' } },
+				{ name: 'DeFi Tracking', tiers: { Free: false, Premium: false, Pro: 'Coming soon' } },
 			],
 		},
 		{
-			name: 'Support & Customization',
+			name: 'Support',
 			features: [
-				{ name: 'Custom Branding', tiers: { Free: false, Pro: 'Coming soon', Business: 'Coming soon' } },
-				{ name: 'Priority Support', tiers: { Free: false, Pro: 'Coming soon', Business: 'Coming soon' } },
-				{ name: 'Team Collaboration', tiers: { Free: false, Pro: false, Business: 'Coming soon' } },
-				{ name: 'Integrations (Slack, Sheets)', tiers: { Free: false, Pro: false, Business: 'Coming soon' } },
+				{ name: 'Email Support', tiers: { Free: false, Premium: '48h response', Pro: '24h response' } },
+				{ name: 'Priority Support', tiers: { Free: false, Premium: false, Pro: true } },
+				{ name: 'Early Access to Features', tiers: { Free: false, Premium: false, Pro: true } },
 			],
 		},
 	],
@@ -95,22 +100,32 @@ const faqs = [
 	{
 		id: 1,
 		question: 'Can I try Guapital before I buy?',
-		answer: 'Absolutely. Our Free plan is not a time-limited trial. It includes core features and allows you to track your net worth, so you can see the value for yourself. You can use it for as long as you like within the plan\'s limits.',
+		answer: 'Absolutely. Our Free plan is not a time-limited trial. It includes unlimited manual entry for traditional accounts and up to 2 crypto wallets with automatic syncing. You can use it for as long as you like. Upgrade to Premium when you want automatic syncing for your bank and investment accounts via Plaid.',
 	},
 	{
 		id: 2,
-		question: 'What are AI Credits and how are they used?',
-		answer: 'AI Credits power our artificial intelligence features. You\'ll use them when generating surveys with our AI. Our upcoming AI Analysis tools on the Pro and Business plans will also use credits. Each plan includes a generous monthly amount, and you can track your usage in your dashboard.',
+		question: 'How does account syncing work?',
+		answer: 'We use Plaid, a secure and trusted platform, to connect your bank accounts, credit cards, and investment accounts. Plaid uses bank-level encryption and never stores your login credentials. On Premium and Pro plans, your accounts sync automatically to keep your net worth up-to-date.',
 	},
 	{
 		id: 3,
-		question: 'What happens if I need more responses or features?',
-		answer: 'You can upgrade your plan at any time from your account settings. If you\'re on the Free plan and hit your response limit, your survey will pause collecting new responses until you upgrade to Pro. Upgrading unlocks higher limits and powerful features like AI-Powered Analysis (coming soon).',
+		question: 'Is my financial data secure?',
+		answer: 'Yes. We take security seriously. All data is encrypted at rest and in transit. We use bank-level security practices and never sell or share your personal financial information with third parties for marketing purposes. Your data is yours alone.',
 	},
 	{
 		id: 4,
 		question: 'Can I change or cancel my plan at any time?',
 		answer: 'Yes. You have complete control over your subscription. You can upgrade, downgrade, or cancel your plan at any time through your account dashboard. Changes will be reflected at the start of your next billing cycle.',
+	},
+	{
+		id: 5,
+		question: 'What types of assets can I track?',
+		answer: 'You can track traditional bank accounts, credit cards, investment accounts (401k, brokerage, etc.), crypto wallets, and with the Pro plan, manually entered assets like real estate, vehicles, private equity, and collectibles. We support tracking your entire financial picture in one place.',
+	},
+	{
+		id: 6,
+		question: 'What is percentile ranking?',
+		answer: 'Percentile ranking shows where you stand compared to other Guapital users in your age group. For example, "You\'re in the top 25% of users aged 25-30." It\'s completely anonymized and opt-in, designed to motivate and celebrate your wealth-building progress.',
 	},
 ]
 
@@ -142,10 +157,10 @@ export default function PricingPage() {
 						<div className="mx-auto max-w-7xl px-6 lg:px-8">
 							<div className="relative z-10">
 								<h2 className="mx-auto max-w-4xl text-balance text-center text-5xl font-semibold tracking-tight text-[#E27A70] sm:text-6xl">
-									Pricing that grows with you
+									Pricing that grows with your wealth
 								</h2>
 								<p className="mx-auto mt-6 max-w-2xl text-pretty text-center text-lg font-medium text-neutral-500 sm:text-xl/8">
-									From quick feedback to in-depth market research, we have a plan that fits your needs. Start for free and upgrade as you grow.
+									From basic tracking to complete financial visibility, we have a plan that fits your needs. Start for free and upgrade as your portfolio grows.
 								</p>
 
 								{/* monthly / annually toggle */}
@@ -225,7 +240,7 @@ export default function PricingPage() {
 														!tier.featured && 'ring-1 ring-inset ring-white/5'
 													)}
 												>
-													{tier.id === 'business' ? 'Contact Us' : 'Get Started'}
+													Get Started
 												</Link>
 											</div>
 											<div className="mt-8 flow-root sm:mt-10">

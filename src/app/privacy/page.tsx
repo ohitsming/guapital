@@ -2,69 +2,123 @@ export default function PrivacyPolicy() {
     return (
         <div className="max-w-3xl mx-auto px-4 py-10 text-base text-gray-800">
             <h1 className="text-5xl font-bold mb-4">Privacy Policy</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated: August 8, 2025</p>
-            <p className="text-md mb-8 font-semibold">Welcome to LocalMoco!</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated: October 18, 2025</p>
+            <p className="text-md mb-8 font-semibold">Welcome to Guapital!</p>
 
             <div className="privacy-policy">
                 <p className="mb-6">
-                    This Privacy Policy (“Policy”) describes how LocalMoco (“LocalMoco,” “we,” “us,” or “our”) collects, uses, stores, transfers, and discloses information, including personal data, from individuals and entities (“Users”) who access, register for, or otherwise use our AI-powered survey builder, website, mobile applications, and related services (collectively, the “Services”). By accessing or using the Services, you agree to this Policy in full. If you do not agree, you must immediately cease using the Services.
+                    At Guapital, we understand that you&apos;re trusting us with your most sensitive financial information. This Privacy Policy explains how we collect, use, protect, and share your data when you use our net worth tracking platform and related services (the &quot;Services&quot;). We believe in transparency and your right to privacy—we will never sell your personal data to third parties.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">1. Scope of Data Collection</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">1. Information We Collect</h2>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Financial Account Information</h3>
                 <p className="mb-4">
-                    We may collect, process, and store any and all information you provide, generate, or that is otherwise obtained through your use of the Services, whether directly, indirectly, automatically, or through third-party integrations (“Collected Data”). Collected Data includes, without limitation: personal identifiers; demographic information; contact information; account credentials; device, browser, and network data; location data; behavioral and usage analytics; financial and transactional data; survey responses; communications with us or other users; and any other information, regardless of format, that may be reasonably associated with you or your account now or in the future. This definition applies to all current and future methods of collection.
+                    When you connect your financial accounts through Plaid, we collect account balances, transaction history, and account details (account type, institution name, account numbers). This data is necessary to calculate and display your net worth.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">2. Purpose and Legal Basis</h2>
+                <h3 className="text-xl font-semibold mt-6 mb-3">Cryptocurrency Wallet Data</h3>
                 <p className="mb-4">
-                    We process Collected Data for the operation, improvement, personalization, and security of the Services; to enable AI-powered survey generation and analysis; to comply with applicable legal obligations; and to enforce our Terms of Service. Where required by law, we rely on your consent or our legitimate interests as the lawful basis for processing.
+                    If you add cryptocurrency wallets, we collect your wallet addresses and use third-party services (Alchemy) to retrieve token balances and transaction history. We never store or have access to your private keys.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">3. Use of Collected Data</h2>
+                <h3 className="text-xl font-semibold mt-6 mb-3">Manual Asset Information</h3>
                 <p className="mb-4">
-                    Collected Data may be used to operate, maintain, and improve the Services; to verify identities; to process payments for subscriptions and features; to prevent fraud or misuse; to communicate with you; to facilitate AI-powered survey generation and analysis; to analyze usage trends; and for any lawful business purpose. You acknowledge and agree that we may combine Collected Data with other information obtained from public or private sources to improve our services and user experience.
+                    You may manually enter information about assets like real estate, vehicles, or other valuables. We store this information along with your valuation estimates and edit history.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">4. Disclosure of Information</h2>
+                <h3 className="text-xl font-semibold mt-6 mb-3">Account and Profile Data</h3>
                 <p className="mb-4">
-                    We may disclose Collected Data to: (a) service providers, including payment processors and analytics providers; (b) governmental authorities where required by law; and (c) other third parties in connection with a merger, acquisition, or sale of assets. We disclaim all liability for how third parties process or use Collected Data once disclosed in accordance with this Policy, and you are solely responsible for ensuring any third-party use meets your own compliance requirements.
+                    We collect your email address, password (encrypted), age bracket (for percentile rankings), and account preferences. We may also collect device information, IP addresses, and usage analytics to improve our service.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">5. Cross-Border Data Transfers</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">2. How We Use Your Information</h2>
+                <p className="mb-4">We use your information to:</p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2">Calculate and display your net worth across all asset types</li>
+                    <li className="mb-2">Sync and update account balances and transaction data</li>
+                    <li className="mb-2">Provide trend analysis and financial insights</li>
+                    <li className="mb-2">Display your anonymized percentile ranking compared to other users (if you opt in)</li>
+                    <li className="mb-2">Process subscription payments and manage your account</li>
+                    <li className="mb-2">Send you service updates, security alerts, and support communications</li>
+                    <li className="mb-2">Improve our platform through usage analytics and bug detection</li>
+                    <li className="mb-2">Prevent fraud and maintain platform security</li>
+                </ul>
+
+                <h2 className="text-2xl font-semibold mt-10 mb-4">3. Third-Party Service Providers</h2>
+                <p className="mb-4">We work with trusted third-party services to provide our platform:</p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2"><strong>Plaid:</strong> Connects to your bank and investment accounts securely</li>
+                    <li className="mb-2"><strong>Alchemy:</strong> Retrieves cryptocurrency wallet balances and holdings</li>
+                    <li className="mb-2"><strong>Supabase:</strong> Hosts our database and authentication infrastructure</li>
+                    <li className="mb-2"><strong>Stripe:</strong> Processes subscription payments securely</li>
+                    <li className="mb-2"><strong>AWS:</strong> Provides cloud hosting infrastructure</li>
+                </ul>
                 <p className="mb-4">
-                    Collected Data may be transferred to, stored in, and processed in jurisdictions other than your own. By using the Services, you consent to such transfers, even where such jurisdictions may have different or less protective data protection laws than your own. We will implement legally recognized mechanisms such as Standard Contractual Clauses where required, but we do not guarantee that such transfers will meet the data protection standards of your jurisdiction.
+                    These providers are bound by strict data protection agreements and only access the minimum data necessary to perform their services. We never share your data with advertisers or data brokers.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">6. Data Retention</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">4. Data Security</h2>
                 <p className="mb-4">
-                    We retain Collected Data for as long as necessary to fulfill the purposes described in this Policy, to comply with our legal obligations, to resolve disputes, and to enforce our agreements. Retention periods may vary by data type and applicable law. Once Collected Data is no longer required, we may delete it or anonymize it in our discretion without notice to you.
+                    We implement industry-standard security measures including encryption at rest and in transit, secure authentication (OAuth 2.0), regular security audits, and automated backups. However, no system is 100% secure. We encourage you to use strong passwords and enable two-factor authentication when available.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">7. Security Measures</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">5. Data Retention and Deletion</h2>
                 <p className="mb-4">
-                    We implement commercially reasonable technical and organizational measures to protect Collected Data. However, no method of storage or transmission is completely secure. To the maximum extent permitted by applicable law, we disclaim all liability for any unauthorized access to, use of, or disclosure of Collected Data, whether arising from a breach of our systems, those of a third-party provider, or otherwise, provided we have implemented such reasonable measures.
+                    We retain your financial data for as long as you maintain an active account. If you delete your account, we will permanently delete your personal data within 30 days, except where we&apos;re required by law to retain certain records (e.g., transaction records for tax purposes). You can request deletion of your account at any time through your account settings or by contacting support.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">8. Your Rights</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">6. Your Privacy Rights</h2>
+                <p className="mb-4">Depending on your location, you have the right to:</p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2">Access your personal data and download a copy</li>
+                    <li className="mb-2">Correct inaccurate information</li>
+                    <li className="mb-2">Delete your account and associated data</li>
+                    <li className="mb-2">Opt out of percentile rankings and community features</li>
+                    <li className="mb-2">Withdraw consent for data processing (where consent is the legal basis)</li>
+                    <li className="mb-2">Object to certain data processing activities</li>
+                </ul>
                 <p className="mb-4">
-                    Depending on your jurisdiction, you may have rights to access, correct, delete, or restrict processing of your Collected Data, as well as to object to certain processing activities or request data portability. To exercise these rights, contact us at the address provided below. We may require verification of identity before fulfilling any request and may deny requests where permitted by law.
+                    To exercise these rights, contact us at support@guapital.com. We&apos;ll respond within 30 days.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">9. Children&apos;s Privacy</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">7. Sharing and Disclosure</h2>
                 <p className="mb-4">
-                    The Services are not directed to children under the age of 13 (or the minimum legal age in your jurisdiction). We do not knowingly collect Collected Data from such individuals. If we discover that we have inadvertently collected such information, we will take reasonable steps to delete it. You are solely responsible for ensuring that any use of the Services by a minor is lawful and authorized.
+                    We do NOT sell, rent, or trade your personal information. We may disclose your data only in these limited circumstances:
                 </p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2">With your explicit consent</li>
+                    <li className="mb-2">To comply with legal obligations (court orders, subpoenas)</li>
+                    <li className="mb-2">To protect our rights, property, or safety, or that of our users</li>
+                    <li className="mb-2">In connection with a merger, acquisition, or sale of assets (users will be notified)</li>
+                </ul>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">10. Changes to This Policy</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">8. Anonymized Data and Analytics</h2>
                 <p className="mb-4">
-                    We reserve the right to modify this Policy at any time without prior notice, except where applicable law requires notice. Updated versions will be posted on our website, and your continued use of the Services after any changes become effective constitutes your acceptance of the revised Policy.
+                    We may use anonymized, aggregated data (that cannot identify you personally) for research, analytics, and to provide features like percentile rankings. This data helps us understand user trends and improve the platform.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">11. Contact Information</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">9. International Data Transfers</h2>
+                <p className="mb-4">
+                    Your data may be processed and stored in the United States or other countries where our service providers operate. We ensure appropriate safeguards are in place, including Standard Contractual Clauses, to protect your data in compliance with applicable laws.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-10 mb-4">10. Children&apos;s Privacy</h2>
+                <p className="mb-4">
+                    Guapital is not intended for individuals under 18 years of age. We do not knowingly collect personal information from minors. If we learn that we&apos;ve collected data from a minor, we will delete it promptly.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-10 mb-4">11. Changes to This Policy</h2>
+                <p className="mb-4">
+                    We may update this Privacy Policy from time to time. If we make material changes, we&apos;ll notify you via email or through a prominent notice in the app at least 30 days before the changes take effect. Your continued use of Guapital after changes become effective means you accept the updated policy.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-10 mb-4">12. Contact Us</h2>
                 <p className="mb-2">
-                    If you have questions about this Policy or our privacy practices, please contact us at:
+                    If you have questions about this Privacy Policy or our data practices, please contact us:
                 </p>
-                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@localmoco.io" className="text-blue-600 underline">support@localmoco.io</a></p>
+                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@guapital.com" className="text-blue-600 underline">support@guapital.com</a></p>
+                <p className="mb-6">We&apos;re here to help and committed to protecting your privacy.</p>
 
             </div>
 

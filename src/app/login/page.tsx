@@ -1,24 +1,14 @@
 import { type Metadata } from 'next'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 
 import { LoginForm } from '@/components/LoginForm'
-import { createClient } from '@/utils/supabase/server'
 
 export const metadata: Metadata = {
     title: 'Login - Guapital',
     description: 'Log in to your Guapital account.',
 }
 
-export default async function Login() {
-    const supabase = createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (user) {
-        redirect('/dashboard') // Redirect to the new unified dashboard
-    }
-
+export default function Login() {
     return (
         <div className='h-[85vh]'>
             <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">

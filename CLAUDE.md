@@ -240,84 +240,40 @@ Required environment variables (in `.env.local`):
 - Ultra-wealthy ($5M+) who need complex tax optimization
 - Active traders needing real-time portfolio analytics
 
-## Current Implementation Status
+## Implementation Status
 
-### ✅ Completed Features
+**Phase 1 MVP Completion: ~30%**
 
-**1. Project Foundation**
-- Complete database schema with RLS policies
-- TypeScript interfaces for all domain models
-- Environment configuration and documentation
-- Utility functions (formatters, date handling)
-
-**2. Account Aggregation (Plaid) - PARTIAL**
-- ✅ API routes for link token creation (`/api/plaid/create-link-token`)
-- ✅ API routes for token exchange (`/api/plaid/exchange-token`)
-- ✅ API routes for syncing accounts (`/api/plaid/sync-accounts`)
-- ✅ API routes for syncing transactions (`/api/plaid/sync-transactions`)
-- ✅ API routes for fetching/deleting accounts (`/api/plaid/accounts`)
-- ✅ PlaidLinkButton component for connecting accounts
-- ✅ AccountsList component for viewing connected accounts
-- ⏳ Need: Main dashboard integration
-
-**3. Crypto Wallet Tracking - PARTIAL**
-- ✅ API routes for managing wallets (`/api/crypto/wallets`)
-- ✅ API routes for syncing balances via Alchemy (`/api/crypto/sync-wallet`)
-- ✅ Support for Ethereum, Polygon, Base, Arbitrum, Optimism
-- ⏳ Need: UI components for wallet management
-- ⏳ Need: Display crypto holdings
-
-### 🚧 In Progress / To Do
-
-**4. Manual Asset Entry - NOT STARTED**
-- ⏳ API routes for CRUD operations
-- ⏳ Form component for adding/editing assets
-- ⏳ Asset history tracking UI
-
-**5. Net Worth Dashboard - NOT STARTED**
-- ⏳ API route for calculating current net worth
-- ⏳ API route for fetching historical snapshots
-- ⏳ Dashboard page with big number display
-- ⏳ Trend charts (30/90/365 days) using Recharts
-- ⏳ Assets vs Liabilities breakdown (pie/bar charts)
-- ⏳ Category breakdown visualization
-
-**6. Percentile Ranking (Gamification) - NOT STARTED**
-- ⏳ API route for calculating percentile
-- ⏳ Demographics form (age, opt-in)
-- ⏳ Ranking display component
-- ⏳ Social sharing functionality
-
-**7. Basic Budgeting (Lite) - NOT STARTED**
-- ⏳ API route for spending by category
-- ⏳ Monthly spending view
-- ⏳ "Guilt-free spending" toggle
-- ⏳ Simple categorization UI
-
-**8. Main Application Pages - NOT STARTED**
-- ⏳ Dashboard page (`/app/dashboard/page.tsx`)
-- ⏳ Accounts page
-- ⏳ Budget page
-- ⏳ Settings page
-- ⏳ Onboarding flow
+| Feature | Backend | Frontend | Status | Details |
+|---------|---------|----------|--------|---------|
+| **Project Foundation** | ✅ Complete | ✅ Complete | ✅ Done | Database schema with RLS, TypeScript interfaces, utilities |
+| **Account Aggregation (Plaid)** | ✅ Complete | ✅ Complete | 🔄 Partial | API routes + components ready; needs dashboard integration |
+| **Crypto Wallet Tracking** | ✅ Complete | ⏳ Pending | 🔄 Partial | API ready (Ethereum, Polygon, Base, Arbitrum, Optimism); needs UI |
+| **Manual Asset Entry** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #3 for specs |
+| **Net Worth Dashboard** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #4 for specs |
+| **Percentile Ranking** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #5 for specs |
+| **Basic Budgeting** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #6 for specs |
 
 ### Next Steps
 
-**Immediate Priority:**
-1. Complete crypto wallet UI components
-2. Build manual asset entry system
-3. Create net worth calculation API endpoint
-4. Build main dashboard with charts
-5. Implement percentile ranking
-6. Add basic budgeting view
+**Immediate Priorities:**
+1. Complete crypto wallet UI components (1-2 days)
+2. Build manual asset entry system (2-3 days)
+3. Create net worth calculation API endpoint + dashboard (5-7 days)
+4. Implement percentile ranking (3-4 days)
+5. Add basic budgeting view (3-4 days)
+6. Integration & testing (3-5 days)
 
-**Before Launch:**
-- Apply database migration to Supabase
-- Configure Plaid sandbox account
-- Configure Alchemy API key
-- Test complete user flow
-- Add error handling and loading states
-- Mobile responsiveness testing
+**Estimated Time to Launch-Ready MVP:** 17-25 days of focused development
+
+**Pre-Launch Checklist:**
+- [ ] Apply database migration to Supabase
+- [ ] Configure Plaid sandbox/production account
+- [ ] Configure Alchemy API key
+- [ ] End-to-end user flow testing
+- [ ] Error handling and loading states for all features
+- [ ] Mobile responsiveness testing
+- [ ] Performance optimization (initial load, sync speed)
 
 ## Project Roadmap
 
@@ -427,16 +383,21 @@ Required environment variables (in `.env.local`):
 **Price:** $0/month
 
 **Features:**
-- Manual entry only (no account sync)
-- Up to 3 connected accounts
-- Net worth dashboard + 30-day history
+- Unlimited manual entry for traditional accounts (no automatic syncing)
+- Up to 2 crypto wallets (with automatic syncing via Alchemy)
+- Net worth dashboard with trends & charts
+- 30-day history
+- Category breakdowns
 - No percentile ranking
-- Basic transaction categorization
+- No Plaid account sync (manual updates only)
 
 **Purpose:**
-- Let users try before they buy
-- SEO/viral growth mechanism
-- Convert to paid when users need automation
+- Let users try before they buy - experience the full dashboard with unlimited tracking
+- Showcase key differentiator (crypto integration) immediately
+- SEO/viral growth mechanism - Gen Z crypto holders will share
+- Convert to paid when users need automation (Plaid sync) or more crypto wallets
+- Low friction onboarding - no limitations on number of traditional accounts tracked
+- Cost: Negligible - Alchemy free tier supports 5K+ users
 
 ---
 
@@ -479,6 +440,7 @@ Required environment variables (in `.env.local`):
 - **Anxiety reduction:** Knowing exact net worth reduces financial stress (hard to quantify, but real)
 - **Competitive positioning:** More expensive than Monarch ($8/mo) but less than wealth management tools ($100+/mo)
 - **LTV optimization:** Annual plans reduce churn and improve cash flow
+- **Crypto in Free tier:** Strategic decision to showcase key differentiator before payment. Cost is negligible (Alchemy free tier), viral potential is high (Gen Z shares crypto wins), and real conversion driver is Plaid auto-sync, not crypto limits
 
 ## Go-to-Market Strategy
 
@@ -720,29 +682,6 @@ Visit http://localhost:3000
 - Feature flags system in place for gradual rollout
 - Toast notification system available globally via ToastProvider
 - **Bootstrap Philosophy:** Build for 1,000 users first, not 1,000,000. Optimize for learning speed over scale.
-
-## Implementation Progress Tracking
-
-**Phase 1 Completion: ~30%**
-
-| Feature | Backend | Frontend | Status |
-|---------|---------|----------|--------|
-| Account Aggregation (Plaid) | ✅ Complete | ✅ Complete | Ready for integration |
-| Crypto Wallet Tracking | ✅ Complete | ⏳ Pending | Backend ready |
-| Manual Asset Entry | ⏳ Pending | ⏳ Pending | Not started |
-| Net Worth Dashboard | ⏳ Pending | ⏳ Pending | Not started |
-| Percentile Ranking | ⏳ Pending | ⏳ Pending | Not started |
-| Basic Budgeting | ⏳ Pending | ⏳ Pending | Not started |
-
-**Estimated Time to MVP:**
-- Crypto wallet UI: 1-2 days
-- Manual assets: 2-3 days
-- Net worth dashboard: 5-7 days
-- Percentile ranking: 3-4 days
-- Basic budgeting: 3-4 days
-- Integration & testing: 3-5 days
-
-**Total: 17-25 days of focused development**
 
 ## Strategic Context
 

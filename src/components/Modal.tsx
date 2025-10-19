@@ -8,32 +8,51 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  footer?: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, footer }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none backdrop-filter backdrop-blur-sm">
-      <div className="relative w-auto max-w-lg mx-auto my-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto outline-none focus:outline-none">
+      {/* Backdrop with enhanced blur */}
+      <div
+        className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal container with proper centering */}
+      <div className="flex min-h-full items-center justify-center p-4">
         {/* Modal content */}
-        <div className="relative flex flex-col w-full bg-white border-0 rounded-lg shadow-lg outline-none focus:outline-none">
-          {/* Header */}
-          <div className="flex items-start justify-between p-5 border-b border-solid border-neutral-200 rounded-t">
-            <h3 className="text-2xl font-semibold">
+        <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+          {/* Header - Fixed */}
+          <div className="flex items-center justify-between p-6 border-b-2 border-gray-100 rounded-t-2xl flex-shrink-0">
+            <h3 className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-[#004D40] to-[#00695C] bg-clip-text text-transparent">
               {title || 'Modal Title'}
             </h3>
             <button
-              className="p-1 ml-auto bg-transparent border-0 text-neutral-900 float-right text-3xl leading-none font-semibold outline-none focus:outline-none cursor-pointer"
+              className="p-2 ml-4 bg-transparent text-gray-400 hover:text-gray-600
+                         rounded-xl hover:bg-gray-100 transition-all duration-200
+                         focus:outline-none focus:ring-2 focus:ring-[#004D40]/20"
               onClick={onClose}
+              type="button"
             >
-              <XMarkIcon className="h-6 w-6 text-neutral-500" />
+              <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
-          {/* Body */}
-          <div className="relative p-6 flex-auto">
+
+          {/* Body - Scrollable */}
+          <div className="relative p-6 overflow-y-auto flex-1">
             {children}
           </div>
+
+          {/* Footer - Fixed */}
+          {footer && (
+            <div className="flex-shrink-0 border-t-2 border-gray-100 bg-gray-50 rounded-b-2xl px-6 py-4">
+              {footer}
+            </div>
+          )}
         </div>
       </div>
     </div>

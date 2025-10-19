@@ -1,18 +1,38 @@
 // Manual asset-related type definitions
 
+export type EntryType = 'asset' | 'liability';
+
+// Asset categories
 export type AssetCategory =
   | 'real_estate'
   | 'vehicle'
   | 'private_equity'
   | 'collectibles'
+  | 'cash'
+  | 'investment'
+  | 'private_stock'
+  | 'bonds'
+  | 'p2p_lending'
   | 'other';
+
+// Liability categories
+export type LiabilityCategory =
+  | 'mortgage'
+  | 'personal_loan'
+  | 'business_debt'
+  | 'credit_debt'
+  | 'other_debt';
+
+// Combined type for all categories
+export type ManualEntryCategory = AssetCategory | LiabilityCategory;
 
 export interface ManualAsset {
   id: string;
   user_id: string;
   asset_name: string;
   current_value: number;
-  category: AssetCategory;
+  category: ManualEntryCategory;
+  entry_type: EntryType;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -30,6 +50,7 @@ export interface ManualAssetHistory {
 export interface AssetFormData {
   asset_name: string;
   current_value: number;
-  category: AssetCategory;
+  category: ManualEntryCategory;
+  entry_type: EntryType;
   notes?: string;
 }

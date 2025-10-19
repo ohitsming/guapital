@@ -2,11 +2,11 @@ export default function TermsOfService() {
     return (
         <div className="max-w-3xl mx-auto px-4 py-10 text-base text-gray-800">
             <h1 className="text-5xl font-bold mb-4">Terms of Service</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated: August 8, 2025</p>
-            <p className="text-md mb-8 font-semibold">Welcome to LocalMoco!</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated: October 18, 2025</p>
+            <p className="text-md mb-8 font-semibold">Welcome to Guapital!</p>
 
             <p className="mb-2">
-                These Terms of Service (&ldquo;Terms&rdquo;) constitute a binding legal agreement between you (&ldquo;you,&rdquo; &ldquo;your,&rdquo; or &ldquo;User&rdquo;) and LocalMoco, LLC. (&ldquo;LocalMoco,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) governing your access to and use of our AI-powered survey builder, website, applications, and related services (collectively, the &ldquo;Services&rdquo;).
+                These Terms of Service (&ldquo;Terms&rdquo;) constitute a binding legal agreement between you (&ldquo;you,&rdquo; &ldquo;your,&rdquo; or &ldquo;User&rdquo;) and Guapital, LLC. (&ldquo;Guapital,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) governing your access to and use of our net worth tracking platform, website, applications, and related services (collectively, the &ldquo;Services&rdquo;).
 
             </p>
             <p className="mb-6">
@@ -20,9 +20,9 @@ export default function TermsOfService() {
                     By accessing or using the Services, you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Services.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">1. The LocalMoco Service</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">1. The Guapital Service</h2>
                 <p className="mb-4">
-                    LocalMoco provides an AI-powered platform designed to help businesses, entrepreneurs, product managers, and marketers create, distribute, and analyze surveys. Our Services leverage generative AI to transform your goals into well-structured, unbiased surveys, enabling you to gather actionable insights and validate market fit. Use of the Services is subject to compliance with these Terms.
+                    Guapital provides a financial tracking platform designed to help individuals monitor their net worth across traditional and modern assets. Our Services enable you to connect bank accounts, investment accounts, crypto wallets, and manually track other assets to calculate and visualize your total net worth over time. Use of the Services is subject to compliance with these Terms.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">2. Eligibility and Account Registration</h2>
@@ -35,17 +35,17 @@ export default function TermsOfService() {
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">3. User Responsibilities</h2>
                 <p className="mb-4">
-                    Users are solely responsible for the content, legality, and distribution of their surveys. You agree not to create or distribute surveys that violate any laws or third-party rights, including intellectual property. You are responsible for all payments for subscription services or any other features, processed via Stripe or other approved payment processors.
+                    You are solely responsible for maintaining the security of your account credentials and for all activity under your account. You agree to provide accurate information when connecting financial accounts and manually entering asset data. You acknowledge that Guapital provides informational tools only and does not provide financial, investment, tax, or legal advice. You are responsible for all payments for subscription services or any other features, processed via Stripe or other approved payment processors.
                 </p>
 
 
 
-                <h2 className="text-2xl font-semibold mt-10 mb-4">4. Content Ownership and Intellectual Property</h2>
+                <h2 className="text-2xl font-semibold mt-10 mb-4">4. Data Ownership and Intellectual Property</h2>
                 <p className="mb-4">
-                    You retain ownership of content you submit. By submitting content, you grant LocalMoco a worldwide, non-exclusive, royalty-free license to use, reproduce, adapt, publish, and distribute your content for purposes of operating and promoting the Services.
+                    You retain all ownership rights to your financial data. We do not sell or share your personal financial information with third parties for marketing purposes. We use your data solely to provide the Services, generate aggregated and anonymized analytics (such as percentile rankings), and improve our platform.
                 </p>
                 <p className="mb-4">
-                    All other intellectual property rights in the Services remain the exclusive property of LocalMoco and its licensors.
+                    All intellectual property rights in the Services, including software, design, and branding, remain the exclusive property of Guapital and its licensors.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">5. Acceptable Use Policy</h2>
@@ -60,23 +60,23 @@ export default function TermsOfService() {
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">7. Disclaimers and Limitation of Liability</h2>
                 <p className="mb-4">
-                    THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+                    THE SERVICES ARE PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. GUAPITAL DOES NOT PROVIDE FINANCIAL, INVESTMENT, TAX, OR LEGAL ADVICE. THE SERVICES ARE FOR INFORMATIONAL PURPOSES ONLY.
                 </p>
                 <p className="mb-4">
-                    TO THE MAXIMUM EXTENT PERMITTED BY LAW, LOCALMOCO AND ITS AFFILIATES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL, ARISING FROM YOUR USE OR INABILITY TO USE THE SERVICES, CONTENT SUBMITTED BY USERS, OR UNAUTHORIZED ACCESS.
+                    TO THE MAXIMUM EXTENT PERMITTED BY LAW, GUAPITAL AND ITS AFFILIATES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL, ARISING FROM YOUR USE OR INABILITY TO USE THE SERVICES, INACCURACIES IN DATA PROVIDED BY THIRD-PARTY FINANCIAL INSTITUTIONS, OR UNAUTHORIZED ACCESS.
                 </p>
                 <p className="mb-4">
-                    YOU ACKNOWLEDGE THAT YOU USE THE SERVICES AT YOUR OWN RISK.
+                    YOU ACKNOWLEDGE THAT YOU USE THE SERVICES AT YOUR OWN RISK AND ARE SOLELY RESPONSIBLE FOR ALL FINANCIAL DECISIONS MADE BASED ON INFORMATION PROVIDED BY THE SERVICES.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">8. Indemnification</h2>
                 <p className="mb-4">
-                    You agree to indemnify, defend, and hold harmless LocalMoco and its affiliates from any claims, damages, losses, liabilities, costs, or expenses arising out of or related to your use of the Services, breach of these Terms, or violation of any law or third-party rights.
+                    You agree to indemnify, defend, and hold harmless Guapital and its affiliates from any claims, damages, losses, liabilities, costs, or expenses arising out of or related to your use of the Services, breach of these Terms, or violation of any law or third-party rights.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">9. Payment Processing</h2>
                 <p className="mb-4">
-                    Payments for LocalMoco subscription services and any other paid features are processed by third-party providers such as Stripe. You agree to comply with their terms and acknowledge that LocalMoco is not responsible for any issues arising from payment processing.
+                    Payments for Guapital subscription services and any other paid features are processed by third-party providers such as Stripe. You agree to comply with their terms and acknowledge that Guapital is not responsible for any issues arising from payment processing.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">10. Governing Law and Jurisdiction</h2>
@@ -98,7 +98,7 @@ export default function TermsOfService() {
                     The arbitration will be conducted by a single arbitrator in Wilmington, Delaware, or another mutually agreed location. Judgment on the award may be entered in any court having jurisdiction.
                 </p>
                 <p className="mb-4">
-                    YOU AND LOCALMOCO AGREE THAT ALL DISPUTES WILL BE RESOLVED ON AN INDIVIDUAL BASIS. THERE WILL BE NO CLASS ACTIONS OR REPRESENTATIVE ACTIONS.
+                    YOU AND GUAPITAL AGREE THAT ALL DISPUTES WILL BE RESOLVED ON AN INDIVIDUAL BASIS. THERE WILL BE NO CLASS ACTIONS OR REPRESENTATIVE ACTIONS.
                 </p>
                 <p className="mb-4">
                     If any part of this arbitration agreement is found unenforceable, the remaining provisions will remain in full effect.
@@ -116,7 +116,7 @@ export default function TermsOfService() {
                 <p className="mb-2">
                     For questions about these Terms, please contact:
                 </p>
-                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@localmoco.io" className="text-blue-600 underline">support@localmoco.io</a></p>
+                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@guapital.com" className="text-blue-600 underline">support@guapital.com</a></p>
             </div>
         </div>
     );

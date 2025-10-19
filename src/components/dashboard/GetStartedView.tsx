@@ -1,0 +1,110 @@
+'use client';
+
+import React from 'react';
+import PlaidLinkButton from '@/components/plaid/PlaidLinkButton';
+import AddAssetButton from '@/components/assets/AddAssetButton';
+import { BanknotesIcon, CubeIcon } from '@heroicons/react/24/outline';
+
+const GetStartedView: React.FC = () => {
+  return (
+    <div className="max-w-4xl mx-auto py-12">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Welcome to Guapital!
+        </h1>
+        <p className="text-lg text-gray-600">
+          Let's start tracking your net worth. Choose how you'd like to begin:
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Connect Accounts Card */}
+        <div className="bg-white rounded-lg p-8 shadow-sm border-2 border-gray-200 hover:border-blue-500 transition-colors">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-blue-50 rounded-full">
+              <BanknotesIcon className="h-12 w-12 text-blue-600" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 text-center">
+            Connect Your Accounts
+          </h2>
+          <p className="text-gray-600 mb-6 text-center">
+            Automatically sync your bank accounts, credit cards, and investments using Plaid.
+            Your data updates automatically.
+          </p>
+          <div className="flex justify-center">
+            <PlaidLinkButton />
+          </div>
+          <div className="mt-6 space-y-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Bank-level encryption</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Automatic daily updates</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>10,000+ institutions supported</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Manual Entry Card */}
+        <div className="bg-white rounded-lg p-8 shadow-sm border-2 border-gray-200 hover:border-blue-500 transition-colors">
+          <div className="flex justify-center mb-6">
+            <div className="p-4 bg-blue-50 rounded-full">
+              <CubeIcon className="h-12 w-12 text-blue-600" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3 text-center">
+            Add Assets Manually
+          </h2>
+          <p className="text-gray-600 mb-6 text-center">
+            Track assets that can't be connected automatically, like real estate, vehicles,
+            collectibles, or crypto wallets.
+          </p>
+          <div className="flex justify-center">
+            <AddAssetButton />
+          </div>
+          <div className="mt-6 space-y-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Track any type of asset</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Full value history</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Unlimited entries on Free plan</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-12 text-center">
+        <p className="text-sm text-gray-500">
+          💡 <strong>Pro tip:</strong> You can use both methods! Connect your bank accounts for automation,
+          then manually add assets like real estate or crypto wallets.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default GetStartedView;
