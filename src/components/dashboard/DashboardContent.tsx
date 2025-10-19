@@ -30,9 +30,11 @@ export default function DashboardContent() {
     const fetchNetWorth = async () => {
         try {
             setLoading(true)
+            setError(null) // Clear previous errors
             const response = await fetch('/api/networth')
             if (!response.ok) {
-                throw new Error('Failed to fetch net worth')
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Failed to fetch net worth')
             }
             const data = await response.json()
             setNetWorth(data)
@@ -92,9 +94,17 @@ export default function DashboardContent() {
                 </div>
             )}
 
-            {/* Hero Net Worth Card - Always shown */}
+            {/* Hero Net Worth Card - Always shown when not loading */}
             {!loading && netWorth && (
                 <HeroNetWorthCard netWorth={netWorth} trendData={trendData} maxDays={historyDays} />
+            )}
+
+            {/* Error State */}
+            {!loading && error && (
+                <div className="mb-4 bg-red-50 rounded-xl p-6 shadow-md border border-red-200">
+                    <p className="text-red-900 font-semibold">Unable to load net worth data</p>
+                    <p className="text-red-700 text-sm mt-1">{error}</p>
+                </div>
             )}
 
             {/* Main Content Grid */}

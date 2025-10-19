@@ -38,6 +38,26 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to fetch snapshots' }, { status: 500 });
     }
 
+    // If no historical snapshots exist, check if there's a snapshot from today
+    // This handles the case for brand new users who just created their first snapshot
+    if (!snapshots || snapshots.length === 0) {
+      const { data: todaySnapshot, error: todayError } = await supabase
+        .from('net_worth_snapshots')
+        .select('snapshot_date, net_worth')
+        .eq('user_id', user.id)
+        .eq('snapshot_date', todayString)
+        .maybeSingle();
+
+      if (!todayError && todaySnapshot) {
+        // Return today's snapshot so new users see something
+        const trendData: TrendDataPoint[] = [{
+          date: todaySnapshot.snapshot_date,
+          value: todaySnapshot.net_worth,
+        }];
+        return NextResponse.json({ trendData }, { status: 200 });
+      }
+    }
+
     // Transform to TrendDataPoint format
     const trendData: TrendDataPoint[] = (snapshots || []).map(snapshot => ({
       date: snapshot.snapshot_date,

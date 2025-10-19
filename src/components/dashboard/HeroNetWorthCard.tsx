@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { NetWorthCalculation } from '@/lib/interfaces/networth'
 import { TrendDataPoint } from '@/lib/interfaces/subscription'
 import {
@@ -10,6 +10,7 @@ import {
     ChartBarIcon,
     ChevronDownIcon,
 } from '@heroicons/react/24/outline'
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 
 interface HeroNetWorthCardProps {
     netWorth: NetWorthCalculation
@@ -92,6 +93,134 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
     }
 
     const progress = calculateProgress()
+
+    // Prepare chart data filtered by selected time period
+    const chartData = useMemo(() => {
+        if (!trendData || trendData.length === 0) {
+            return []
+        }
+
+        const now = new Date()
+        const periodStart = new Date(now.getTime() - selectedDays * 24 * 60 * 60 * 1000)
+        const today = new Date().toISOString().split('T')[0]
+
+        // Check if we only have today's snapshot (first-time user case)
+        const isTodayOnly = trendData.length === 1 && trendData[0].date.split('T')[0] === today
+
+        if (isTodayOnly) {
+            // For brand new users with only today's snapshot, show it as a single point
+            return trendData.map(point => ({
+                date: point.date,
+                value: point.value,
+                displayDate: 'Today'
+            }))
+        }
+
+        // Filter data by selected period, exclude today's snapshot (we'll use live data for today)
+        const filtered = trendData.filter(point => {
+            const pointDate = new Date(point.date)
+            const dateString = point.date.split('T')[0]
+            return pointDate >= periodStart && dateString !== today
+        })
+
+        // Sort by date
+        const sorted = [...filtered].sort((a, b) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
+
+        // Always add today's live net worth value if we have any historical data
+        // This creates a trend line: historical snapshot(s) → today's live value
+        if (sorted.length > 0) {
+            sorted.push({
+                date: today,
+                value: netWorth.net_worth
+            })
+        }
+
+        // Format for chart
+        return sorted.map(point => ({
+            date: point.date,
+            value: point.value,
+            displayDate: new Date(point.date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            })
+        }))
+    }, [trendData, selectedDays, netWorth.net_worth])
+
+    // Custom tooltip for the chart
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-gray-200">
+                    <p className="text-xs text-gray-600 mb-1">{payload[0].payload.displayDate}</p>
+                    <p className="text-sm font-bold text-[#004D40]">
+                        {formatCurrency(payload[0].value)}
+                    </p>
+                </div>
+            )
+        }
+        return null
+    }
+
+    // Ghost Chart component for empty state
+    const GhostChart = () => {
+        // Generate sample data points showing a gentle upward trend
+        const ghostData = [
+            { date: 'Day 1', value: 100 },
+            { date: 'Day 5', value: 102 },
+            { date: 'Day 10', value: 105 },
+            { date: 'Day 15', value: 103 },
+            { date: 'Day 20', value: 108 },
+            { date: 'Day 25', value: 110 },
+            { date: 'Day 30', value: 112 },
+        ]
+
+        return (
+            <div className="relative">
+                <ResponsiveContainer width="100%" height={370}>
+                    <AreaChart data={ghostData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                        <defs>
+                            <linearGradient id="ghostGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#FFC107" stopOpacity={0.05}/>
+                                <stop offset="95%" stopColor="#FFC107" stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <XAxis
+                            dataKey="date"
+                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <YAxis hide={true} />
+                        <Area
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#FFC107"
+                            strokeWidth={2}
+                            strokeOpacity={0.25}
+                            strokeDasharray="5 5"
+                            fill="url(#ghostGradient)"
+                            dot={false}
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+
+                {/* Overlay message */}
+                <div
+                    className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-white/5 backdrop-blur-[2px] rounded-lg"
+                    aria-label="Preview of net worth trend chart"
+                >
+                    <ChartBarIcon className="w-10 h-10 text-[#FFC107] mb-2" />
+                    <p className="text-white/90 text-sm font-medium">Start Building Your History</p>
+                    <p className="text-white/60 text-xs mt-1">
+                        Your net worth trend will appear here as you track over time
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-5 shadow-lg">
@@ -193,10 +322,39 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
 
                 {/* Net Worth Trend Chart */}
                 <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
-                    <div className="flex items-center justify-center h-24 text-white/50 text-xs">
-                        <ChartBarIcon className="w-8 h-8 mr-2 text-white/30" />
-                        <span>Track your progress over time</span>
-                    </div>
+                    {chartData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={370}>
+                            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                                <defs>
+                                    <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#FFC107" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#FFC107" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="displayDate"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 10 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    interval="preserveStartEnd"
+                                />
+                                <YAxis hide={true} domain={['dataMin - dataMin * 0.02', 'dataMax + dataMax * 0.02']} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,193,7,0.5)', strokeWidth: 1 }} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#FFC107"
+                                    strokeWidth={2}
+                                    fill="url(#colorNetWorth)"
+                                    dot={chartData.length === 1 ? { r: 6, fill: '#FFC107', strokeWidth: 2, stroke: '#fff' } : false}
+                                    activeDot={{ r: 4, fill: '#FFC107' }}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <GhostChart />
+                    )}
                 </div>
 
                 {/* Quick Stats */}
