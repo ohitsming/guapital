@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       breakdown.crypto = cryptoHoldings.reduce((sum, holding) => sum + (holding.usd_value || 0), 0);
     }
 
-    // 3. Fetch manual assets
+    // 3. Fetch manual assets (real estate, vehicles, etc.)
     const { data: manualAssets, error: assetsError } = await supabase
       .from('manual_assets')
       .select('current_value, category, entry_type')

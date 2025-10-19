@@ -14,7 +14,7 @@ export default function PlaidLinkButton({
   onSuccess,
   onExit,
   className = '',
-  children = 'Connect Bank Account',
+  children = 'Connect Account',
 }: PlaidLinkButtonProps) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -111,7 +111,7 @@ export default function PlaidLinkButton({
     <button
       onClick={handleClick}
       disabled={loading || (!ready && linkToken !== null)}
-      className={`${className} disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#004D40] border border-transparent rounded-md hover:bg-[#00695C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {loading ? 'Loading...' : children}
     </button>

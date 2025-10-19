@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import GetStartedView from '@/components/dashboard/GetStartedView'
 import DashboardContent from '@/components/dashboard/DashboardContent'
+import { SubscriptionProvider } from '@/lib/context/SubscriptionContext'
 
 export default async function Dashboard() {
     const supabase = createClient()
@@ -34,5 +35,9 @@ export default async function Dashboard() {
     }
 
     // Show full dashboard for users with data
-    return <DashboardContent />
+    return (
+        <SubscriptionProvider>
+            <DashboardContent />
+        </SubscriptionProvider>
+    )
 }

@@ -73,7 +73,19 @@ src/
 │   ├── plaid/                   # Plaid integration components
 │   │   └── PlaidLinkButton.tsx  # Plaid Link connection button
 │   ├── accounts/                # Account management components
-│   │   └── AccountsList.tsx     # Display connected accounts
+│   │   └── AccountsList.tsx     # Display Plaid accounts (legacy, for reference)
+│   ├── assets/                  # Manual asset entry components
+│   │   ├── ManualAssetsSection.tsx  # Main "Accounts" panel (Plaid + manual unified)
+│   │   ├── AddAssetButton.tsx       # Button to add manual assets
+│   │   └── AddAssetModal.tsx        # Modal form for asset entry
+│   ├── dashboard/               # Dashboard panel components
+│   │   ├── DashboardContent.tsx         # Main dashboard layout
+│   │   ├── HeroNetWorthCard.tsx         # Net worth overview card with gradient
+│   │   ├── AssetBreakdownPanel.tsx      # Asset category pie chart
+│   │   ├── LiabilityBreakdownPanel.tsx  # Liability breakdown
+│   │   ├── ManualAssetsPanel.tsx        # Wrapper for unified accounts panel
+│   │   ├── MonthlyCashFlowPanel.tsx     # Monthly cash flow stats (Premium+)
+│   │   └── RecentTransactionsPanel.tsx  # Recent transactions (Premium+)
 │   ├── business-onboarding/     # Business onboarding flow (legacy)
 │   ├── earner-onboarding/       # Earner onboarding flow (legacy)
 │   ├── settings/                # Settings-related components
@@ -83,12 +95,16 @@ src/
 │   │   ├── plaid.ts             # Plaid accounts & transactions
 │   │   ├── crypto.ts            # Crypto wallets & holdings
 │   │   ├── asset.ts             # Manual assets
+│   │   ├── account.ts           # Unified account types (manual + Plaid)
 │   │   ├── networth.ts          # Net worth calculations
+│   │   ├── subscription.ts      # Subscription tiers & feature access
 │   │   ├── percentile.ts        # Percentile rankings
 │   │   └── budget.ts            # Budgeting features
 │   ├── types/                   # TypeScript type definitions
 │   ├── context/                 # React Context providers
+│   │   └── SubscriptionContext.tsx  # Subscription tier management
 │   ├── stripe/                  # Stripe-related utilities
+│   ├── permissions.ts           # Feature access by tier configuration
 │   ├── constant.ts              # App-wide constants (WEB_NAME, URLs, etc.)
 │   ├── featureFlags.ts          # Feature flag management
 │   └── quota.ts                 # Quota management logic
@@ -103,7 +119,13 @@ src/
 
 ### Database Schema
 
-The complete database schema is defined in `supabase/migrations/001_create_guapital_schema.sql` and includes:
+The database schema is defined across multiple migration files:
+- `001_create_guapital_schema.sql` - Core tables and RLS policies
+- `002_add_subscription_tier.sql` - Subscription tier enums and user_settings columns
+- `002_add_manual_entry_types.sql` - Manual asset entry types
+- `003_add_mortgage_category.sql` - Additional asset categories
+
+**Migration 001** includes:
 
 **Core Tables:**
 - `plaid_items` - Stores Plaid access tokens and institution metadata
@@ -242,29 +264,55 @@ Required environment variables (in `.env.local`):
 
 ## Implementation Status
 
-**Phase 1 MVP Completion: ~30%**
+**Phase 1 MVP Completion: ~60%**
 
 | Feature | Backend | Frontend | Status | Details |
 |---------|---------|----------|--------|---------|
-| **Project Foundation** | ✅ Complete | ✅ Complete | ✅ Done | Database schema with RLS, TypeScript interfaces, utilities |
-| **Account Aggregation (Plaid)** | ✅ Complete | ✅ Complete | 🔄 Partial | API routes + components ready; needs dashboard integration |
+| **Project Foundation** | ✅ Complete | ✅ Complete | ✅ Done | Database schema with RLS, TypeScript interfaces, utilities, subscription tiers |
+| **Account Aggregation (Plaid)** | ✅ Complete | ✅ Complete | ✅ Done | Fully integrated in unified Accounts panel with Plaid Link |
+| **Manual Asset Entry** | ✅ Complete | ✅ Complete | ✅ Done | Complete CRUD for real estate, vehicles, collectibles, liabilities |
+| **Net Worth Dashboard** | ✅ Complete | ✅ Complete | ✅ Done | Hero card, asset/liability breakdowns, real-time calculation from all sources |
+| **Subscription Tiers** | ✅ Complete | ✅ Complete | ✅ Done | Free/Premium/Pro tiers with feature gating, dev mode override |
+| **Unified Accounts UI** | ✅ Complete | ✅ Complete | ✅ Done | Single panel showing Plaid + manual entries with visual badges |
 | **Crypto Wallet Tracking** | ✅ Complete | ⏳ Pending | 🔄 Partial | API ready (Ethereum, Polygon, Base, Arbitrum, Optimism); needs UI |
-| **Manual Asset Entry** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #3 for specs |
-| **Net Worth Dashboard** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #4 for specs |
+| **Historical Snapshots** | ⏳ Pending | ⏳ Pending | ❌ Not Started | Table exists, needs daily snapshot recording + trend chart |
 | **Percentile Ranking** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #5 for specs |
 | **Basic Budgeting** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #6 for specs |
+
+### Recent Updates (Current Session)
+
+**Dashboard Architecture:**
+- Unified "Accounts" panel combines Plaid-connected accounts + manual assets in single view
+- Visual badges distinguish "Plaid" (emerald) vs "Manual" (amber) entries
+- Plaid "Connect Account" button only visible for Premium+ tier
+- Manual asset entry available for all tiers
+- Asset & Liability breakdowns moved to right sidebar
+- Recent Transactions panel positioned below Accounts panel
+- Hero net worth card with interactive time period dropdown
+
+**Component Structure:**
+- `ManualAssetsSection.tsx` (formerly "Manual Entries") → now "Accounts" panel
+- `HeroNetWorthCard.tsx` - Net worth overview with gradient design
+- `AssetBreakdownPanel.tsx` / `LiabilityBreakdownPanel.tsx` - Category pie charts
+- `MonthlyCashFlowPanel.tsx` / `RecentTransactionsPanel.tsx` - Premium+ features
+- `SubscriptionContext.tsx` - Tier-based feature access management
+
+**Color Scheme Applied:**
+- All buttons use Dark Teal (#004D40) with #00695C hover state
+- Consistent brand colors across dashboard components
+- Removed emoji icons for cleaner professional appearance
 
 ### Next Steps
 
 **Immediate Priorities:**
-1. Complete crypto wallet UI components (1-2 days)
-2. Build manual asset entry system (2-3 days)
-3. Create net worth calculation API endpoint + dashboard (5-7 days)
+1. Implement net worth snapshot recording (daily cron job + API endpoint) (2-3 days)
+2. Build historical trend chart with real data from snapshots (2-3 days)
+3. Complete crypto wallet UI components (1-2 days)
 4. Implement percentile ranking (3-4 days)
-5. Add basic budgeting view (3-4 days)
+5. Add basic budgeting view with transaction categorization (3-4 days)
 6. Integration & testing (3-5 days)
 
-**Estimated Time to Launch-Ready MVP:** 17-25 days of focused development
+**Estimated Time to Launch-Ready MVP:** 14-20 days of focused development
 
 **Pre-Launch Checklist:**
 - [ ] Apply database migration to Supabase
@@ -682,6 +730,67 @@ Visit http://localhost:3000
 - Feature flags system in place for gradual rollout
 - Toast notification system available globally via ToastProvider
 - **Bootstrap Philosophy:** Build for 1,000 users first, not 1,000,000. Optimize for learning speed over scale.
+
+## Architecture Decisions
+
+### Unified Accounts Panel (December 2024)
+
+**Decision:** Merge Plaid-connected accounts and manual asset entries into a single "Accounts" panel instead of maintaining separate panels.
+
+**Rationale:**
+- **User Experience**: Single source of truth for all account types reduces cognitive load
+- **Simplified Navigation**: Users don't need to search multiple panels to find their accounts
+- **Tier Flexibility**: Free users can manually track unlimited traditional accounts; Premium+ users get auto-sync via Plaid
+- **Clear Visual Distinction**: Badges ("Plaid" vs "Manual") make the source immediately obvious
+
+**Implementation:**
+- `ManualAssetsSection.tsx` serves as the unified panel (renamed from "Manual Entries" to "Accounts")
+- Fetches both Plaid accounts and manual assets in parallel
+- Transforms both into common `UnifiedEntry` interface for consistent rendering
+- Displays in two subsections: Assets (checking, savings, investments, real estate, etc.) and Liabilities (credit cards, loans, mortgages)
+- Plaid "Connect Account" button conditionally rendered for Premium+ tier only
+- Manual asset "Add Asset" button always visible for all tiers
+
+**Database Design:**
+- Kept separate tables: `plaid_accounts` for auto-synced data, `manual_assets` for user-entered data
+- Avoided database consolidation to maintain clean schema and data lineage
+- Unified only at the presentation layer
+
+**Trade-offs:**
+- ✅ Pro: Simpler mental model for users
+- ✅ Pro: All accounts in one place improves discoverability
+- ✅ Pro: Easier to implement tier-based features (Plaid button gating)
+- ⚠️ Con: More complex component logic (fetching multiple sources, transforming data)
+- ⚠️ Con: Mix of auto-synced and manual data requires clear visual distinction
+
+### Subscription Tier Architecture
+
+**Decision:** Implement three-tier system (Free/Premium/Pro) with feature flags and React Context for access control.
+
+**Implementation:**
+- `SubscriptionContext.tsx`: Provides `hasAccess()` function for checking feature availability
+- `permissions.ts`: Central configuration mapping features to tiers
+- Development mode override: All features enabled when `NODE_ENV === 'development'` for easier testing
+- Database: `user_settings` table extended with `subscription_tier` and `subscription_status` columns
+
+**Feature Gating:**
+- Free: Manual asset entry, basic dashboard, 30-day history
+- Premium ($19/mo): Plaid sync, transaction history, 365-day history, percentile ranking
+- Pro ($49/mo): Everything in Premium + unlimited crypto wallets, priority support, export features
+
+### Dashboard Layout
+
+**Decision:** Two-column layout with Accounts panel on left (2/3 width), supporting panels on right (1/3 width).
+
+**Layout:**
+- **Left Column**: Accounts panel (unified), Recent Transactions panel (Premium+)
+- **Right Column**: Asset Breakdown, Liability Breakdown, Monthly Cash Flow (Premium+)
+- Hero net worth card spans full width above columns
+
+**Rationale:**
+- Left column gets more space for detailed account listings
+- Right column perfect for at-a-glance summaries and charts
+- Mobile: Stacks vertically naturally
 
 ## Strategic Context
 
