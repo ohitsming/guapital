@@ -53,20 +53,74 @@ export async function POST(request: Request) {
 
     const institutionName = institutionResponse.data.institution.name;
 
-    // Store the Plaid item in the database
-    const { data: plaidItem, error: itemError } = await supabase
+    // Check if user has already connected this institution
+    const { data: existingItem } = await supabase
       .from('plaid_items')
-      .insert({
-        user_id: user.id,
-        item_id: itemId,
-        access_token: accessToken,
-        institution_id: institutionId,
-        institution_name: institutionName,
-        sync_status: 'active',
-        last_sync_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+      .select('id, institution_id')
+      .eq('user_id', user.id)
+      .eq('institution_id', institutionId)
+      .maybeSingle();
+
+    let plaidItem;
+
+    if (existingItem) {
+      // Update existing connection with new access token
+      const { data: updatedItem, error: updateError } = await supabase
+        .from('plaid_items')
+        .update({
+          item_id: itemId,
+          access_token: accessToken,
+          sync_status: 'active',
+          last_sync_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingItem.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating plaid item:', updateError);
+        return NextResponse.json(
+          { error: 'Failed to update plaid item', details: updateError.message },
+          { status: 500 }
+        );
+      }
+
+      plaidItem = updatedItem;
+
+      // Delete old accounts associated with this item (will be replaced with fresh data)
+      await supabase
+        .from('plaid_accounts')
+        .delete()
+        .eq('plaid_item_id', existingItem.id);
+    } else {
+      // Insert new plaid item
+      const { data: newItem, error: insertError } = await supabase
+        .from('plaid_items')
+        .insert({
+          user_id: user.id,
+          item_id: itemId,
+          access_token: accessToken,
+          institution_id: institutionId,
+          institution_name: institutionName,
+          sync_status: 'active',
+          last_sync_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error inserting plaid item:', insertError);
+        return NextResponse.json(
+          { error: 'Failed to insert plaid item', details: insertError.message },
+          { status: 500 }
+        );
+      }
+
+      plaidItem = newItem;
+    }
+
+    const itemError = !plaidItem;
 
     if (itemError) {
       console.error('Error storing plaid item:', itemError);

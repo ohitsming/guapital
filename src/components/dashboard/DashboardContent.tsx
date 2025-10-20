@@ -122,18 +122,20 @@ export default function DashboardContent() {
 
                 {/* Right Column - 1/3 width */}
                 <div className="space-y-4">
-                    {/* Asset & Liability Breakdown - Always shown */}
+                    {/* Asset Breakdown - Always shown when assets exist */}
                     {netWorth && netWorth.total_assets > 0 && (
-                        <>
-                            <AssetBreakdownPanel
-                                breakdown={netWorth.breakdown}
-                                totalAssets={netWorth.total_assets}
-                            />
-                            <LiabilityBreakdownPanel
-                                breakdown={netWorth.breakdown}
-                                totalLiabilities={netWorth.total_liabilities}
-                            />
-                        </>
+                        <AssetBreakdownPanel
+                            breakdown={netWorth.breakdown}
+                            totalAssets={netWorth.total_assets}
+                        />
+                    )}
+
+                    {/* Liability Breakdown - Only shown when liabilities exist */}
+                    {netWorth && netWorth.total_liabilities > 0 && (
+                        <LiabilityBreakdownPanel
+                            breakdown={netWorth.breakdown}
+                            totalLiabilities={netWorth.total_liabilities}
+                        />
                     )}
 
                     {/* Monthly Cash Flow - Premium+ only */}

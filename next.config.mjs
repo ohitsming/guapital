@@ -30,6 +30,19 @@ const nextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'fullscreen=(self "https://cdn.plaid.com"), payment=(self "https://cdn.plaid.com"), camera=(self "https://cdn.plaid.com")',
+          },
+        ],
+      },
+    ]
+  },
   async rewrites() {
     return [
       {

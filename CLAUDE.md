@@ -264,7 +264,7 @@ Required environment variables (in `.env.local`):
 
 ## Implementation Status
 
-**Phase 1 MVP Completion: ~60%**
+**Phase 1 MVP Completion: ~75%**
 
 | Feature | Backend | Frontend | Status | Details |
 |---------|---------|----------|--------|---------|
@@ -274,12 +274,38 @@ Required environment variables (in `.env.local`):
 | **Net Worth Dashboard** | ✅ Complete | ✅ Complete | ✅ Done | Hero card, asset/liability breakdowns, real-time calculation from all sources |
 | **Subscription Tiers** | ✅ Complete | ✅ Complete | ✅ Done | Free/Premium/Pro tiers with feature gating, dev mode override |
 | **Unified Accounts UI** | ✅ Complete | ✅ Complete | ✅ Done | Single panel showing Plaid + manual entries with visual badges |
+| **Historical Snapshots** | ✅ Complete | ✅ Complete | ✅ Done | Daily cron job recording, trend chart with ghost/preview empty state, smart single-point display |
 | **Crypto Wallet Tracking** | ✅ Complete | ⏳ Pending | 🔄 Partial | API ready (Ethereum, Polygon, Base, Arbitrum, Optimism); needs UI |
-| **Historical Snapshots** | ⏳ Pending | ⏳ Pending | ❌ Not Started | Table exists, needs daily snapshot recording + trend chart |
 | **Percentile Ranking** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #5 for specs |
 | **Basic Budgeting** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #6 for specs |
 
 ### Recent Updates (Current Session)
+
+**Historical Snapshots & Trend Chart (October 2025):**
+- ✅ **Removed backfill functionality** - Deleted synthetic data generation to maintain data integrity
+  - Removed `/api/networth/snapshot/backfill/route.ts` API endpoint
+  - Deleted `scripts/backfill-snapshots.ts` and admin backfill page
+  - Ensures only real historical data is displayed to users
+- ✅ **Implemented ghost/preview chart empty state** - Modern UX approach for new users
+  - Faded skeleton chart with dotted gold trend line (25% opacity)
+  - Educational overlay: "Start Building Your History"
+  - Chart height increased to 370px for better visibility
+  - Passive design (no CTAs) per UX best practices
+- ✅ **Smart single-point detection** - Handles brand new users gracefully
+  - API modified to return today's snapshot when no historical data exists
+  - Single data points display as prominent gold dot (6px radius with white border)
+  - Labeled as "Today" for clarity
+  - Creates immediate feedback that system is working
+- ✅ **Progressive trend visualization** - Natural evolution from Day 1 onwards
+  - **Day 1**: Single dot (today's snapshot)
+  - **Day 2+**: Historical snapshots → Today's live net worth
+  - Today's value always uses live API calculation (never stale)
+  - Supports all time periods: 30/90/365 days with dropdown selector
+- ✅ **Test data generation** - Created `scripts/generate-test-snapshots.sql`
+  - Generates 365 days of realistic historical data
+  - 15% gradual growth pattern with ±1.5% daily variance
+  - Liabilities stay stable with ±2.5% fluctuation
+  - Enables full testing of all dashboard time periods
 
 **Dashboard Architecture:**
 - Unified "Accounts" panel combines Plaid-connected accounts + manual assets in single view
@@ -292,10 +318,15 @@ Required environment variables (in `.env.local`):
 
 **Component Structure:**
 - `ManualAssetsSection.tsx` (formerly "Manual Entries") → now "Accounts" panel
-- `HeroNetWorthCard.tsx` - Net worth overview with gradient design
+- `HeroNetWorthCard.tsx` - Net worth overview with gradient design, trend chart with ghost state
 - `AssetBreakdownPanel.tsx` / `LiabilityBreakdownPanel.tsx` - Category pie charts
 - `MonthlyCashFlowPanel.tsx` / `RecentTransactionsPanel.tsx` - Premium+ features
 - `SubscriptionContext.tsx` - Tier-based feature access management
+
+**API Routes:**
+- `/api/networth/history` - Fetches historical snapshots with smart today-only fallback
+- `/api/networth/snapshot` - Records daily snapshots (called by cron job)
+- Daily cron job (`pg_cron`) automatically records snapshots at midnight UTC
 
 **Color Scheme Applied:**
 - All buttons use Dark Teal (#004D40) with #00695C hover state
@@ -305,14 +336,14 @@ Required environment variables (in `.env.local`):
 ### Next Steps
 
 **Immediate Priorities:**
-1. Implement net worth snapshot recording (daily cron job + API endpoint) (2-3 days)
-2. Build historical trend chart with real data from snapshots (2-3 days)
+1. ~~Implement net worth snapshot recording (daily cron job + API endpoint)~~ ✅ **DONE**
+2. ~~Build historical trend chart with real data from snapshots~~ ✅ **DONE**
 3. Complete crypto wallet UI components (1-2 days)
 4. Implement percentile ranking (3-4 days)
 5. Add basic budgeting view with transaction categorization (3-4 days)
 6. Integration & testing (3-5 days)
 
-**Estimated Time to Launch-Ready MVP:** 14-20 days of focused development
+**Estimated Time to Launch-Ready MVP:** 10-16 days of focused development
 
 **Pre-Launch Checklist:**
 - [ ] Apply database migration to Supabase
@@ -791,6 +822,62 @@ Visit http://localhost:3000
 - Left column gets more space for detailed account listings
 - Right column perfect for at-a-glance summaries and charts
 - Mobile: Stacks vertically naturally
+
+### Historical Snapshots & Trend Visualization (October 2025)
+
+**Decision:** Implement honest, real-data-only approach for historical net worth tracking with progressive UX that evolves from Day 1.
+
+**Implementation:**
+
+**Backend Architecture:**
+- Daily cron job (`pg_cron`) runs at midnight UTC via `record_daily_snapshots()` function
+- Calculates net worth using `calculate_user_net_worth()` helper function
+- Stores snapshots in `net_worth_snapshots` table with full breakdown
+- API endpoint `/api/networth/history` fetches historical data with smart fallbacks
+- Never generates synthetic or backfilled data - all historical values are real
+
+**Frontend Progressive Display:**
+1. **No data (new user)**: Ghost/preview chart with faded dotted line
+   - Educational message: "Start Building Your History"
+   - Shows users exactly what to expect without fake data
+   - Passive design with no CTAs per UX research
+2. **Day 1 (first snapshot)**: Single gold dot labeled "Today"
+   - Provides immediate visual feedback that system is working
+   - Creates anticipation for tomorrow's trend
+3. **Day 2+**: Full trend line visualization
+   - Historical snapshots (from database) + today's live net worth (from API)
+   - Today's value is always calculated in real-time (never stale)
+   - Supports 30/90/365-day views with dropdown selector
+
+**Key Design Decisions:**
+- **No backfill**: Rejected synthetic data generation to maintain user trust
+- **Ghost chart empty state**: Modern SaaS pattern showing preview of future functionality
+- **Single-point handling**: Special case for brand new users to provide feedback
+- **Live today's value**: Always uses real-time calculation, not yesterday's snapshot
+- **Progressive disclosure**: UX naturally evolves as user builds history
+
+**Database Schema:**
+```sql
+net_worth_snapshots (
+  id, user_id, snapshot_date (unique per user),
+  total_assets, total_liabilities, net_worth,
+  breakdown (JSONB), created_at
+)
+```
+
+**Files Modified:**
+- `src/app/api/networth/history/route.ts` - Smart snapshot fetching with today-only fallback
+- `src/components/dashboard/HeroNetWorthCard.tsx` - Ghost chart + single point detection
+- `supabase/migrations/004_add_snapshot_recording.sql` - Cron job setup
+- `scripts/generate-test-snapshots.sql` - Test data generation (365 days)
+
+**Trade-offs:**
+- ✅ Pro: Honest approach builds user trust (no fake data)
+- ✅ Pro: Ghost chart educates users on what's coming
+- ✅ Pro: Single-point display reduces "empty state anxiety"
+- ✅ Pro: Live today's value shows real-time changes
+- ⚠️ Con: New users must wait 1+ days to see trend (acceptable)
+- ⚠️ Con: More complex API logic to handle edge cases
 
 ## Strategic Context
 

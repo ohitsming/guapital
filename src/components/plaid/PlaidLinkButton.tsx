@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
   onExit?: () => void;
+  onSyncStart?: () => void;  // Called when sync begins
   className?: string;
   children?: React.ReactNode;
 }
@@ -13,6 +14,7 @@ interface PlaidLinkButtonProps {
 export default function PlaidLinkButton({
   onSuccess,
   onExit,
+  onSyncStart,
   className = '',
   children = 'Connect Account',
 }: PlaidLinkButtonProps) {
@@ -45,6 +47,12 @@ export default function PlaidLinkButton({
   const handleOnSuccess = useCallback(
     async (public_token: string, metadata: any) => {
       setLoading(true);
+
+      // Notify parent that sync is starting
+      if (onSyncStart) {
+        onSyncStart();
+      }
+
       try {
         const response = await fetch('/api/plaid/exchange-token', {
           method: 'POST',
@@ -80,7 +88,7 @@ export default function PlaidLinkButton({
         setLoading(false);
       }
     },
-    [onSuccess]
+    [onSuccess, onSyncStart]
   );
 
   // Handle Plaid Link exit
@@ -98,6 +106,13 @@ export default function PlaidLinkButton({
   };
 
   const { open, ready } = usePlaidLink(config);
+
+  // Auto-open Plaid Link when token is ready
+  useEffect(() => {
+    if (linkToken && ready) {
+      open();
+    }
+  }, [linkToken, ready, open]);
 
   const handleClick = () => {
     if (!linkToken) {

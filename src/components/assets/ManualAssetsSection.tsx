@@ -61,6 +61,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
   const [assets, setAssets] = useState<ManualAsset[]>([]);
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccountWithInstitution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -105,7 +106,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
   useEffect(() => {
     fetchAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasAccess]);
 
   const handleDeleteManualAsset = async (assetId: string) => {
     if (!confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
@@ -171,6 +172,20 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
 
   const handleEditSuccess = () => {
     fetchAssets();
+
+    // Notify parent to refresh net worth
+    if (onUpdate) {
+      onUpdate();
+    }
+  };
+
+  const handleSyncStart = () => {
+    setIsSyncing(true);
+  };
+
+  const handleSyncComplete = async () => {
+    await fetchAssets();
+    setIsSyncing(false);
 
     // Notify parent to refresh net worth
     if (onUpdate) {
@@ -250,12 +265,28 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
 
   // Render the full section when entries exist
   return (
-    <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
+    <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 relative">
+      {/* Syncing Overlay */}
+      {isSyncing && (
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+              <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
+            </div>
+            <p className="text-lg font-semibold text-gray-900 mb-1">Syncing your accounts...</p>
+            <p className="text-sm text-gray-600">This may take a few seconds</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
         <div className="flex items-center gap-2">
           {hasAccess('plaidSync') && (
-            <PlaidLinkButton onSuccess={fetchAssets} />
+            <PlaidLinkButton
+              onSyncStart={handleSyncStart}
+              onSuccess={handleSyncComplete}
+            />
           )}
           <AddAssetButton onAssetAdded={handleEditSuccess} />
         </div>

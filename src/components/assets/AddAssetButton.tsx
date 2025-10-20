@@ -25,7 +25,7 @@ const AddAssetButton: React.FC<AddAssetButtonProps> = ({ onAssetAdded }) => {
         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#004D40] border border-transparent rounded-md hover:bg-[#00695C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] transition-colors"
       >
         <PlusIcon className="h-5 w-5" />
-        Add Asset
+        Add
       </button>
 
       <AddAssetModal
