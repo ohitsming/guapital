@@ -41,6 +41,7 @@ export interface FeatureAccess {
 
     // Advanced features
     percentileRanking: boolean
+    advancedReports: boolean
     advancedDefi: boolean
     csvExport: boolean
     apiAccess: boolean

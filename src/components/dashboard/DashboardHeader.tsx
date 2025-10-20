@@ -17,7 +17,7 @@ export function DashboardHeader({ user }: { user: User }) {
     }
 
     return (
-        <div className="fixed top-0 left-0 right-0 h-24 bg-white border-b border-gray-200 z-50">
+        <div className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-gray-200 z-50">
             <div className="flex items-center justify-between h-full px-6 ml-24">
                 <Link href="/" aria-label="Home">
                     <Logo className="hidden h-8 sm:block" />

@@ -34,6 +34,7 @@ export enum Feature {
 
     // Advanced features
     PERCENTILE_RANKING = 'percentileRanking',
+    ADVANCED_REPORTS = 'advancedReports',
     ADVANCED_DEFI = 'advancedDefi',
     CSV_EXPORT = 'csvExport',
     API_ACCESS = 'apiAccess',
@@ -60,6 +61,7 @@ export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
         transactionHistory: false,
         budgeting: false,
         percentileRanking: false,
+        advancedReports: false,
         advancedDefi: false,
         csvExport: false,
         apiAccess: false,
@@ -79,6 +81,7 @@ export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
         transactionHistory: true,
         budgeting: true,
         percentileRanking: true,
+        advancedReports: true,
         advancedDefi: false,
         csvExport: false,
         apiAccess: false,
@@ -98,6 +101,7 @@ export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
         transactionHistory: true,
         budgeting: true,
         percentileRanking: true,
+        advancedReports: true,
         advancedDefi: true,
         csvExport: true,
         apiAccess: true,

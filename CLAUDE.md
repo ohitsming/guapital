@@ -264,22 +264,54 @@ Required environment variables (in `.env.local`):
 
 ## Implementation Status
 
-**Phase 1 MVP Completion: ~75%**
+**Phase 1 MVP Completion: ~85%**
 
 | Feature | Backend | Frontend | Status | Details |
 |---------|---------|----------|--------|---------|
 | **Project Foundation** | ✅ Complete | ✅ Complete | ✅ Done | Database schema with RLS, TypeScript interfaces, utilities, subscription tiers |
 | **Account Aggregation (Plaid)** | ✅ Complete | ✅ Complete | ✅ Done | Fully integrated in unified Accounts panel with Plaid Link |
 | **Manual Asset Entry** | ✅ Complete | ✅ Complete | ✅ Done | Complete CRUD for real estate, vehicles, collectibles, liabilities |
-| **Net Worth Dashboard** | ✅ Complete | ✅ Complete | ✅ Done | Hero card, asset/liability breakdowns, real-time calculation from all sources |
-| **Subscription Tiers** | ✅ Complete | ✅ Complete | ✅ Done | Free/Premium/Pro tiers with feature gating, dev mode override |
+| **Net Worth Dashboard** | ✅ Complete | ✅ Complete | ✅ Done | Hero card, asset/liability breakdowns, real-time calculation from all sources, clean single-view design |
+| **Subscription Tiers** | ✅ Complete | ✅ Complete | ✅ Done | Free/Premium/Pro tiers with feature gating, dev mode override, loading state fixes |
 | **Unified Accounts UI** | ✅ Complete | ✅ Complete | ✅ Done | Single panel showing Plaid + manual entries with visual badges |
 | **Historical Snapshots** | ✅ Complete | ✅ Complete | ✅ Done | Daily cron job recording, trend chart with ghost/preview empty state, smart single-point display |
+| **Sidebar Navigation** | ✅ Complete | ✅ Complete | ✅ Done | 4 functional pages: Dashboard, Accounts, Transactions (Premium+), Reports (Premium+) |
+| **Transaction History** | ✅ Complete | ✅ Complete | ✅ Done | Full transaction list with filters, search, sync, AI categorization (Premium+ feature) |
+| **Advanced Reports** | ✅ Complete | ✅ Complete | ✅ Done | Net worth trends, asset/liability breakdowns with pie charts (Premium+ feature) |
 | **Crypto Wallet Tracking** | ✅ Complete | ⏳ Pending | 🔄 Partial | API ready (Ethereum, Polygon, Base, Arbitrum, Optimism); needs UI |
 | **Percentile Ranking** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #5 for specs |
-| **Basic Budgeting** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #6 for specs |
+| **Basic Budgeting** | 🔄 Partial | 🔄 Partial | 🔄 On Hold | Cash Flow Insights implemented but removed from navigation; strategic decision pending |
 
-### Recent Updates (Current Session)
+### Recent Updates
+
+**UI/UX Improvements & Page Completion (October 2025):**
+- ✅ **Dashboard tabs removed** - Eliminated non-functional navigation tabs (Overview, Net Worth, Cash Flow, Spending, Income)
+  - Simplified to single focused dashboard view
+  - Reduces cognitive load and aligns with "wealth building, not penny-pinching" positioning
+  - Users rely on sidebar navigation for major section switching
+- ✅ **Transactions page completed** - Full implementation with premium gating
+  - Replaced native HTML select elements with custom Tailwind Dropdown components
+  - Advanced filtering: date range, category, pending status, search
+  - Stats cards showing total spent, income, net cash flow
+  - Sync button for manual transaction refresh
+  - Premium-only feature with proper access control
+- ✅ **Reports page completed** - Advanced analytics with premium gating
+  - Historical net worth trend chart with time period selector (30/90/365 days)
+  - Key metrics cards: current net worth, 30-day change, total assets, total liabilities
+  - Asset breakdown pie chart by category
+  - Liability breakdown pie chart by category
+  - Fixed data structure mapping for proper category display
+- ✅ **Premium feature gate fixes** - Eliminated "flashing banner" bug
+  - Added subscription loading checks before showing premium gates
+  - Loading spinner displays while subscription status loads
+  - Prevents 1-second flash of "upgrade to premium" message for premium users
+  - Applied fix to all premium-gated pages (Transactions, Reports, Dashboard nav)
+- ✅ **API optimization analysis** - Documented API call patterns per page
+  - Dashboard: 3 calls (Free) / 6 calls (Premium+)
+  - Accounts: 1 call (Free) / 2 calls (Premium+)
+  - Transactions: 1 call (Premium+ only)
+  - Reports: 1 call (Premium+ only)
+  - Identified potential consolidation opportunities for future optimization
 
 **Historical Snapshots & Trend Chart (October 2025):**
 - ✅ **Removed backfill functionality** - Deleted synthetic data generation to maintain data integrity
@@ -317,15 +349,27 @@ Required environment variables (in `.env.local`):
 - Hero net worth card with interactive time period dropdown
 
 **Component Structure:**
-- `ManualAssetsSection.tsx` (formerly "Manual Entries") → now "Accounts" panel
+- `DashboardContent.tsx` - Main dashboard layout with single-view design (tabs removed)
+- `ManualAssetsSection.tsx` - Unified "Accounts" panel combining Plaid + manual assets
 - `HeroNetWorthCard.tsx` - Net worth overview with gradient design, trend chart with ghost state
 - `AssetBreakdownPanel.tsx` / `LiabilityBreakdownPanel.tsx` - Category pie charts
-- `MonthlyCashFlowPanel.tsx` / `RecentTransactionsPanel.tsx` - Premium+ features
-- `SubscriptionContext.tsx` - Tier-based feature access management
+- `MonthlyCashFlowPanel.tsx` / `RecentTransactionsPanel.tsx` - Premium+ dashboard panels
+- `TransactionsPageContent.tsx` - Full transaction history page with filters (Premium+)
+- `ReportsPageContent.tsx` - Advanced analytics page with charts (Premium+)
+- `AccountsPageContent.tsx` - Dedicated accounts management page
+- `DashboardNav.tsx` - Sidebar navigation with premium feature locks
+- `Dropdown.tsx` - Custom Tailwind dropdown component (replaces native selects)
+- `SubscriptionContext.tsx` - Tier-based feature access management with loading states
 
 **API Routes:**
+- `/api/networth` - Calculate current net worth from all sources (Plaid + manual + crypto)
 - `/api/networth/history` - Fetches historical snapshots with smart today-only fallback
 - `/api/networth/snapshot` - Records daily snapshots (called by cron job)
+- `/api/assets` - CRUD operations for manual assets
+- `/api/plaid/accounts` - Fetch Plaid-connected accounts (Premium+)
+- `/api/plaid/transactions` - Fetch transaction history with pagination (Premium+)
+- `/api/plaid/sync-transactions` - Manually trigger transaction sync (Premium+)
+- `/api/cashflow/monthly` - Calculate monthly income/expenses (Premium+)
 - Daily cron job (`pg_cron`) automatically records snapshots at midnight UTC
 
 **Color Scheme Applied:**
@@ -333,17 +377,32 @@ Required environment variables (in `.env.local`):
 - Consistent brand colors across dashboard components
 - Removed emoji icons for cleaner professional appearance
 
+**Sidebar Navigation Structure:**
+- ✅ **Navigation layout implemented** in `src/app/dashboard/layout.tsx` with fixed left sidebar
+- **Dashboard** (HomeIcon) - ✅ Fully functional with single-view design, all panels operational
+- **Accounts** (WalletIcon) - ✅ Dedicated account management page with filtering and search
+- **Transactions** (CreditCardIcon) - ✅ Complete transaction history with advanced filters (Premium+ feature)
+- **Reports** (ChartBarIcon) - ✅ Advanced analytics with charts and breakdowns (Premium+ feature)
+- ~~**Budget/Cash Flow** (BanknotesIcon)~~ - Removed from navigation (strategic decision)
+- Premium features show lock icon for free users with upgrade prompt
+
 ### Next Steps
 
 **Immediate Priorities:**
 1. ~~Implement net worth snapshot recording (daily cron job + API endpoint)~~ ✅ **DONE**
 2. ~~Build historical trend chart with real data from snapshots~~ ✅ **DONE**
-3. Complete crypto wallet UI components (1-2 days)
-4. Implement percentile ranking (3-4 days)
-5. Add basic budgeting view with transaction categorization (3-4 days)
-6. Integration & testing (3-5 days)
+3. ~~Implement sidebar navigation structure with 4 tabs~~ ✅ **DONE**
+4. ~~Build out navigation pages: Accounts, Transactions, Reports~~ ✅ **DONE**
+5. ~~Fix premium feature gate flashing~~ ✅ **DONE**
+6. ~~Remove dashboard tabs for cleaner UX~~ ✅ **DONE**
+7. Complete crypto wallet UI components (1-2 days)
+8. Implement percentile ranking (3-4 days)
+9. Decide on budgeting feature inclusion (Cash Flow Insights vs remove entirely)
+10. Mobile responsiveness testing & optimization (2-3 days)
+11. End-to-end user flow testing (2-3 days)
+12. Performance optimization (1-2 days)
 
-**Estimated Time to Launch-Ready MVP:** 10-16 days of focused development
+**Estimated Time to Launch-Ready MVP:** 8-12 days of focused development
 
 **Pre-Launch Checklist:**
 - [ ] Apply database migration to Supabase

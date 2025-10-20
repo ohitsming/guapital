@@ -9,8 +9,10 @@ import {
     ArrowTrendingDownIcon,
     ChartBarIcon,
     ChevronDownIcon,
+    InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { useSubscription } from '@/lib/context/SubscriptionContext'
 
 interface HeroNetWorthCardProps {
     netWorth: NetWorthCalculation
@@ -22,6 +24,7 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
     const [selectedDays, setSelectedDays] = useState(maxDays)
     const [isOpen, setIsOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+    const { hasAccess } = useSubscription()
 
     const dayOptions = [
         { value: 30, label: 'Last 30 days' },
@@ -356,6 +359,23 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
                         <GhostChart />
                     )}
                 </div>
+
+                {/* Info Banner for Free Tier Users */}
+                {!hasAccess('plaidSync') && trendData && trendData.length > 0 && (
+                    <div className="mb-3 bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 backdrop-blur-sm">
+                        <div className="flex items-start gap-2">
+                            <InformationCircleIcon className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-blue-200 text-xs font-medium mb-1">Historical Data Note</p>
+                                <p className="text-blue-200/80 text-xs leading-relaxed">
+                                    Your chart shows historical net worth including any previously connected accounts.
+                                    Current net worth reflects only your active accounts.
+                                    <a href="/pricing" className="underline hover:text-blue-100 ml-1">Upgrade to Premium</a> to reconnect accounts.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-3">

@@ -63,26 +63,6 @@ export default function DashboardContent() {
 
     return (
         <div className="px-4 py-4 mt-6 min-h-screen" style={{ background: '#F7F9F9' }}>
-            {/* Top Navigation Tabs */}
-            <div className="mb-4">
-                <div className="border-b border-[#004D40]/20 bg-white/80 backdrop-blur-sm rounded-t-lg px-4">
-                    <nav className="-mb-px flex space-x-6">
-                        <a href="#" className="border-b-2 border-[#FFC107] py-2.5 px-1 text-sm font-semibold text-[#004D40]">
-                            Net Worth
-                        </a>
-                        <a href="#" className="border-b-2 border-transparent py-2.5 px-1 text-sm font-medium text-gray-600 hover:text-[#004D40] hover:border-[#004D40]/30 transition-colors">
-                            Cash Flow
-                        </a>
-                        <a href="#" className="border-b-2 border-transparent py-2.5 px-1 text-sm font-medium text-gray-600 hover:text-[#004D40] hover:border-[#004D40]/30 transition-colors">
-                            Spending
-                        </a>
-                        <a href="#" className="border-b-2 border-transparent py-2.5 px-1 text-sm font-medium text-gray-600 hover:text-[#004D40] hover:border-[#004D40]/30 transition-colors">
-                            Income
-                        </a>
-                    </nav>
-                </div>
-            </div>
-
             {/* Loading State */}
             {loading && (
                 <div className="mb-4 bg-white rounded-xl p-8 shadow-md border border-gray-200">
