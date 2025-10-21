@@ -65,6 +65,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing wallet_id' }, { status: 400 });
     }
 
+    // Debug: Check if API key exists
+    if (!process.env.ALCHEMY_API_KEY) {
+      console.error('ALCHEMY_API_KEY is not set in environment variables');
+      return NextResponse.json({ error: 'Alchemy API key not configured' }, { status: 500 });
+    }
+    console.log('Alchemy API Key exists:', process.env.ALCHEMY_API_KEY?.substring(0, 5) + '...');
+
     // Get wallet details
     const { data: wallet, error: walletError } = await supabase
       .from('crypto_wallets')
@@ -78,6 +85,8 @@ export async function POST(request: Request) {
     }
 
     const alchemyEndpoint = getAlchemyEndpoint(wallet.blockchain);
+    console.log('Syncing wallet:', wallet.wallet_address, 'on', wallet.blockchain);
+    console.log('Alchemy endpoint:', alchemyEndpoint);
 
     try {
       // Get native token balance (ETH, MATIC, etc.)
@@ -88,8 +97,12 @@ export async function POST(request: Request) {
         params: [wallet.wallet_address, 'latest'],
       });
 
+      console.log('Balance response:', balanceResponse.data);
+
       const nativeBalance =
         parseInt(balanceResponse.data.result || '0x0', 16) / 1e18;
+
+      console.log('Native balance:', nativeBalance);
 
       // Get ERC20 token balances
       const tokensResponse = await axios.post(alchemyEndpoint, {
@@ -112,8 +125,11 @@ export async function POST(request: Request) {
       const nativeTokenId = getNativeTokenSymbol(wallet.blockchain).toLowerCase();
       const priceIds = [nativeTokenId === 'matic' ? 'matic-network' : 'ethereum'];
 
+      console.log('Fetching prices for:', priceIds);
       const prices = await getTokenPrices(priceIds);
+      console.log('Prices received:', prices);
       const nativePrice = prices[priceIds[0]] || 0;
+      console.log('Native price:', nativePrice);
 
       // Add native token holding
       holdings.push({
@@ -167,12 +183,16 @@ export async function POST(request: Request) {
 
       // Insert new holdings
       if (holdings.length > 0) {
+        console.log('Inserting holdings:', holdings.length);
+        console.log('Holdings data:', JSON.stringify(holdings, null, 2));
         const { error: holdingsError } = await supabase
           .from('crypto_holdings')
           .insert(holdings);
 
         if (holdingsError) {
           console.error('Error inserting holdings:', holdingsError);
+        } else {
+          console.log('Successfully inserted holdings');
         }
       }
 

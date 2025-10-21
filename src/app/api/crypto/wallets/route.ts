@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         wallet_address: wallet_address.toLowerCase(),
         wallet_name: wallet_name || null,
         blockchain: blockchain.toLowerCase(),
-        sync_status: 'active',
+        sync_status: 'pending', // Will be updated to 'active' after first sync
       })
       .select()
       .single();
@@ -101,19 +101,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Trigger initial sync
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_ENV_URL}/api/crypto/sync-wallet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ wallet_id: wallet.id }),
-      });
-    } catch (syncError) {
-      console.error('Error triggering wallet sync:', syncError);
-    }
-
+    // Return wallet - sync will be triggered from client side
     return NextResponse.json({ wallet });
   } catch (error: any) {
     console.error('Error in add wallet route:', error);

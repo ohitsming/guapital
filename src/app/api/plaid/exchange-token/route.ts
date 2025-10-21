@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
+import { PlaidItem } from '@/lib/interfaces/plaid';
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       .eq('institution_id', institutionId)
       .maybeSingle();
 
-    let plaidItem;
+    let plaidItem: PlaidItem | null = null;
 
     if (existingItem) {
       // Update existing connection with new access token
@@ -120,12 +121,10 @@ export async function POST(request: Request) {
       plaidItem = newItem;
     }
 
-    const itemError = !plaidItem;
-
-    if (itemError) {
-      console.error('Error storing plaid item:', itemError);
+    if (!plaidItem) {
+      console.error('Error storing plaid item: plaidItem is null');
       return NextResponse.json(
-        { error: 'Failed to store plaid item', details: itemError.message },
+        { error: 'Failed to store plaid item' },
         { status: 500 }
       );
     }
@@ -140,7 +139,7 @@ export async function POST(request: Request) {
     // Store accounts in database
     const accountsToInsert = accounts.map((account) => ({
       user_id: user.id,
-      plaid_item_id: plaidItem.id,
+      plaid_item_id: plaidItem!.id, // Safe: we checked for null above
       account_id: account.account_id,
       account_name: account.name,
       account_type: account.type,

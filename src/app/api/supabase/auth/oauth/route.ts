@@ -1,9 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { getBaseUrl } from '@/lib/env'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
-  const siteUrl = process.env.NEXT_PUBLIC_ENV_URL || origin;
+  const siteUrl = getBaseUrl(origin);
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 

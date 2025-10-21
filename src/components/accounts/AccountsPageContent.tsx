@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
-import AddAssetButton from '@/components/assets/AddAssetButton'
+import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown'
 import EditAssetModal from '@/components/assets/EditAssetModal'
-import PlaidLinkButton from '@/components/plaid/PlaidLinkButton'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
 import type { ManualAsset } from '@/lib/interfaces/asset'
 import type { PlaidAccount } from '@/lib/interfaces/plaid'
+import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto'
 import { formatCurrency } from '@/utils/formatters'
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -22,6 +22,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   private_stock: 'Private Stock',
   bonds: 'Bonds',
   p2p_lending: 'P2P Lending',
+  crypto: 'Cryptocurrency',
   other: 'Other Assets',
   // Liability categories
   mortgage: 'Mortgage',
@@ -39,6 +40,10 @@ interface PlaidAccountWithInstitution extends PlaidAccount {
   }
 }
 
+interface CryptoWalletWithHoldings extends CryptoWallet {
+  crypto_holdings: CryptoHolding[]
+}
+
 interface UnifiedEntry {
   id: string
   name: string
@@ -47,22 +52,27 @@ interface UnifiedEntry {
   category: string
   notes?: string
   updatedAt: string
-  source: 'plaid' | 'manual'
+  source: 'plaid' | 'manual' | 'crypto'
   manualAsset?: ManualAsset
   plaidAccount?: PlaidAccountWithInstitution
+  cryptoWallet?: CryptoWalletWithHoldings
+  isExpandable?: boolean
+  isExpanded?: boolean
 }
 
 export function AccountsPageContent() {
   const [assets, setAssets] = useState<ManualAsset[]>([])
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccountWithInstitution[]>([])
+  const [cryptoWallets, setCryptoWallets] = useState<CryptoWalletWithHoldings[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSyncing, setIsSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [expandedWallets, setExpandedWallets] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'asset' | 'liability'>('all')
-  const [filterSource, setFilterSource] = useState<'all' | 'plaid' | 'manual'>('all')
+  const [filterSource, setFilterSource] = useState<'all' | 'plaid' | 'manual' | 'crypto'>('all')
 
   const { hasAccess } = useSubscription()
 
@@ -90,6 +100,17 @@ export function AccountsPageContent() {
         } catch (err) {
           console.error('Error fetching Plaid accounts:', err)
         }
+      }
+
+      // Fetch crypto wallets (available to all tiers)
+      try {
+        const cryptoResponse = await fetch('/api/crypto/wallets')
+        if (cryptoResponse.ok) {
+          const cryptoData = await cryptoResponse.json()
+          setCryptoWallets(cryptoData.wallets || [])
+        }
+      } catch (err) {
+        console.error('Error fetching crypto wallets:', err)
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred')
@@ -153,6 +174,32 @@ export function AccountsPageContent() {
     }
   }
 
+  const handleDeleteCryptoWallet = async (walletId: string) => {
+    if (!confirm('Are you sure you want to remove this wallet? This action cannot be undone.')) {
+      return
+    }
+
+    setDeletingId(walletId)
+
+    try {
+      const response = await fetch(`/api/crypto/wallets?id=${walletId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete wallet')
+      }
+
+      setCryptoWallets(cryptoWallets.filter((w) => w.id !== walletId))
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete wallet')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const handleEditSuccess = () => {
     fetchAssets()
   }
@@ -203,6 +250,27 @@ export function AccountsPageContent() {
     }))
   }
 
+  const transformCryptoToUnified = (): UnifiedEntry[] => {
+    return cryptoWallets.map((wallet) => {
+      const totalValue = wallet.crypto_holdings?.reduce((sum, holding) => sum + holding.usd_value, 0) || 0
+      const hasHoldings = wallet.crypto_holdings && wallet.crypto_holdings.length > 0
+
+      return {
+        id: wallet.id,
+        name: wallet.wallet_name || `${wallet.blockchain.charAt(0).toUpperCase() + wallet.blockchain.slice(1)} Wallet`,
+        type: 'asset' as const,
+        value: totalValue,
+        category: 'crypto',
+        notes: wallet.wallet_address.slice(0, 6) + '...' + wallet.wallet_address.slice(-4),
+        updatedAt: wallet.last_sync_at || wallet.updated_at,
+        source: 'crypto',
+        cryptoWallet: wallet,
+        isExpandable: hasHoldings,
+        isExpanded: expandedWallets.has(wallet.id),
+      }
+    })
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -214,7 +282,8 @@ export function AccountsPageContent() {
   // Combine and filter entries
   const plaidEntries = transformPlaidToUnified()
   const manualEntries = transformManualToUnified()
-  let allEntries = [...plaidEntries, ...manualEntries]
+  const cryptoEntries = transformCryptoToUnified()
+  let allEntries = [...plaidEntries, ...manualEntries, ...cryptoEntries]
 
   // Apply filters
   if (filterType !== 'all') {
@@ -339,6 +408,7 @@ export function AccountsPageContent() {
               options={[
                 { value: 'all', label: 'All Sources' },
                 { value: 'plaid', label: 'Plaid Only' },
+                { value: 'crypto', label: 'Crypto Only' },
                 { value: 'manual', label: 'Manual Only' },
               ]}
               className="w-48"
@@ -355,12 +425,11 @@ export function AccountsPageContent() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
-            {hasAccess('plaidSync') && (
-              <PlaidLinkButton onSyncStart={handleSyncStart} onSuccess={handleSyncComplete} />
-            )}
-            <AddAssetButton onAssetAdded={handleEditSuccess} />
-          </div>
+          <AddAccountDropdown
+            onAccountAdded={handleEditSuccess}
+            onSyncStart={handleSyncStart}
+            onSyncComplete={handleSyncComplete}
+          />
         </div>
       </div>
 
@@ -383,11 +452,12 @@ export function AccountsPageContent() {
               : 'No accounts yet'}
           </p>
           {!searchQuery && filterType === 'all' && filterSource === 'all' && (
-            <div className="flex gap-2 justify-center">
-              {hasAccess('plaidSync') && (
-                <PlaidLinkButton onSyncStart={handleSyncStart} onSuccess={handleSyncComplete} />
-              )}
-              <AddAssetButton onAssetAdded={handleEditSuccess} />
+            <div className="flex justify-center">
+              <AddAccountDropdown
+                onAccountAdded={handleEditSuccess}
+                onSyncStart={handleSyncStart}
+                onSyncComplete={handleSyncComplete}
+              />
             </div>
           )}
         </div>
@@ -395,78 +465,144 @@ export function AccountsPageContent() {
         <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
           <div className="space-y-3">
             {allEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className={`flex items-center justify-between p-4 bg-white border-2 rounded-xl hover:shadow-md transition-all ${
-                  entry.type === 'asset'
-                    ? 'border-green-100 hover:border-green-200'
-                    : 'border-red-100 hover:border-red-200'
-                }`}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">{entry.name}</h3>
-                    <span
-                      className={`px-2.5 py-1 text-xs font-semibold rounded-lg border ${
-                        entry.type === 'asset'
-                          ? 'text-green-700 bg-green-50 border-green-200'
-                          : 'text-red-700 bg-red-50 border-red-200'
+              <div key={entry.id}>
+                <div
+                  className={`flex items-center justify-between p-4 bg-white border-2 rounded-xl hover:shadow-md transition-all ${
+                    entry.type === 'asset'
+                      ? 'border-green-100 hover:border-green-200'
+                      : 'border-red-100 hover:border-red-200'
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="text-base font-semibold text-gray-900">{entry.name}</h3>
+                      <span
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                          entry.type === 'asset'
+                            ? 'text-green-700 bg-green-50 border-green-200'
+                            : 'text-red-700 bg-red-50 border-red-200'
+                        }`}
+                      >
+                        {CATEGORY_LABELS[entry.category] || entry.category}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          entry.source === 'plaid'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : entry.source === 'crypto'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {entry.source === 'plaid' ? 'Plaid' : entry.source === 'crypto' ? 'Crypto' : 'Manual'}
+                      </span>
+                      {entry.isExpandable && (
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedWallets)
+                            if (newExpanded.has(entry.id)) {
+                              newExpanded.delete(entry.id)
+                            } else {
+                              newExpanded.add(entry.id)
+                            }
+                            setExpandedWallets(newExpanded)
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded transition-all"
+                        >
+                          {entry.isExpanded ? (
+                            <ChevronDownIcon className="h-4 w-4 text-gray-600" />
+                          ) : (
+                            <ChevronRightIcon className="h-4 w-4 text-gray-600" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                    <p
+                      className={`text-2xl font-bold mt-2 ${
+                        entry.type === 'asset' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {CATEGORY_LABELS[entry.category] || entry.category}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        entry.source === 'plaid'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}
-                    >
-                      {entry.source === 'plaid' ? 'Plaid' : 'Manual'}
-                    </span>
-                  </div>
-                  <p
-                    className={`text-2xl font-bold mt-2 ${
-                      entry.type === 'asset' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {formatCurrency(entry.value)}
-                  </p>
-                  {entry.notes && (
-                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
-                      {entry.notes}
+                      {formatCurrency(entry.value)}
                     </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">Last updated: {formatDate(entry.updatedAt)}</p>
+                    {entry.notes && (
+                      <p className="text-sm text-gray-600 mt-2 bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
+                        {entry.notes}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">Last updated: {formatDate(entry.updatedAt)}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 ml-4">
+                    {entry.source === 'manual' && entry.manualAsset && (
+                      <button
+                        onClick={() => setEditingAsset(entry.manualAsset!)}
+                        className="p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
+                        title="Edit asset"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (entry.source === 'manual') {
+                          handleDeleteManualAsset(entry.id)
+                        } else if (entry.source === 'crypto') {
+                          handleDeleteCryptoWallet(entry.id)
+                        } else {
+                          handleDeletePlaidAccount(entry.id)
+                        }
+                      }}
+                      disabled={deletingId === entry.id}
+                      className="p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                      title={entry.source === 'manual' ? 'Delete asset' : entry.source === 'crypto' ? 'Remove wallet' : 'Remove account'}
+                    >
+                      {deletingId === entry.id ? (
+                        <div className="h-5 w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
+                      ) : (
+                        <TrashIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 ml-4">
-                  {entry.source === 'manual' && entry.manualAsset && (
-                    <button
-                      onClick={() => setEditingAsset(entry.manualAsset!)}
-                      className="p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
-                      title="Edit asset"
-                    >
-                      <PencilIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() =>
-                      entry.source === 'manual'
-                        ? handleDeleteManualAsset(entry.id)
-                        : handleDeletePlaidAccount(entry.id)
-                    }
-                    disabled={deletingId === entry.id}
-                    className="p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                    title={entry.source === 'manual' ? 'Delete asset' : 'Remove account'}
-                  >
-                    {deletingId === entry.id ? (
-                      <div className="h-5 w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
-                    ) : (
-                      <TrashIcon className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
+                {/* Expandable Crypto Holdings */}
+                {entry.isExpanded && entry.cryptoWallet && entry.cryptoWallet.crypto_holdings && entry.cryptoWallet.crypto_holdings.length > 0 && (
+                  <div className="mt-2 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Holdings</h4>
+                    <div className="space-y-2">
+                      {entry.cryptoWallet.crypto_holdings
+                        .sort((a, b) => b.usd_value - a.usd_value)
+                        .map((holding) => (
+                          <div
+                            key={holding.id}
+                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-gray-900">{holding.token_symbol}</p>
+                                <p className="text-sm text-gray-600">{holding.token_name}</p>
+                              </div>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {holding.balance.toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 6,
+                                })}{' '}
+                                {holding.token_symbol}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-gray-900">{formatCurrency(holding.usd_value)}</p>
+                              {holding.usd_price && (
+                                <p className="text-xs text-gray-500">
+                                  @ {formatCurrency(holding.usd_price)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -476,6 +612,7 @@ export function AccountsPageContent() {
       {/* Edit Modal */}
       {editingAsset && (
         <EditAssetModal
+          isOpen={true}
           asset={editingAsset}
           onClose={() => setEditingAsset(null)}
           onSuccess={handleEditSuccess}

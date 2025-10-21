@@ -1,5 +1,10 @@
 /**
  * Subscription and feature access interfaces
+ *
+ * PRICING STRUCTURE (2025):
+ * - Free: 2 crypto wallets, 30-day history, percentile preview
+ * - Premium: $79/year (founding members), $99/year (regular) - UNLIMITED everything
+ * - Pro: DEPRECATED (kept for backwards compatibility, maps to Premium features)
  */
 
 export type SubscriptionTier = 'free' | 'premium' | 'pro'
@@ -13,6 +18,8 @@ export interface SubscriptionInfo {
     endDate?: Date
     stripeCustomerId?: string
     stripeSubscriptionId?: string
+    isFoundingMember?: boolean      // First 1,000 users lock in $79/year forever
+    foundingMemberPrice?: number    // Locked-in price for founding members
 }
 
 export interface FeatureAccess {

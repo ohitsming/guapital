@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import Link from 'next/link'
+import { getClientBaseUrl } from '@/lib/env'
 
 export function LoginForm() {
     const [email, setEmail] = useState('')
@@ -17,12 +18,15 @@ export function LoginForm() {
 
     const handleGoogleSignIn = async () => {
         setLoading(true)
+        const redirectUrl = `${getClientBaseUrl()}/api/supabase/auth/callback`;
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${location.origin}/api/supabase/auth/callback`,
+                redirectTo: redirectUrl,
             },
         })
+
         if (error) {
             setError(error.message)
             setLoading(false)

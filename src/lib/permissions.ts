@@ -1,10 +1,12 @@
 /**
  * Subscription tier permissions and feature access configuration
  *
- * Based on pricing model from CLAUDE.md:
- * - Free: Manual entry, 2 crypto wallets, 30-day history, no Plaid sync
- * - Premium: Plaid sync, 5 crypto wallets, 365-day history, AI categorization, percentile ranking
- * - Pro: All Premium + unlimited crypto, manual assets, advanced DeFi, CSV export, API access
+ * AGGRESSIVE GROWTH PRICING STRATEGY (2025):
+ * - Free: Manual entry unlimited, 2 crypto wallets, 30-day history, percentile preview
+ * - Premium ($79/year founding, $99/year regular): Unlimited everything - Plaid sync unlimited accounts,
+ *   unlimited crypto wallets, 365-day history, full percentile ranking, AI categorization, manual assets, reports
+ *
+ * Pro tier ELIMINATED - simplified to 2-tier structure for clarity
  */
 
 import type { SubscriptionTier, FeatureAccess, SubscriptionLimits } from './interfaces/subscription'
@@ -46,21 +48,26 @@ export enum Feature {
 
 /**
  * Feature access configuration for each subscription tier
+ *
+ * NEW PRICING (2025):
+ * - Free: Great for trying out, manual tracking, crypto preview
+ * - Premium: Everything unlimited - best value in market at $79/year
+ * - Pro: DEPRECATED - merged into Premium
  */
 export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
     free: {
         netWorthDashboard: true,
-        manualEntry: true,
-        plaidSync: false,
+        manualEntry: true,           // Unlimited manual entry for traditional accounts
+        plaidSync: false,             // No auto-sync
         cryptoWallets: true,
-        cryptoWalletLimit: 2,
+        cryptoWalletLimit: 2,         // 2 crypto wallets (unique selling point!)
         history30Days: true,
         history365Days: false,
-        manualAssets: true,
+        manualAssets: true,           // Can add unlimited manual assets
         aiCategorization: false,
-        transactionHistory: false,
+        transactionHistory: false,    // Need Premium for transaction history
         budgeting: false,
-        percentileRanking: false,
+        percentileRanking: true,      // Preview only - see your rank but not full leaderboard
         advancedReports: false,
         advancedDefi: false,
         csvExport: false,
@@ -71,24 +78,26 @@ export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
     premium: {
         netWorthDashboard: true,
         manualEntry: true,
-        plaidSync: true,
+        plaidSync: true,              // Unlimited connected accounts via Plaid
         cryptoWallets: true,
-        cryptoWalletLimit: 5,
+        cryptoWalletLimit: Infinity,  // UNLIMITED crypto wallets (nobody else offers this!)
         history30Days: true,
-        history365Days: true,
-        manualAssets: false,
-        aiCategorization: true,
-        transactionHistory: true,
-        budgeting: true,
-        percentileRanking: true,
-        advancedReports: true,
-        advancedDefi: false,
-        csvExport: false,
-        apiAccess: false,
-        emailSupport: true,
-        prioritySupport: false,
+        history365Days: true,         // Full 365-day history
+        manualAssets: true,           // Unlimited manual assets (real estate, vehicles, etc.)
+        aiCategorization: true,       // AI-powered transaction categorization
+        transactionHistory: true,     // Full transaction history and analysis
+        budgeting: true,              // Basic budgeting features
+        percentileRanking: true,      // Full percentile ranking + leaderboard access
+        advancedReports: true,        // Advanced analytics and reports
+        advancedDefi: false,          // Reserved for future Pro tier if needed
+        csvExport: true,              // Export data for tax time
+        apiAccess: false,             // Reserved for future Pro tier if needed
+        emailSupport: true,           // Email support (48hr response)
+        prioritySupport: false,       // Reserved for future Pro tier if needed
     },
     pro: {
+        // DEPRECATED: Pro tier merged into Premium
+        // Keeping for backwards compatibility, maps to Premium
         netWorthDashboard: true,
         manualEntry: true,
         plaidSync: true,
@@ -112,19 +121,24 @@ export const TIER_FEATURES: Record<SubscriptionTier, FeatureAccess> = {
 
 /**
  * Numeric limits for each tier
+ *
+ * PRICING TIERS (2025):
+ * - Free: 2 crypto wallets, 30-day history
+ * - Premium ($79/year): UNLIMITED everything
  */
 export const TIER_LIMITS: Record<SubscriptionTier, SubscriptionLimits> = {
     free: {
-        cryptoWallets: 2,
-        historyDays: 30,
-        connectedAccounts: 0, // No Plaid sync
+        cryptoWallets: 2,              // 2 crypto wallets (best free tier in market!)
+        historyDays: 30,               // 30-day history
+        connectedAccounts: 0,          // No Plaid sync (manual entry only)
     },
     premium: {
-        cryptoWallets: 5,
-        historyDays: 365,
-        connectedAccounts: 'unlimited',
+        cryptoWallets: Infinity,       // UNLIMITED crypto wallets
+        historyDays: 365,              // Full year of history
+        connectedAccounts: 'unlimited', // Unlimited Plaid-connected accounts
     },
     pro: {
+        // DEPRECATED: Maps to Premium
         cryptoWallets: Infinity,
         historyDays: 365,
         connectedAccounts: 'unlimited',

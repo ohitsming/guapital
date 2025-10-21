@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import EmptyState from '@/components/dashboard/EmptyState'
 import { ReceiptPercentIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { formatCurrency, formatDate } from '@/utils/formatters'
@@ -36,11 +36,7 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
     const [syncing, setSyncing] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        fetchTransactions()
-    }, [limit])
-
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -58,7 +54,11 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
         } finally {
             setLoading(false)
         }
-    }
+    }, [limit])
+
+    useEffect(() => {
+        fetchTransactions()
+    }, [fetchTransactions])
 
     const handleSync = async () => {
         try {

@@ -4,944 +4,734 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Guapital** is a modern, privacy-first financial application designed to help Gen Z wealth builders (ages 24-35) track their net worth across traditional and modern assets. The project focuses on wealth generation rather than simple budgeting, targeting users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
+**Guapital** is a modern, privacy-first financial application for Gen Z wealth builders (ages 24-35) to track net worth across traditional and modern assets. Targets users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
 
-**Core Value Proposition:** The single, reliable source of truth for net worth calculation across all asset classes - without the budget shame, sync failures, or feature bloat of existing tools.
+**Core Value Proposition:** Single, reliable source of truth for net worth calculation across all asset classes - without budget shame, sync failures, or feature bloat.
 
 **Key Differentiators:**
 - Wealth-building mindset (not penny-pinching budgeting)
 - First-class crypto/DeFi wallet integration
 - Gamified percentile rankings (anonymous, opt-in)
-- Beautiful, mobile-first UX designed for daily engagement
+- Beautiful, mobile-first UX for daily engagement
 - Privacy-first monetization (paid subscriptions, never selling data)
 
 ## Tech Stack
 
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
+- **Framework:** Next.js 14 (App Router), TypeScript
 - **Styling:** Tailwind CSS v4
-- **Database & Auth:** Supabase
+- **Database & Auth:** Supabase (RLS enabled)
 - **Deployment:** AWS Amplify
 - **Financial Data:** Plaid (account aggregation), Alchemy (crypto tracking)
 - **Charting:** Recharts
-- **Additional:** MDX support for content, Stripe integration, Framer Motion for animations, date-fns, axios
+- **Additional:** Stripe, Framer Motion, date-fns, axios
 
 ## Development Commands
 
 ```bash
-# Development
 npm run dev              # Start development server
-
-# Building
 npm run build            # Production build
-npm start                # Start production server
-
-# Code Quality
 npm run lint             # Run ESLint
 npm run test             # Run Jest tests
-
-# Git Hooks
-npm run prepare          # Setup Husky git hooks
 ```
 
 ## Architecture Overview
 
-### Directory Structure
+### Directory Structure (Simplified)
 
 ```
 src/
-├── app/                          # Next.js App Router pages & API routes
+├── app/
 │   ├── api/
-│   │   ├── plaid/               # Plaid integration endpoints
-│   │   │   ├── create-link-token/   # Generate Plaid Link token
-│   │   │   ├── exchange-token/      # Exchange public token for access token
-│   │   │   ├── sync-accounts/       # Sync account balances
-│   │   │   ├── sync-transactions/   # Sync transactions
-│   │   │   └── accounts/            # Get/delete accounts
-│   │   ├── crypto/              # Crypto wallet tracking endpoints
-│   │   │   ├── wallets/         # Add/get/delete crypto wallets
-│   │   │   └── sync-wallet/     # Sync wallet balances via Alchemy
-│   │   └── supabase/            # Legacy Supabase API endpoints
-│   │       ├── auth/            # Authentication callbacks & OAuth
-│   │       ├── general/         # General endpoints (interests, onboarding status)
-│   │       └── settings/        # User profile & settings management
-│   ├── auth/                    # Auth-related pages (callbacks, confirmations)
-│   ├── login/                   # Login & password reset pages
-│   ├── signup/                  # Signup flow pages
-│   └── [other-pages]/           # Marketing pages (about, pricing, terms, etc.)
-├── components/                   # React components
-│   ├── plaid/                   # Plaid integration components
-│   │   └── PlaidLinkButton.tsx  # Plaid Link connection button
-│   ├── accounts/                # Account management components
-│   │   └── AccountsList.tsx     # Display Plaid accounts (legacy, for reference)
-│   ├── assets/                  # Manual asset entry components
-│   │   ├── ManualAssetsSection.tsx  # Main "Accounts" panel (Plaid + manual unified)
-│   │   ├── AddAssetButton.tsx       # Button to add manual assets
-│   │   └── AddAssetModal.tsx        # Modal form for asset entry
-│   ├── dashboard/               # Dashboard panel components
-│   │   ├── DashboardContent.tsx         # Main dashboard layout
-│   │   ├── HeroNetWorthCard.tsx         # Net worth overview card with gradient
-│   │   ├── AssetBreakdownPanel.tsx      # Asset category pie chart
-│   │   ├── LiabilityBreakdownPanel.tsx  # Liability breakdown
-│   │   ├── ManualAssetsPanel.tsx        # Wrapper for unified accounts panel
-│   │   ├── MonthlyCashFlowPanel.tsx     # Monthly cash flow stats (Premium+)
-│   │   └── RecentTransactionsPanel.tsx  # Recent transactions (Premium+)
-│   ├── business-onboarding/     # Business onboarding flow (legacy)
-│   ├── earner-onboarding/       # Earner onboarding flow (legacy)
-│   ├── settings/                # Settings-related components
-│   └── toast/                   # Toast notification system
-├── lib/                         # Core utilities & business logic
-│   ├── interfaces/              # TypeScript interfaces for domain models
-│   │   ├── plaid.ts             # Plaid accounts & transactions
-│   │   ├── crypto.ts            # Crypto wallets & holdings
-│   │   ├── asset.ts             # Manual assets
-│   │   ├── account.ts           # Unified account types (manual + Plaid)
-│   │   ├── networth.ts          # Net worth calculations
-│   │   ├── subscription.ts      # Subscription tiers & feature access
-│   │   ├── percentile.ts        # Percentile rankings
-│   │   └── budget.ts            # Budgeting features
-│   ├── types/                   # TypeScript type definitions
-│   ├── context/                 # React Context providers
-│   │   └── SubscriptionContext.tsx  # Subscription tier management
-│   ├── stripe/                  # Stripe-related utilities
-│   ├── permissions.ts           # Feature access by tier configuration
-│   ├── constant.ts              # App-wide constants (WEB_NAME, URLs, etc.)
-│   ├── featureFlags.ts          # Feature flag management
-│   └── quota.ts                 # Quota management logic
-└── utils/                       # Utility functions
-    ├── supabase/                # Supabase client factories
-    │   ├── client.ts            # Browser client creation
-    │   └── server.ts            # Server-side client creation
-    ├── formatters.ts            # Currency, percentage, date formatting
-    ├── avatarUtils.ts
-    └── timeUtils.ts
+│   │   ├── plaid/         # Plaid integration (link-token, exchange-token, sync, accounts)
+│   │   ├── crypto/        # Crypto wallets (add/get/delete, sync via Alchemy)
+│   │   └── supabase/      # Legacy auth/settings endpoints
+│   └── [pages]/           # Auth, login, signup, marketing pages
+├── components/
+│   ├── plaid/             # PlaidLinkButton
+│   ├── assets/            # ManualAssetsSection (unified Plaid+manual), AddAssetModal
+│   ├── crypto/            # AddWalletModal, WalletsList
+│   ├── dashboard/         # HeroNetWorthCard, AssetBreakdown, RecentTransactions
+│   ├── pricing/           # PricingCard, PricingSection, FoundingMemberBanner
+│   └── ui/                # AddAccountDropdown, Dropdown
+├── lib/
+│   ├── interfaces/        # plaid.ts, crypto.ts, asset.ts, networth.ts, subscription.ts
+│   ├── context/           # SubscriptionContext.tsx
+│   ├── permissions.ts     # Feature access by tier
+│   └── constant.ts        # App constants (WEB_NAME, URLs)
+└── utils/
+    ├── supabase/          # client.ts, server.ts
+    └── formatters.ts      # Currency, date formatting
 ```
 
 ### Database Schema
 
-The database schema is defined across multiple migration files:
-- `001_create_guapital_schema.sql` - Core tables and RLS policies
-- `002_add_subscription_tier.sql` - Subscription tier enums and user_settings columns
-- `002_add_manual_entry_types.sql` - Manual asset entry types
-- `003_add_mortgage_category.sql` - Additional asset categories
-
-**Migration 001** includes:
-
 **Core Tables:**
-- `plaid_items` - Stores Plaid access tokens and institution metadata
-- `plaid_accounts` - Individual bank/investment accounts from Plaid
-- `plaid_transactions` - Transaction history from Plaid
-- `crypto_wallets` - User's crypto wallet addresses
-- `crypto_holdings` - Token balances for each wallet
-- `manual_assets` - Manually entered assets (real estate, vehicles, etc.)
-- `manual_asset_history` - Edit history for manual assets
-- `net_worth_snapshots` - Daily snapshots for historical tracking
-- `user_demographics` - Age brackets for percentile rankings
-- `user_settings` - User preferences and settings
+- `plaid_items`, `plaid_accounts`, `plaid_transactions` - Plaid integration
+- `crypto_wallets`, `crypto_holdings` - Crypto tracking
+- `manual_assets`, `manual_asset_history` - Manual entry
+- `net_worth_snapshots` - Daily historical tracking
+- `user_demographics`, `user_settings` - User data & preferences
 
-**Security:**
-- Row Level Security (RLS) enabled on all tables
-- Users can only access their own data
-- Proper indexes for performance
-- Helper functions for net worth calculations
+**Security:** RLS enabled on all tables, users can only access their own data
 
-### Authentication & Database Pattern
-
-**Supabase Client Creation:**
-- Use `createClient()` from `@/utils/supabase/server` in Server Components and API Routes
-- Use `createClient()` from `@/utils/supabase/client` in Client Components
-- Both use `@supabase/ssr` package for proper cookie handling
+### Authentication Pattern
 
 **API Route Pattern:**
 ```typescript
-// Standard pattern for protected API routes
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) {
         return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
     }
-
     // Query logic here
 }
 ```
 
-### Key Configuration Files
+**Client Usage:**
+- Server Components/API Routes: `createClient()` from `@/utils/supabase/server`
+- Client Components: `createClient()` from `@/utils/supabase/client`
 
-- **next.config.mjs:** Complex MDX configuration with Shiki syntax highlighting, custom remark/rehype plugins
-- **tsconfig.json:** Path alias `@/*` maps to `./src/*`
-- **jest.config.js:** Jest configured with ts-jest preset, `@/` alias support
-- **middleware.ts:** Currently disabled (empty matcher array)
+### Environment Variables
 
-### Important Constants
+Required in `.env.local`:
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`
+- `ALCHEMY_API_KEY`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 
-Located in `src/lib/constant.ts`:
-- `WEB_NAME`: "Guapital"
-- `WEB_DESC`: "Track your guap, build your wealth."
-- `URL`: Environment-based URL (defaults to https://guapital.com)
-- Email addresses for info and support
+### Styling & Design
 
-### MDX Integration
-
-The project has extensive MDX support configured for blog/work content:
-- Custom Typography wrapper for markdown content
-- Shiki syntax highlighting with CSS variables theme
-- Image import optimization via recma-import-images
-- Conditional layouts based on content location (blog vs work)
-
-## Environment Variables
-
-Required environment variables (in `.env.local`):
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
-- `NEXT_PUBLIC_ENV_URL`: Public-facing URL (defaults to http://localhost:3000 in dev)
-- `PLAID_CLIENT_ID`: Plaid client ID
-- `PLAID_SECRET`: Plaid secret key (sandbox/development/production)
-- `PLAID_ENV`: Plaid environment (sandbox, development, or production)
-- `ALCHEMY_API_KEY`: Alchemy API key for crypto wallet tracking
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Stripe publishable key
-- `STRIPE_SECRET_KEY`: Stripe secret key
-- `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret
-
-## Development Guidelines
-
-### Component Organization
-- Reusable UI components live in `src/components/`
-- Feature-specific components are grouped in subdirectories (e.g., `business-onboarding/`, `settings/`)
-- Use the established pattern of FadeIn animations and Border components for visual consistency
-
-### State Management
-- React Context for form state (see `src/lib/context/CampaignFormContext.tsx`)
-- Custom Toast notification system (`src/components/toast/`)
-- Server-side state via Supabase queries in API routes
-
-### Styling
-- Tailwind CSS v4 with PostCSS
-- Custom animations using Framer Motion
-- Utility-first approach with custom components for common patterns (Button, TextField, SelectField)
-
-#### Color Palette: Modern Wealth
-- **Primary Color:** `Dark Teal`
-  - **Hex:** `#004D40`
-  - **Rationale:** Combines the calming trust of blue with the growth/money association of green. It feels modern, sophisticated, and secure.
-- **Accent Color:** `Vibrant Gold/Amber`
-  - **Hex:** `#FFC107`
-  - **Rationale:** Associated with wealth, optimism, and energy. Excellent for calls-to-action.
-- **Background (Light):** `Off-white` (`#F7F9F9`)
-- **Background (Dark):** `Near-black` (`#12181B`)
+- **Primary Color:** Dark Teal (#004D40, hover: #00695C)
+- **Accent Color:** Vibrant Gold/Amber (#FFC107)
+- **Backgrounds:** Off-white (#F7F9F9), Near-black (#12181B)
+- Tailwind CSS v4 with Framer Motion animations
+- Custom components: Button, TextField, SelectField, Dropdown
 
 ## Ideal Customer Profile (ICP)
 
 **Primary Target:** Tech-savvy wealth builders, ages 24-35
-
-**Demographics:**
 - Income: $75K-$200K/year (tech workers, consultants, entrepreneurs)
 - Net Worth: $50K-$500K (sweet spot: $100K-$300K)
-- Location: Urban/suburban, tech hubs preferred
-
-**Asset Mix:**
-- Traditional: 401(k), brokerage account (Robinhood/Fidelity), HYSA
-- Modern: Cryptocurrency (1-3 wallets), some may have RSUs
-- Emerging: Side business income, rental property (minority)
-
-**Psychographic Profile:**
-- "I'm building wealth, not just surviving paycheck to paycheck"
-- Tired of YNAB-style budget shame and micromanagement
-- Wants to see net worth line go up (dopamine-driven engagement)
+- Asset Mix: 401(k), brokerage, crypto (1-3 wallets), HYSA, some RSUs
+- "I'm building wealth, not surviving paycheck to paycheck"
 - Willing to pay $15-25/mo for quality tools that work reliably
-- Privacy-conscious but not paranoid
-- Shares financial wins anonymously on social media
-
-**Anti-ICP (Avoid Initially):**
-- Traditional budgeters who need envelope systems
-- People with <$10K net worth (product won't resonate yet)
-- Ultra-wealthy ($5M+) who need complex tax optimization
-- Active traders needing real-time portfolio analytics
 
 ## Implementation Status
 
 **Phase 1 MVP Completion: ~85%**
 
-| Feature | Backend | Frontend | Status | Details |
-|---------|---------|----------|--------|---------|
-| **Project Foundation** | ✅ Complete | ✅ Complete | ✅ Done | Database schema with RLS, TypeScript interfaces, utilities, subscription tiers |
-| **Account Aggregation (Plaid)** | ✅ Complete | ✅ Complete | ✅ Done | Fully integrated in unified Accounts panel with Plaid Link |
-| **Manual Asset Entry** | ✅ Complete | ✅ Complete | ✅ Done | Complete CRUD for real estate, vehicles, collectibles, liabilities |
-| **Net Worth Dashboard** | ✅ Complete | ✅ Complete | ✅ Done | Hero card, asset/liability breakdowns, real-time calculation from all sources, clean single-view design |
-| **Subscription Tiers** | ✅ Complete | ✅ Complete | ✅ Done | Free/Premium/Pro tiers with feature gating, dev mode override, loading state fixes |
-| **Unified Accounts UI** | ✅ Complete | ✅ Complete | ✅ Done | Single panel showing Plaid + manual entries with visual badges |
-| **Historical Snapshots** | ✅ Complete | ✅ Complete | ✅ Done | Daily cron job recording, trend chart with ghost/preview empty state, smart single-point display |
-| **Sidebar Navigation** | ✅ Complete | ✅ Complete | ✅ Done | 4 functional pages: Dashboard, Accounts, Transactions (Premium+), Reports (Premium+) |
-| **Transaction History** | ✅ Complete | ✅ Complete | ✅ Done | Full transaction list with filters, search, sync, AI categorization (Premium+ feature) |
-| **Advanced Reports** | ✅ Complete | ✅ Complete | ✅ Done | Net worth trends, asset/liability breakdowns with pie charts (Premium+ feature) |
-| **Crypto Wallet Tracking** | ✅ Complete | ⏳ Pending | 🔄 Partial | API ready (Ethereum, Polygon, Base, Arbitrum, Optimism); needs UI |
-| **Percentile Ranking** | ⏳ Pending | ⏳ Pending | ❌ Not Started | See roadmap Phase 1 feature #5 for specs |
-| **Basic Budgeting** | 🔄 Partial | 🔄 Partial | 🔄 On Hold | Cash Flow Insights implemented but removed from navigation; strategic decision pending |
+| Feature | Status | Priority | Details |
+|---------|--------|----------|---------|
+| **Project Foundation** | ✅ Done | - | Database schema with RLS, TypeScript interfaces, subscription tiers |
+| **Account Aggregation (Plaid)** | ✅ Done | - | Fully integrated in unified Accounts panel |
+| **Manual Asset Entry** | ✅ Done | - | Complete CRUD for real estate, vehicles, collectibles, liabilities |
+| **Net Worth Dashboard** | ✅ Done | - | Hero card, asset/liability breakdowns, real-time calculation |
+| **Subscription Tiers** | ✅ Done | - | Free/Premium tiers with feature gating ($79/$99 annually) |
+| **Unified Accounts UI** | ✅ Done | - | Single panel showing Plaid + manual + crypto entries |
+| **Historical Snapshots** | ✅ Done | - | Daily cron job, trend chart with ghost state |
+| **Sidebar Navigation** | ✅ Done | - | Dashboard, Accounts, Transactions (Premium+), Reports (Premium+) |
+| **Transaction History** | ✅ Done | - | Filters, search, sync, AI categorization (Premium+) |
+| **Advanced Reports** | ✅ Done | - | Net worth trends, breakdowns with charts (Premium+) |
+| **Crypto Wallet Tracking** | ✅ Done | - | Multi-chain support (Ethereum, Polygon, Base, Arbitrum, Optimism) |
+| **Pricing & Subscription** | ✅ Done | - | Founding member offer, Stripe integration |
+| **Percentile Ranking** | ❌ Not Started | **#1** | **THE killer feature** - Only compelling reason to switch from Monarch |
+| **FIRE Calculator** | ❌ Not Started | **#2** | Years to FI, required net worth, withdrawal scenarios - Aligns with wealth-building positioning |
 
-### Recent Updates
+### Key Recent Updates (October 2025)
 
-**UI/UX Improvements & Page Completion (October 2025):**
-- ✅ **Dashboard tabs removed** - Eliminated non-functional navigation tabs (Overview, Net Worth, Cash Flow, Spending, Income)
-  - Simplified to single focused dashboard view
-  - Reduces cognitive load and aligns with "wealth building, not penny-pinching" positioning
-  - Users rely on sidebar navigation for major section switching
-- ✅ **Transactions page completed** - Full implementation with premium gating
-  - Replaced native HTML select elements with custom Tailwind Dropdown components
-  - Advanced filtering: date range, category, pending status, search
-  - Stats cards showing total spent, income, net cash flow
-  - Sync button for manual transaction refresh
-  - Premium-only feature with proper access control
-- ✅ **Reports page completed** - Advanced analytics with premium gating
-  - Historical net worth trend chart with time period selector (30/90/365 days)
-  - Key metrics cards: current net worth, 30-day change, total assets, total liabilities
-  - Asset breakdown pie chart by category
-  - Liability breakdown pie chart by category
-  - Fixed data structure mapping for proper category display
-- ✅ **Premium feature gate fixes** - Eliminated "flashing banner" bug
-  - Added subscription loading checks before showing premium gates
-  - Loading spinner displays while subscription status loads
-  - Prevents 1-second flash of "upgrade to premium" message for premium users
-  - Applied fix to all premium-gated pages (Transactions, Reports, Dashboard nav)
-- ✅ **API optimization analysis** - Documented API call patterns per page
-  - Dashboard: 3 calls (Free) / 6 calls (Premium+)
-  - Accounts: 1 call (Free) / 2 calls (Premium+)
-  - Transactions: 1 call (Premium+ only)
-  - Reports: 1 call (Premium+ only)
-  - Identified potential consolidation opportunities for future optimization
-
-**Historical Snapshots & Trend Chart (October 2025):**
-- ✅ **Removed backfill functionality** - Deleted synthetic data generation to maintain data integrity
-  - Removed `/api/networth/snapshot/backfill/route.ts` API endpoint
-  - Deleted `scripts/backfill-snapshots.ts` and admin backfill page
-  - Ensures only real historical data is displayed to users
-- ✅ **Implemented ghost/preview chart empty state** - Modern UX approach for new users
-  - Faded skeleton chart with dotted gold trend line (25% opacity)
-  - Educational overlay: "Start Building Your History"
-  - Chart height increased to 370px for better visibility
-  - Passive design (no CTAs) per UX best practices
-- ✅ **Smart single-point detection** - Handles brand new users gracefully
-  - API modified to return today's snapshot when no historical data exists
-  - Single data points display as prominent gold dot (6px radius with white border)
-  - Labeled as "Today" for clarity
-  - Creates immediate feedback that system is working
-- ✅ **Progressive trend visualization** - Natural evolution from Day 1 onwards
-  - **Day 1**: Single dot (today's snapshot)
-  - **Day 2+**: Historical snapshots → Today's live net worth
-  - Today's value always uses live API calculation (never stale)
-  - Supports all time periods: 30/90/365 days with dropdown selector
-- ✅ **Test data generation** - Created `scripts/generate-test-snapshots.sql`
-  - Generates 365 days of realistic historical data
-  - 15% gradual growth pattern with ±1.5% daily variance
-  - Liabilities stay stable with ±2.5% fluctuation
-  - Enables full testing of all dashboard time periods
-
-**Dashboard Architecture:**
-- Unified "Accounts" panel combines Plaid-connected accounts + manual assets in single view
-- Visual badges distinguish "Plaid" (emerald) vs "Manual" (amber) entries
-- Plaid "Connect Account" button only visible for Premium+ tier
-- Manual asset entry available for all tiers
-- Asset & Liability breakdowns moved to right sidebar
-- Recent Transactions panel positioned below Accounts panel
-- Hero net worth card with interactive time period dropdown
-
-**Component Structure:**
-- `DashboardContent.tsx` - Main dashboard layout with single-view design (tabs removed)
-- `ManualAssetsSection.tsx` - Unified "Accounts" panel combining Plaid + manual assets
-- `HeroNetWorthCard.tsx` - Net worth overview with gradient design, trend chart with ghost state
-- `AssetBreakdownPanel.tsx` / `LiabilityBreakdownPanel.tsx` - Category pie charts
-- `MonthlyCashFlowPanel.tsx` / `RecentTransactionsPanel.tsx` - Premium+ dashboard panels
-- `TransactionsPageContent.tsx` - Full transaction history page with filters (Premium+)
-- `ReportsPageContent.tsx` - Advanced analytics page with charts (Premium+)
-- `AccountsPageContent.tsx` - Dedicated accounts management page
-- `DashboardNav.tsx` - Sidebar navigation with premium feature locks
-- `Dropdown.tsx` - Custom Tailwind dropdown component (replaces native selects)
-- `SubscriptionContext.tsx` - Tier-based feature access management with loading states
-
-**API Routes:**
-- `/api/networth` - Calculate current net worth from all sources (Plaid + manual + crypto)
-- `/api/networth/history` - Fetches historical snapshots with smart today-only fallback
-- `/api/networth/snapshot` - Records daily snapshots (called by cron job)
-- `/api/assets` - CRUD operations for manual assets
-- `/api/plaid/accounts` - Fetch Plaid-connected accounts (Premium+)
-- `/api/plaid/transactions` - Fetch transaction history with pagination (Premium+)
-- `/api/plaid/sync-transactions` - Manually trigger transaction sync (Premium+)
-- `/api/cashflow/monthly` - Calculate monthly income/expenses (Premium+)
-- Daily cron job (`pg_cron`) automatically records snapshots at midnight UTC
-
-**Color Scheme Applied:**
-- All buttons use Dark Teal (#004D40) with #00695C hover state
-- Consistent brand colors across dashboard components
-- Removed emoji icons for cleaner professional appearance
-
-**Sidebar Navigation Structure:**
-- ✅ **Navigation layout implemented** in `src/app/dashboard/layout.tsx` with fixed left sidebar
-- **Dashboard** (HomeIcon) - ✅ Fully functional with single-view design, all panels operational
-- **Accounts** (WalletIcon) - ✅ Dedicated account management page with filtering and search
-- **Transactions** (CreditCardIcon) - ✅ Complete transaction history with advanced filters (Premium+ feature)
-- **Reports** (ChartBarIcon) - ✅ Advanced analytics with charts and breakdowns (Premium+ feature)
-- ~~**Budget/Cash Flow** (BanknotesIcon)~~ - Removed from navigation (strategic decision)
-- Premium features show lock icon for free users with upgrade prompt
+- **Dashboard simplified** - Removed tabs for single-view design
+- **Transactions page** - Complete with filters, stats, sync (Premium+)
+- **Reports page** - Historical trends, breakdowns (Premium+)
+- **Premium gate fixes** - Loading state prevents flashing banner bug
+- **Crypto integration** - Unified UI with AddAccountDropdown
+- **Pricing overhaul** - 2-tier structure, founding member offer ($79/year)
+- **Historical snapshots** - Ghost chart empty state, smart single-point display
 
 ### Next Steps
 
-**Immediate Priorities:**
-1. ~~Implement net worth snapshot recording (daily cron job + API endpoint)~~ ✅ **DONE**
-2. ~~Build historical trend chart with real data from snapshots~~ ✅ **DONE**
-3. ~~Implement sidebar navigation structure with 4 tabs~~ ✅ **DONE**
-4. ~~Build out navigation pages: Accounts, Transactions, Reports~~ ✅ **DONE**
-5. ~~Fix premium feature gate flashing~~ ✅ **DONE**
-6. ~~Remove dashboard tabs for cleaner UX~~ ✅ **DONE**
-7. Complete crypto wallet UI components (1-2 days)
-8. Implement percentile ranking (3-4 days)
-9. Decide on budgeting feature inclusion (Cash Flow Insights vs remove entirely)
-10. Mobile responsiveness testing & optimization (2-3 days)
-11. End-to-end user flow testing (2-3 days)
-12. Performance optimization (1-2 days)
+**Critical Priorities (Week 1-2):**
+1. **Percentile Ranking** (3-4 days) - THE killer feature that differentiates from Monarch
+   - Anonymous opt-in wealth rankings by age group
+   - Screenshot-worthy UI for viral sharing
+   - See PERCENTILE_RANKING_SPEC.md for full implementation
+2. **FIRE Calculator** (2-3 days) - Aligns with wealth-building positioning
+   - Years to Financial Independence calculator
+   - Required net worth for FI
+   - Withdrawal rate scenarios (4% rule, etc.)
+   - Progress visualization
 
-**Estimated Time to Launch-Ready MVP:** 8-12 days of focused development
+**Secondary Priorities (Week 3):**
+3. Mobile responsiveness testing (2-3 days)
+4. End-to-end user flow testing (2-3 days)
+5. Performance optimization (1-2 days)
 
-**Pre-Launch Checklist:**
-- [ ] Apply database migration to Supabase
-- [ ] Configure Plaid sandbox/production account
-- [ ] Configure Alchemy API key
-- [ ] End-to-end user flow testing
-- [ ] Error handling and loading states for all features
-- [ ] Mobile responsiveness testing
-- [ ] Performance optimization (initial load, sync speed)
+**On Hold:**
+- Budgeting features (not core differentiator vs. Monarch - revisit post-launch)
+
+**Estimated Time to Launch-Ready MVP:** 10-12 days
+
+**Competitive Urgency:** Without percentile ranking, there is NO compelling reason for users to switch from Monarch Money. This feature is non-negotiable for launch.
 
 ## Project Roadmap
 
-### Phase 1: Simple, Lovable, Complete MVP (Months 1-6)
+### Phase 1: MVP (Months 1-6)
 
-**Timeline:** 4-6 months to launch
 **Goal:** Prove product-market fit with 1,000 paying users
 
-**Core Features (What We Build):**
+**Core Features:**
 
-1. **Account Aggregation (Plaid Only)**
-   - Traditional accounts: checking, savings, credit cards, loans
-   - Investment accounts: Robinhood, Fidelity, Vanguard, etc.
-   - Focus on reliability - one aggregator done exceptionally well
-   - Smart error handling with clear user communication
-   - Build time: 6-8 weeks
+1. **Account Aggregation (Plaid)** - Traditional accounts (checking, savings, credit, loans, investments) with reliable sync
+2. **Crypto Wallet Tracking** - Read-only balances via Alchemy (Ethereum, Polygon, Base)
+3. **Manual Asset Entry** - Real estate, vehicles, private equity, collectibles
+4. **Net Worth Dashboard** - Big number, trend charts (30/90/365 days), asset/liability breakdowns
+5. **Percentile Ranking** - "You're in the top X% of users in your age group" (viral loop for screenshots)
+6. **FIRE Calculator** - Calculate years to Financial Independence, required net worth for FI, withdrawal rate scenarios, progress visualization
 
-2. **Crypto Wallet Tracking**
-   - Read-only wallet balance via Alchemy/Moralis API
-   - Support: Ethereum, Polygon, Base (where most Gen Z holds assets)
-   - Display: Total balance in USD, top 5 holdings by value
-   - Build time: 3-4 weeks
-
-3. **Manual Asset Entry**
-   - Simple form: Asset name, current value, category
-   - Categories: Real estate, vehicles, private equity, collectibles, "other"
-   - Timestamp + basic edit history (who changed what when)
-   - Build time: 1-2 weeks
-
-4. **Net Worth Dashboard**
-   - Big number at top: Total net worth
-   - Trend chart: Last 30/90/365 days
-   - Breakdown: Assets vs Liabilities (pie/bar charts)
-   - Category breakdown (cash, investments, crypto, real estate, etc.)
-   - Mobile-first, gorgeous design (key differentiator)
-   - Build time: 3-4 weeks
-
-5. **Percentile Ranking (Gamification)**
-   - "You're in the top X% of Guapital users in your age group"
-   - Filter by: Age bracket only (keep it simple)
-   - Anonymized, opt-in feature
-   - **This is our viral loop** - users will screenshot and share
-   - Build time: 2-3 weeks
-
-6. **Basic Budgeting (Lite)**
-   - Simple monthly spending by category (auto-categorized via Plaid)
-   - AI categorization with confidence scores
-   - "Guilt-free spending" toggle to hide certain categories from budget view
-   - Build time: 2-3 weeks
-
-**What We DON'T Build (Phase 1):**
-- ❌ Multi-aggregator redundancy (add later if Plaid reliability becomes issue)
-- ❌ Advanced DeFi tracking (staking, LP tokens, yield farming)
-- ❌ Tax optimization features
-- ❌ Investment performance analytics (IRR, XIRR calculations)
-- ❌ Bill pay integrations
-- ❌ Shared accounts / partner features
-- ❌ Advanced security certifications (SOC 2) - just good security hygiene
-- ❌ Native mobile apps (PWA is sufficient for MVP)
+**Explicitly NOT Included in Phase 1:**
+- ❌ Budgeting features (conflicts with "wealth-building, not penny-pinching" positioning)
+- ❌ Budget goals or envelope systems (YNAB/Monarch already excel here)
+- Note: Passive spending insights (Cash Flow panel) already built but de-emphasized in navigation
 
 **Success Metrics (12-Month Goals):**
-- 5,000 total users
-- 1,000 paying users (20% conversion rate)
-- $240K ARR ($20K MRR average)
-- <5% monthly churn
-- 99% upfront sync reliability (Plaid integration)
+- 5,000 total users, 1,000 paying (20% conversion)
+- $240K ARR, <5% monthly churn
 
-### Phase 2: Feature Expansion & Retention (Months 7-18)
+### Phase 2: Feature Expansion (Months 7-18)
 
-**Focus:** Expand features based on user feedback, improve retention
+**Focus:** Expand based on user feedback, improve retention
 
 **Planned Features:**
-- Multi-aggregator redundancy (add Yodlee as backup)
+- Multi-aggregator redundancy (Yodlee backup)
 - Advanced DeFi tracking (staking, LP tokens)
-- Investment performance analytics (time-weighted returns)
-- Tax export (CSV/PDF for accountants)
-- Shared accounts for partners/spouses
-- Referral program ("Give $10, get $10")
-- Mobile app (React Native or similar)
+- Investment performance analytics
+- Tax export (CSV/PDF)
+- Shared accounts for partners
+- Referral program
+- Mobile app
 
-**Success Metrics:**
-- 25,000 total users
-- 5,000 paying users
-- $1.2M ARR
-- <3% monthly churn
+**Reconsidered if User Demand Exists:**
+- Passive spending insights (no budget goals, just "where money went")
+- Only if 20%+ of users request it
+- Frame as "Spending Insights" not "Budgeting"
+- Never include budget shame mechanics
 
-### Phase 3: Scale & Upsell (Months 19-36)
+**Success Metrics:** 25,000 users, 5,000 paying, $1.2M ARR
 
-**Focus:** Scale acquisition, add premium features, potentially pivot upmarket
+### Phase 3: Scale (Months 19-36)
 
-**Planned Features:**
-- Advanced tax optimization tools
+- Advanced tax optimization
 - Financial advisor integrations
 - API access for power users
-- White-label solutions for fintech companies
-- "Grow with your users" - as Gen Z users age into complexity ($500K-$2M net worth), add features they need
+- White-label solutions
 
-**Success Metrics:**
-- 100,000+ total users
-- 20,000+ paying users
-- $5M+ ARR
-- Path to acquisition or sustainable lifestyle business
+**Success Metrics:** 100,000+ users, 20,000+ paying, $5M+ ARR
 
 ## Pricing Strategy
 
-### Free Tier (Lead Generation & Viral Growth)
-**Price:** $0/month
+**AGGRESSIVE GROWTH STRATEGY:** 2-tier pricing to undercut competitors. First 1,000 users lock in founding member pricing forever.
 
-**Features:**
-- Unlimited manual entry for traditional accounts (no automatic syncing)
-- Up to 2 crypto wallets (with automatic syncing via Alchemy)
-- Net worth dashboard with trends & charts
+### Free Tier
+- Unlimited manual entry (no auto-sync)
+- Up to 2 crypto wallets (auto-sync via Alchemy)
 - 30-day history
-- Category breakdowns
-- No percentile ranking
-- No Plaid account sync (manual updates only)
+- Percentile ranking preview
+- FIRE calculator with basic features
 
-**Purpose:**
-- Let users try before they buy - experience the full dashboard with unlimited tracking
-- Showcase key differentiator (crypto integration) immediately
-- SEO/viral growth mechanism - Gen Z crypto holders will share
-- Convert to paid when users need automation (Plaid sync) or more crypto wallets
-- Low friction onboarding - no limitations on number of traditional accounts tracked
-- Cost: Negligible - Alchemy free tier supports 5K+ users
+### Premium Tier
+**Price:**
+- **Founding Members (First 1,000):** $79/year forever
+- **Regular Pricing:** $99/year
 
----
+**Features (UNLIMITED EVERYTHING):**
+- Unlimited Plaid accounts, crypto wallets, manual assets
+- Full 365-day history
+- Full percentile ranking + leaderboard
+- Advanced FIRE calculator with scenarios
+- AI transaction categorization
+- Complete transaction history
+- Advanced reports and analytics
+- CSV export
 
-### Premium Tier (Target: 80% of paying users)
-**Price:** $19/month or $180/year (15% discount)
-
-**Features:**
-- Unlimited connected accounts (Plaid integration)
-- Full traditional account sync (checking, savings, credit, investments)
-- Crypto wallet tracking (up to 5 wallets)
-- 365-day history + trend analysis
-- Percentile ranking + community features
-- AI transaction categorization with confidence scores
-- "Guilt-free spending" budget toggles
-- Email support (48-hour response time)
-
-**Value Proposition:** "Automate your wealth tracking for less than a daily coffee"
-
----
-
-### Pro Tier (Target: 20% of paying users)
-**Price:** $49/month or $470/year (20% discount)
-
-**Features:**
-- Everything in Premium
-- Unlimited crypto wallets
-- Manual asset tracking (real estate, private equity, collectibles)
-- Advanced DeFi tracking (future: staking, LP tokens)
-- Priority support (24-hour response time)
-- CSV export for tax time
-- API access (future feature)
-- Early access to new features
-
-**Value Proposition:** "For serious wealth builders managing complex portfolios"
-
----
+**Competitive Positioning:**
+- 45% cheaper than Monarch Money ($180/year)
+- 9% cheaper than YNAB ($109/year)
+- Only app with UNLIMITED crypto wallets at this price
 
 ### Pricing Rationale
-- **Value-based pricing:** Users save 2-5 hours/month of manual tracking (worth $50-200 at their hourly rate)
-- **Anxiety reduction:** Knowing exact net worth reduces financial stress (hard to quantify, but real)
-- **Competitive positioning:** More expensive than Monarch ($8/mo) but less than wealth management tools ($100+/mo)
-- **LTV optimization:** Annual plans reduce churn and improve cash flow
-- **Crypto in Free tier:** Strategic decision to showcase key differentiator before payment. Cost is negligible (Alchemy free tier), viral potential is high (Gen Z shares crypto wins), and real conversion driver is Plaid auto-sync, not crypto limits
+
+- **Annual-only pricing** reduces churn, improves cash flow
+- **Founding member strategy** creates urgency, builds loyal community
+- **Value-based pricing:** Users save 2-5 hours/month (worth $50-200 at their hourly rate)
+- **Target:** 1,000 paying = $99K ARR (Year 1), 5,000 paying = $495K ARR (Year 2)
+
+## Financial Projections & Unit Economics
+
+### API & Infrastructure Costs
+
+**Detailed Cost Breakdown (per user/month):**
+
+| Service | Cost Structure | Monthly Cost (5K users) | Per User |
+|---------|---------------|-------------------------|----------|
+| **Plaid** | $0.60/account + $0.50/transaction | $4,500 | $0.90 |
+| **Alchemy** | 100M compute units free, then $199/mo | $0 (within free tier) | $0 |
+| **CoinGecko** | Free tier (50 calls/min) | **$0** | $0 |
+| **Supabase Pro** | $25/mo | $25 | $0.005 |
+| **Claude Max** | $351/mo (developer) | $351 | $0.07 |
+| **AWS Amplify** | ~$0-20/mo | $10 | $0.002 |
+| **Stripe** | 2.9% + $0.30/transaction | $1,290 | $0.26 |
+| **Total** | - | **$6,166** | **$1.23** |
+
+**Important Notes:**
+- **CoinGecko actual cost: $0/month** - Currently only pricing native tokens (ETH, MATIC), well within free tier limits
+- **Limitation:** ERC20 tokens show $0 USD value (known limitation, acceptable for MVP)
+- **Stripe optimization:** Annual billing = 3.20% effective rate vs 4.93% for monthly
+- **Alchemy scaling:** Crypto tracking remains free up to ~5K users with moderate usage
+
+**Cost per User by Scale:**
+- **1,000 users:** $1.33/user/month (including Stripe)
+- **5,000 users:** $1.23/user/month
+- **25,000 users:** $1.09/user/month (economies of scale)
+
+### Realistic Profit Projections
+
+**Important:** The 87.9% gross margin is **API/infrastructure costs only**. Real-world net margins after operating expenses:
+
+**Operating Expenses Not Yet Included:**
+- Founder compensation (bootstrapped: $0-5K/mo depending on runway)
+- Customer support (scales with users: ~$500-2K/mo at 5K users)
+- Marketing/Customer Acquisition Cost (~$50-100 CAC)
+- Legal, accounting, design (~$500-1K/mo)
+
+**Realistic Net Margin: 15-25%** (similar to profitable SaaS competitors)
+
+**Profit Projections at Different Scales:**
+
+| Users | Monthly Revenue | Gross Profit (87.9%) | Operating Expenses | **Net Profit/Mo** | **Annual Net Profit** | **Net Margin** |
+|-------|----------------|----------------------|-------------------|-------------------|----------------------|----------------|
+| 1,000 | $9,950 | $8,624 | ~$5,000 | **$3,600** | **$43K** | **36%** |
+| 5,000 | $47,880 | $41,714 | ~$20,000 | **$21,700** | **$260K** | **45%** |
+| 15,000 | $142,140 | $124,110 | ~$53,000 | **$71,000** | **$850K** | **50%** |
+| 25,000 | $237,660 | $209,972 | ~$95,000 | **$115,000** | **$1.38M** | **48%** |
+
+**Assumptions:**
+- Blended pricing: 60% annual ($99), 30% annual founding ($79), 10% monthly-to-annual conversions
+- Operating expenses: 2 founders @ $2.5K/mo initially, scaling to small team (5-10 people) at 25K users
+- Marketing spend: $50-100 CAC, organic growth focus (Reddit, Twitter, Product Hunt)
+- Customer support: Initially founder-led, scaling to part-time then full-time at 10K+ users
+
+**Key Insight:** With disciplined cost control, Guapital can achieve 40-50% net margins at scale - significantly better than most SaaS businesses (typical 15-25%).
+
+**Break-Even Analysis:**
+- **50 paying users** covers all infrastructure costs ($1,326/mo)
+- **500 users** supports 2 founders at ramen profitability (~$5K/mo take-home)
+- **1,000 users** = sustainable indie business ($43K/year profit + founder salaries)
+- **5,000 users** = comfortable lifestyle business ($260K/year profit)
+
+## Competitor Profitability Analysis
+
+Understanding competitor economics validates our pricing strategy and reveals market opportunities.
+
+### YNAB (You Need A Budget)
+
+**Business Metrics:**
+- **Annual Revenue:** ~$49M (2024)
+- **Paying Subscribers:** ~350,000-400,000
+- **Employees:** 254
+- **Pricing:** $14.99/mo or $109/year
+- **Business Model:** 100% subscription, bootstrapped (no VC)
+
+**Profitability:**
+- **Gross Margin:** 75-80% (estimated, typical SaaS with API costs)
+- **Net Profit Margin:** 15-25% (mature, profitable company)
+- **Estimated Net Profit:** $7-12M/year
+
+**Key Insights:**
+- Bootstrapped and profitable for years
+- Optimizes for profit over growth
+- Strong retention (budget-focused users are sticky)
+- Similar cost structure to Guapital (~$1-2/user/month API costs)
+
+---
+
+### Monarch Money
+
+**Business Metrics:**
+- **Annual Revenue:** $50-100M (estimated, 2024-2025)
+  - Revenue grew 6x in 2024
+  - $850M valuation suggests $70-100M ARR (8-12x ARR typical for growth SaaS)
+- **Paying Subscribers:** 500K-1M (estimated)
+- **Employees:** 100-200 (estimated)
+- **Pricing:** $14.99/mo or $99/year
+- **Business Model:** 100% subscription (no free tier)
+- **Funding:** $75M Series B (May 2025)
+
+**Profitability:**
+- **Gross Margin:** 75-80% (estimated)
+- **Net Profit Margin:** -10% to +5% (growth mode, burning cash)
+- **Estimated Net Profit:** -$5M to +$5M/year (break-even or slightly negative)
+
+**Key Insights:**
+- **Prioritizing growth over profitability** (just raised $75M)
+- Heavy marketing spend to capture Mint refugees (20x subscriber growth in 2024)
+- Valued at $850M but not yet profitable
+- Will need exit (acquisition/IPO) to return investor capital
+
+**Strategic Implication for Guapital:** Monarch has NO defensible moat beyond brand/market share. They're burning cash to grow. A superior product feature (percentile ranking) can capture market share.
+
+---
+
+### Copilot Money
+
+**Business Metrics:**
+- **Annual Revenue:** $15-20M (estimated)
+- **Paying Subscribers:** 100,000+ (March 2024)
+- **Employees:** 10-20 ("deeply disciplined small team")
+- **Pricing:** ~$14.99/mo or $95/year
+- **Business Model:** 100% subscription
+- **Funding:** $6M Series A (March 2024) - raised AFTER becoming profitable
+
+**Profitability:**
+- **Gross Margin:** 80-85% (small team, efficient operations)
+- **Net Profit Margin:** 15-20% (PROFITABLE since 2023)
+- **Estimated Net Profit:** $3-4M/year
+
+**Key Insights:**
+- **The model Guapital should emulate**
+- Small team, laser-focused product (iOS-first)
+- Profitable BEFORE raising VC money
+- Grew "more in last 4 months than first 4 years" (Mint shutdown tailwind)
+- Raised $6M to accelerate growth, not to survive
+
+**Strategic Implication:** This proves the indie-to-scale path works. Stay lean, get profitable, then raise if/when needed.
+
+---
+
+### Empower Personal Wealth
+
+**Business Metrics:**
+- **Total Empower Revenue:** $973M (2024, entire company)
+- **Personal Wealth Segment:** Revenue split unclear
+- **Business Model:** Freemium app + wealth management fees (0.49-0.89% AUM)
+- **Profitability:** 25-30% net margin, 16% ROE (entire Empower business)
+
+**Key Insights:**
+- Different business model (wealth management fees, not pure SaaS)
+- Very profitable but not directly comparable to Guapital
+- Free app is lead generation for high-margin advisory services
+
+---
+
+### Competitive Profit Comparison Table
+
+| Competitor | Revenue | Net Margin | Est. Net Profit | Business Stage | Team Size |
+|------------|---------|------------|-----------------|----------------|-----------|
+| **YNAB** | $49M | 15-25% | $7-12M/year | Mature, profitable, bootstrapped | 254 |
+| **Monarch** | $75M* | -10% to +5% | -$5M to +$5M | Growth mode, burning $75M | 100-200 |
+| **Copilot** | $18M | 15-20% | $3-4M/year | Efficient, profitable, scaled | 10-20 |
+| **Empower** | $973M** | 25-30% | $250-300M | Very profitable (diff. model) | Large |
+| **Guapital (Projected)** | $1.2M*** | **45%*** | $260K/year | Pre-launch (5K users) | 1-2 |
+
+*Estimated
+**Entire Empower business
+***Projected at 5,000 paying users with lean team
+
+---
+
+### Strategic Takeaways
+
+**1. Copilot's Playbook is the Winning Strategy:**
+- Get to profitability with small team (Copilot: 10-20 people, $3-4M profit)
+- Guapital can match Copilot's profit at just **15,000 users** ($850K/year net profit)
+- Stay indie or raise small round ($1-3M) AFTER proving profitability
+
+**2. Monarch's Weakness is Our Opportunity:**
+- They're burning cash for growth with no defensible moat
+- No unique features beyond "Mint replacement"
+- Without percentile ranking, we can't compete. WITH it, we can steal market share.
+
+**3. Realistic Path to $1M+ Annual Profit:**
+- **Year 1 (1,000 users):** $43K profit = ramen profitability
+- **Year 2 (5,000 users):** $260K profit = sustainable lifestyle business
+- **Year 3 (15,000 users):** $850K profit = comfortable living + reinvestment
+- **Year 4 (25,000 users):** $1.4M profit = generational wealth builder
+
+**4. Exit Opportunity:**
+- At 25,000 users: $2.4M ARR (blended pricing)
+- 10-15x ARR valuation = **$24-36M acquisition potential**
+- Comparable: Monarch valued at $850M on ~$75M ARR (11x multiple)
+
+## Competitive Strategy
+
+### Why Users Don't Switch (Current State)
+
+**Brutal Honesty:** As of today, there is NO compelling reason for a Monarch user to switch to Guapital.
+
+**Feature Parity:**
+- ✅ Net worth dashboard (Monarch has this)
+- ✅ Account aggregation via Plaid (Monarch has this)
+- ✅ Transaction history (Monarch has this)
+- ✅ Crypto wallet tracking (Monarch has this)
+- ✅ Historical trends (Monarch has this)
+
+**Switching Costs:**
+- Re-linking all bank accounts (friction)
+- Learning new UI (cognitive overhead)
+- Losing historical data (perceived loss aversion)
+- $79-99/year vs $99-180/year (price difference not compelling enough alone)
+
+**Conclusion:** Price alone won't drive switching. We need a killer feature Monarch doesn't have.
+
+---
+
+### The Killer Feature: Percentile Ranking
+
+**Why This Works:**
+1. **Gamification Psychology:** "You're in the top 15% of 28-year-olds" is screenshot-worthy
+2. **Social Proof:** Users WILL share this on Twitter/Reddit/Instagram
+3. **Viral Loop:** Every share = free marketing + social proof
+4. **Impossible to Copy Quickly:** Requires critical mass of users to be meaningful
+5. **Network Effects:** More users = more accurate percentiles = more valuable to existing users
+
+**Competitive Moat:**
+- Monarch would need 6-12 months to build this (product cycles, privacy/legal review)
+- By then, we have first-mover advantage and data advantage
+- Percentile rankings get MORE valuable as user base grows (network effects)
+
+**See PERCENTILE_RANKING_SPEC.md for full implementation details.**
+
+---
+
+### The Secondary Feature: FIRE Calculator
+
+**Why This Works:**
+1. **Target Audience Alignment:** Gen Z wealth builders care about Financial Independence
+2. **Emotional Connection:** "You'll reach FI in 8.3 years" is motivating
+3. **Differentiation:** Monarch/YNAB focus on budgeting, not wealth building
+4. **Sticky Feature:** Users check progress monthly (retention driver)
+
+**Competitive Advantage:**
+- Positions Guapital as wealth-building tool, not budget tracker
+- Appeals to r/Fire, r/leanfire communities (organic growth channels)
+- Complements percentile ranking ("Top 20% + 8 years to FI" = powerful combo)
+
+---
+
+### Launch Strategy
+
+**Minimum Viable Differentiation:**
+1. ✅ Reliable net worth tracking (table stakes)
+2. ✅ Crypto integration (nice-to-have)
+3. **⚠️ Percentile ranking (MUST HAVE for launch)**
+4. **⚠️ FIRE calculator (strongly recommended for launch)**
+
+**Without percentile ranking:** We're just another Monarch clone with lower prices. Not enough to drive switching.
+
+**With percentile ranking:** We're the ONLY app that gamifies wealth building. This is the viral hook.
+
+**Launch Positioning:**
+- "The net worth tracker that shows you where you stand (and celebrates your wins)"
+- "Finally, a wealth app that makes you feel GOOD about your progress"
+- "Stop budget shaming, start wealth building"
 
 ## Go-to-Market Strategy
 
 ### Phase 0: Pre-Launch (Months 1-3)
-
-**Build in Public:**
-- Twitter thread: "I'm building the net worth tracker I wish existed"
-- Weekly updates with screenshots (build anticipation)
-- Start email waitlist landing page
-- Goal: 200-500 email subscribers
-
-**Private Beta (50-100 users):**
-- Friends, family, personal network
-- Reddit communities (r/PersonalFinance, r/Fire)
-- Get brutal feedback on onboarding flow
-- Fix critical bugs before public launch
-- Goal: 50 active beta users giving weekly feedback
-
----
+- Build in public (Twitter thread, weekly updates)
+- Email waitlist landing page (Goal: 200-500 subscribers)
+- Private beta with 50-100 users (friends, family, Reddit)
 
 ### Phase 1: Public Launch (Months 4-6)
-
-**Launch Week Strategy:**
-
-1. **Product Hunt** (aim for Top 5 of the day)
-   - Prepare: Great demo video, founder story, early user testimonials
-   - Coordinate: Ask beta users to upvote/comment on launch day
-   - Offer: Special launch pricing ($15/mo instead of $19 for first 100 users)
-
-2. **Reddit** (organic posts, not ads yet)
-   - r/PersonalFinance: "I built a tool to track net worth across crypto and traditional assets [Tool]"
-   - r/financialindependence: Share tool in "self-promotion" threads
-   - r/CryptoCurrency: Focus on wallet tracking angle
-   - r/Fire: "How I track my progress to FI with this tool"
-   - Value-first approach: Share helpful content, tool is secondary
-
-3. **Twitter/X Launch**
-   - Founder story thread: Personal journey building the tool
-   - Tag fintech influencers for retweets
-   - "Here's how I hit $100K net worth at 27" type threads showcasing the tool
-   - Daily updates during launch week
-
-4. **Indie Hacker / Hacker News**
-   - "Show HN: I built a net worth tracker for Gen Z wealth builders"
-   - Focus on technical architecture and privacy-first approach
-
-**Goal:** 500 total signups, 100 paying users ($2K MRR) by end of Month 6
-
----
+- Product Hunt launch (Top 5 of the day)
+- Reddit organic posts (r/PersonalFinance, r/Fire, r/CryptoCurrency)
+- Twitter/X launch thread with founder story
+- Indie Hacker / Hacker News
+- **Goal:** 500 signups, 100 paying users
 
 ### Phase 2: Content & Community (Months 7-12)
+- Blog SEO content, YouTube tutorials, TikTok/Instagram Reels
+- Discord/Slack community
+- Finance YouTuber affiliate deals (10-20% rev share)
+- **Goal:** 2,000 users, 400 paying
 
-**Content Marketing:**
-- **Blog (SEO-focused):**
-  - "How to track your net worth in 2025" (long-form guide)
-  - "Best crypto portfolio trackers compared"
-  - "Net worth milestones by age: Where do you stand?"
-- **YouTube:**
-  - "Net worth tracker tutorial"
-  - "I tracked my net worth for 6 months - here's what happened"
-- **TikTok/Instagram Reels:**
-  - Quick "I just hit $X net worth!" celebration videos
-  - User-generated content from customers
-
-**Community Building:**
-- Discord or Slack for power users
-- Monthly "net worth growth wins" thread (viral on Twitter)
-- User spotlight features
-- Anonymous leaderboard for friendly competition
-
-**Partnerships:**
-- Affiliate deals with finance YouTubers (10-20% rev share)
-  - Target: Graham Stephan, Andrei Jikh, Meet Kevin audience
-- Guest posts on finance blogs (NerdWallet, The Penny Hoarder)
-- Podcast sponsorships (Choose FI, BiggerPockets Money)
-
-**Goal:** 2,000 total users, 400 paying ($8K MRR) by end of Month 12
-
----
-
-### Phase 3: Scale & Optimize (Months 13-24)
-
-**Paid Acquisition:**
-- Facebook/Instagram ads with demo video (target: $50-100 CAC)
-- Reddit ads in finance subreddits
-- Google Search ads (target: "net worth tracker", "personal finance app")
-
-**Growth Experiments:**
-- Referral program: "Give $10 off, get $10 credit"
-- Annual plan push: "Save 15% by going annual"
-- Lifetime deal on AppSumo (one-time acquisition experiment)
-
-**SEO Content Machine:**
-- Target long-tail keywords
-- "Net worth tracking for [specific profession]"
-- Location-based content for local SEO
-
-**Product-Led Growth:**
-- Improve onboarding based on drop-off data
-- In-app prompts to upgrade to Premium
-- Email nurture sequences for free users
-
-**Goal:** 10,000 total users, 2,000 paying ($40K MRR = $480K ARR)
-
-## Testing
-
-- Jest configured with ts-jest
-- Tests should be co-located with source files or in a `__tests__` directory
-- Use the `@/` alias for imports in tests
+### Phase 3: Scale (Months 13-24)
+- Facebook/Instagram ads (target: $50-100 CAC)
+- Google Search ads
+- Referral program
+- **Goal:** 10,000 users, 2,000 paying ($480K ARR)
 
 ## Development Priorities & Scope Discipline
 
 **Golden Rule:** Ship fast, iterate faster. Focus on core value prop (reliable net worth tracking), not feature bloat.
 
 ### Always Prioritize:
-1. **Reliability over features** - One aggregator working perfectly > two working poorly
-2. **Mobile-first design** - Gen Z lives on their phones
-3. **Speed & performance** - Fast load times, instant sync feedback
-4. **Beautiful UX** - Design is a competitive advantage in fintech
-5. **Privacy & security** - Non-negotiable for financial data
+1. Reliability over features
+2. Mobile-first design
+3. Speed & performance
+4. Beautiful UX
+5. Privacy & security
 
 ### Decision Framework: "Should we build this?"
 
-Ask these questions:
-1. Does this help users track their net worth more accurately? (Core value prop)
-2. Does this reduce friction in the onboarding/sync process? (Reliability)
-3. Does this increase viral sharing? (Growth loop)
-4. Can we ship it in <2 weeks? (Speed)
+1. Does this help users track net worth more accurately?
+2. Does this reduce friction in onboarding/sync?
+3. Does this increase viral sharing?
+4. Can we ship it in <2 weeks?
 
 If "No" to all four → **Don't build it yet.**
 
-### Scope Creep Red Flags:
+### Scope Creep Red Flags (Push to Phase 2 or Avoid):
+- **Budgeting features** (conflicts with positioning, YNAB already dominates)
+  - Budget goals or limits
+  - Envelope systems
+  - Budget vs. actual comparisons
+  - Budget shame mechanics
+- Investment performance tracking
+- Solana NFT tracking
+- Financial advisor sharing
+- Bill pay integration
+- Credit score monitoring
 
-**User Requests to Push Back On (Phase 1):**
-- "Can you add investment performance tracking?" → Phase 2
-- "I need to track my Solana NFTs" → Phase 2 (start with basic wallet balances)
-- "Can I share my dashboard with my financial advisor?" → Phase 2
-- "Add budgeting goals and envelope system" → Not our core value prop
-- "Support for [obscure European bank]" → Start with US banks, expand later
-
-**Features That Sound Good But Aren't (Yet):**
-- Bill pay integration (massive scope, low differentiation)
-- Credit score monitoring (commoditized, not unique)
-- Investment recommendations (requires licensing, regulatory hell)
-- Spending alerts/notifications (YNAB territory, not our niche)
-
-### When to Say "Yes" to Scope Expansion:
-
-Only add features if:
-- ✅ 10+ users request the same thing unprompted
-- ✅ It's a clear competitive advantage vs Monarch/Empower
-- ✅ It aligns with "wealth building" positioning (not budget micromanagement)
-- ✅ We can build it without compromising reliability
-
-### Technical Debt Management:
-
-**Acceptable Shortcuts (MVP):**
-- Basic error handling (don't need perfect retry logic yet)
-- Simple manual asset form (no complex valuation models)
-- PWA instead of native app
-- Email support instead of live chat
-
-**Never Compromise On:**
+### Never Compromise On:
 - Data encryption (at rest and in transit)
-- Secure authentication (OAuth for banks, no password storage)
+- Secure authentication (OAuth for banks)
 - Database backups and disaster recovery
 - User data privacy (no selling data, ever)
 
 ## Setup Instructions
 
 ### 1. Database Setup
-
-Run the database migration in your Supabase dashboard:
-
 ```bash
 # Go to Supabase Dashboard → SQL Editor
-# Copy and run the contents of: supabase/migrations/001_create_guapital_schema.sql
+# Run: supabase/migrations/001_create_guapital_schema.sql
 ```
-
-This will create all tables, RLS policies, indexes, and helper functions.
 
 ### 2. Environment Variables
-
-Copy `.env.example` to `.env.local` and fill in your keys:
-
 ```bash
 cp .env.example .env.local
+# Fill in Supabase, Plaid, Alchemy, Stripe keys
 ```
 
-**Required for Phase 1:**
-- Supabase URL and anon key (already configured)
-- Plaid credentials (get from https://dashboard.plaid.com)
-- Alchemy API key (get from https://www.alchemy.com)
-
-**Optional (for later phases):**
-- Stripe keys (for payments)
-
-### 3. Install Dependencies
-
+### 3. Development
 ```bash
 npm install
+npm run dev  # Visit http://localhost:3000
 ```
 
-Dependencies include:
-- `plaid` - Plaid Node.js SDK
-- `react-plaid-link` - Plaid Link React component
-- `recharts` - Charting library
-- `axios` - HTTP client
-- `date-fns` - Date utilities
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Visit http://localhost:3000
-
-### 5. Test Plaid Integration
-
-1. Sign up / log in
-2. Navigate to accounts page
-3. Click "Connect Bank Account"
-4. Use Plaid sandbox credentials:
-   - Username: `user_good`
-   - Password: `pass_good`
-5. Select any bank and accounts to link
-
-### 6. Test Crypto Wallet Tracking
-
-1. Add a crypto wallet (any valid Ethereum address)
-2. System will sync via Alchemy API
-3. View balances and holdings
-
-## Notes
-
-- The project is transitioning from "LocalMoco" (survey platform) to "Guapital" (net worth tracker) - actively removing legacy code
-- Middleware is currently disabled but infrastructure exists for future route protection
-- Feature flags system in place for gradual rollout
-- Toast notification system available globally via ToastProvider
-- **Bootstrap Philosophy:** Build for 1,000 users first, not 1,000,000. Optimize for learning speed over scale.
+### 4. Testing
+- **Plaid:** Use `user_good` / `pass_good` in sandbox
+- **Crypto:** Add any valid Ethereum address
+- **Jest:** `npm run test`
 
 ## Architecture Decisions
 
-### Unified Accounts Panel (December 2024)
-
-**Decision:** Merge Plaid-connected accounts and manual asset entries into a single "Accounts" panel instead of maintaining separate panels.
+### Unified Accounts Panel
+**Decision:** Merge Plaid + manual + crypto into single "Accounts" panel
 
 **Rationale:**
-- **User Experience**: Single source of truth for all account types reduces cognitive load
-- **Simplified Navigation**: Users don't need to search multiple panels to find their accounts
-- **Tier Flexibility**: Free users can manually track unlimited traditional accounts; Premium+ users get auto-sync via Plaid
-- **Clear Visual Distinction**: Badges ("Plaid" vs "Manual") make the source immediately obvious
+- Single source of truth reduces cognitive load
+- Free users: unlimited manual tracking; Premium: auto-sync via Plaid
+- Visual badges distinguish "Plaid" (emerald), "Manual" (amber), "Crypto" (purple)
 
 **Implementation:**
-- `ManualAssetsSection.tsx` serves as the unified panel (renamed from "Manual Entries" to "Accounts")
-- Fetches both Plaid accounts and manual assets in parallel
-- Transforms both into common `UnifiedEntry` interface for consistent rendering
-- Displays in two subsections: Assets (checking, savings, investments, real estate, etc.) and Liabilities (credit cards, loans, mortgages)
-- Plaid "Connect Account" button conditionally rendered for Premium+ tier only
-- Manual asset "Add Asset" button always visible for all tiers
-
-**Database Design:**
-- Kept separate tables: `plaid_accounts` for auto-synced data, `manual_assets` for user-entered data
-- Avoided database consolidation to maintain clean schema and data lineage
-- Unified only at the presentation layer
-
-**Trade-offs:**
-- ✅ Pro: Simpler mental model for users
-- ✅ Pro: All accounts in one place improves discoverability
-- ✅ Pro: Easier to implement tier-based features (Plaid button gating)
-- ⚠️ Con: More complex component logic (fetching multiple sources, transforming data)
-- ⚠️ Con: Mix of auto-synced and manual data requires clear visual distinction
+- `ManualAssetsSection.tsx` fetches all sources in parallel
+- Transforms to common `UnifiedEntry` interface
+- Separate database tables maintained (`plaid_accounts`, `manual_assets`, `crypto_wallets`)
 
 ### Subscription Tier Architecture
+**Implementation:**
+- `SubscriptionContext.tsx` provides `hasAccess()` function
+- `permissions.ts` central config for tier features
+- Dev mode override: all features enabled in development
+- Free/Premium tiers (Pro tier eliminated for simplicity)
 
-**Decision:** Implement three-tier system (Free/Premium/Pro) with feature flags and React Context for access control.
+### Historical Snapshots
+**Decision:** Real-data-only approach with progressive UX
 
 **Implementation:**
-- `SubscriptionContext.tsx`: Provides `hasAccess()` function for checking feature availability
-- `permissions.ts`: Central configuration mapping features to tiers
-- Development mode override: All features enabled when `NODE_ENV === 'development'` for easier testing
-- Database: `user_settings` table extended with `subscription_tier` and `subscription_status` columns
+- Daily cron job (`pg_cron`) at midnight UTC
+- API `/api/networth/history` fetches snapshots with smart fallbacks
+- Ghost/preview chart for new users (educational, passive design)
+- Single-point display (Day 1): gold dot labeled "Today"
+- Full trend line (Day 2+): historical + today's live calculation
 
-**Feature Gating:**
-- Free: Manual asset entry, basic dashboard, 30-day history
-- Premium ($19/mo): Plaid sync, transaction history, 365-day history, percentile ranking
-- Pro ($49/mo): Everything in Premium + unlimited crypto wallets, priority support, export features
+**Key Design:** No backfill/synthetic data - maintains user trust
 
-### Dashboard Layout
+## Key API Routes
 
-**Decision:** Two-column layout with Accounts panel on left (2/3 width), supporting panels on right (1/3 width).
+- `/api/networth` - Current net worth from all sources
+- `/api/networth/history` - Historical snapshots with fallback
+- `/api/networth/snapshot` - Record daily snapshot (cron job)
+- `/api/assets` - CRUD for manual assets
+- `/api/plaid/accounts` - Fetch Plaid accounts (Premium+)
+- `/api/plaid/transactions` - Transaction history (Premium+)
+- `/api/crypto/wallets` - Crypto wallet management
+- `/api/crypto/sync-wallet` - Sync wallet via Alchemy
+- `/api/cashflow/monthly` - Monthly cash flow (Premium+)
 
-**Layout:**
-- **Left Column**: Accounts panel (unified), Recent Transactions panel (Premium+)
-- **Right Column**: Asset Breakdown, Liability Breakdown, Monthly Cash Flow (Premium+)
-- Hero net worth card spans full width above columns
+## Key Components
 
-**Rationale:**
-- Left column gets more space for detailed account listings
-- Right column perfect for at-a-glance summaries and charts
-- Mobile: Stacks vertically naturally
+- `DashboardContent.tsx` - Main dashboard layout
+- `HeroNetWorthCard.tsx` - Net worth card with trend chart
+- `ManualAssetsSection.tsx` - Unified accounts panel
+- `AddAccountDropdown.tsx` - Dropdown for Plaid/crypto/manual
+- `TransactionsPageContent.tsx` - Transaction history (Premium+)
+- `ReportsPageContent.tsx` - Advanced analytics (Premium+)
+- `PricingCard.tsx` / `FoundingMemberBanner.tsx` - Pricing components
+- `SubscriptionContext.tsx` - Tier-based access control
 
-### Historical Snapshots & Trend Visualization (October 2025)
+## Pre-Launch Checklist
 
-**Decision:** Implement honest, real-data-only approach for historical net worth tracking with progressive UX that evolves from Day 1.
-
-**Implementation:**
-
-**Backend Architecture:**
-- Daily cron job (`pg_cron`) runs at midnight UTC via `record_daily_snapshots()` function
-- Calculates net worth using `calculate_user_net_worth()` helper function
-- Stores snapshots in `net_worth_snapshots` table with full breakdown
-- API endpoint `/api/networth/history` fetches historical data with smart fallbacks
-- Never generates synthetic or backfilled data - all historical values are real
-
-**Frontend Progressive Display:**
-1. **No data (new user)**: Ghost/preview chart with faded dotted line
-   - Educational message: "Start Building Your History"
-   - Shows users exactly what to expect without fake data
-   - Passive design with no CTAs per UX research
-2. **Day 1 (first snapshot)**: Single gold dot labeled "Today"
-   - Provides immediate visual feedback that system is working
-   - Creates anticipation for tomorrow's trend
-3. **Day 2+**: Full trend line visualization
-   - Historical snapshots (from database) + today's live net worth (from API)
-   - Today's value is always calculated in real-time (never stale)
-   - Supports 30/90/365-day views with dropdown selector
-
-**Key Design Decisions:**
-- **No backfill**: Rejected synthetic data generation to maintain user trust
-- **Ghost chart empty state**: Modern SaaS pattern showing preview of future functionality
-- **Single-point handling**: Special case for brand new users to provide feedback
-- **Live today's value**: Always uses real-time calculation, not yesterday's snapshot
-- **Progressive disclosure**: UX naturally evolves as user builds history
-
-**Database Schema:**
-```sql
-net_worth_snapshots (
-  id, user_id, snapshot_date (unique per user),
-  total_assets, total_liabilities, net_worth,
-  breakdown (JSONB), created_at
-)
-```
-
-**Files Modified:**
-- `src/app/api/networth/history/route.ts` - Smart snapshot fetching with today-only fallback
-- `src/components/dashboard/HeroNetWorthCard.tsx` - Ghost chart + single point detection
-- `supabase/migrations/004_add_snapshot_recording.sql` - Cron job setup
-- `scripts/generate-test-snapshots.sql` - Test data generation (365 days)
-
-**Trade-offs:**
-- ✅ Pro: Honest approach builds user trust (no fake data)
-- ✅ Pro: Ghost chart educates users on what's coming
-- ✅ Pro: Single-point display reduces "empty state anxiety"
-- ✅ Pro: Live today's value shows real-time changes
-- ⚠️ Con: New users must wait 1+ days to see trend (acceptable)
-- ⚠️ Con: More complex API logic to handle edge cases
+- [ ] Apply database migrations to production Supabase
+- [ ] Configure Plaid production account
+- [ ] Set up Stripe products ($79 founding, $99 regular)
+- [ ] Implement founding member tracking (remaining slots API)
+- [ ] Configure Stripe webhook for subscription events
+- [ ] End-to-end user flow testing
+- [ ] Mobile responsiveness testing
+- [ ] Performance optimization
+- [ ] Social OAuth production URL configuration
 
 ## Strategic Context
 
-See `research.md` for detailed market analysis and competitive landscape research. Key takeaways:
-- Target Gen Z wealth builders ($50K-$500K net worth) over HNWIs ($2M+)
-- Prioritize speed to market (4-6 months) over feature completeness
-- Focus on reliability and crypto integration as key differentiators
-- Build sustainable lifestyle business ($500K-$2M ARR) not venture-scale unicorn
+**Target Market:** Gen Z wealth builders ($50K-$500K net worth) over HNWIs ($2M+)
+
+**Timeline:**
+- Launch-ready MVP: 10-12 days (with percentile ranking + FIRE calculator)
+- First 1,000 users (ramen profitability): 6-9 months
+- 5,000 users (lifestyle business): 12-18 months
+
+**Business Model:** Follow Copilot's playbook
+- Sustainable lifestyle business ($260K-$1.4M profit/year at 5K-25K users)
+- Bootstrap to profitability FIRST, raise small round ($1-3M) if/when needed
+- NOT venture-scale unicorn (avoiding Monarch's burn-to-grow trap)
+
+**Competitive Positioning:**
+- **Price:** 45% cheaper than Monarch ($79-99/year vs $180/year)
+- **Differentiation:** Percentile ranking (viral hook) + FIRE calculator (wealth-building focus)
+- **Moat:** Network effects (more users = more valuable percentile data)
+
+**Key Success Metrics:**
+- **50 users:** Infrastructure break-even
+- **500 users:** Ramen profitability for 2 founders
+- **1,000 users:** $99K ARR, sustainable indie business
+- **5,000 users:** $495K ARR, $260K net profit (lifestyle business)
+- **15,000 users:** $1.5M ARR, $850K net profit (exit opportunity territory)
+
+**Exit Opportunity (if desired):**
+- 25,000 users = $2.4M ARR
+- 10-15x ARR valuation = **$24-36M acquisition**
+- Or stay indie and generate $1.4M/year profit indefinitely
+
+**Philosophy:**
+- Build for 1,000 users first, not 1,000,000
+- Optimize for profit margins (40-50%) over growth at all costs
+- Small team (1-10 people), high efficiency
+- Feature discipline: Every feature must drive viral growth or retention
+
+**Critical Success Factor:** Ship percentile ranking before launch. Without it, we're just another Monarch clone with lower prices. WITH it, we have the viral hook that drives organic growth.
+
+See `research.md` for detailed market analysis and `API_COST_ANALYSIS.md` for complete financial modeling.
