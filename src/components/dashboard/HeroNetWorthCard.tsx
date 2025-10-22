@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { NetWorthCalculation } from '@/lib/interfaces/networth'
 import { TrendDataPoint } from '@/lib/interfaces/subscription'
+import { PercentileResponse, AgeBracket } from '@/lib/interfaces/percentile'
 import {
     SparklesIcon,
     ArrowTrendingUpIcon,
@@ -10,21 +11,82 @@ import {
     ChartBarIcon,
     ChevronDownIcon,
     InformationCircleIcon,
+    TrophyIcon,
 } from '@heroicons/react/24/outline'
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
+import PercentileLearnMoreModal from '@/components/percentile/PercentileLearnMoreModal'
 
 interface HeroNetWorthCardProps {
     netWorth: NetWorthCalculation
     trendData?: TrendDataPoint[]
     maxDays?: number
+    onShowPercentileOptIn?: () => void
+    showPercentileButton?: boolean
+    percentileData?: PercentileResponse | null
+    onPercentileUpdate?: () => void
 }
 
-export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: HeroNetWorthCardProps) {
+export default function HeroNetWorthCard({
+    netWorth,
+    trendData,
+    maxDays = 30,
+    onShowPercentileOptIn,
+    showPercentileButton = false,
+    percentileData,
+    onPercentileUpdate
+}: HeroNetWorthCardProps) {
     const [selectedDays, setSelectedDays] = useState(maxDays)
     const [isOpen, setIsOpen] = useState(false)
+    const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const { hasAccess } = useSubscription()
+
+    // Handler for opting out of percentile tracking
+    const handleOptOut = async () => {
+        try {
+            const response = await fetch('/api/percentile/opt-in', {
+                method: 'DELETE'
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to opt out')
+            }
+
+            // Refresh percentile data
+            if (onPercentileUpdate) {
+                onPercentileUpdate()
+            }
+
+            setIsLearnMoreOpen(false)
+        } catch (error) {
+            console.error('Error opting out:', error)
+            throw error
+        }
+    }
+
+    // Handler for changing age bracket
+    const handleChangeAgeBracket = async (newBracket: AgeBracket) => {
+        try {
+            const response = await fetch('/api/percentile/opt-in', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ age_bracket: newBracket })
+            })
+
+            if (!response.ok) {
+                throw new Error('Failed to change age bracket')
+            }
+
+            // Refresh percentile data
+            if (onPercentileUpdate) {
+                onPercentileUpdate()
+            }
+        } catch (error) {
+            console.error('Error changing age bracket:', error)
+            throw error
+        }
+    }
 
     const dayOptions = [
         { value: 30, label: 'Last 30 days' },
@@ -232,99 +294,205 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
 
             <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                        <SparklesIcon className="w-5 h-5 text-[#FFC107]" />
-                        <h2 className="text-sm font-medium text-white/80">Your Total Net Worth</h2>
-                    </div>
-
-                    {/* Custom Dropdown */}
-                    <div className="relative" ref={dropdownRef}>
-                        <button
-                            type="button"
-                            onClick={() => setIsOpen(!isOpen)}
-                            className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
-                        >
-                            <span>{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
-                            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {isOpen && (
-                            <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                                <div className="py-1">
-                                    {dayOptions.map((option) => (
-                                        <button
-                                            key={option.value}
-                                            onClick={() => handleSelectDays(option.value)}
-                                            className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
-                                                selectedDays === option.value
-                                                    ? 'bg-gray-100 text-gray-900 font-medium'
-                                                    : 'text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
+                {/* Header Row */}
+                <div className="flex items-start justify-between mb-2 gap-4">
+                    {/* Left: Title & Buttons */}
+                    <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                                <SparklesIcon className="w-5 h-5 text-[#FFC107]" />
+                                <h2 className="text-sm font-medium text-white/80">Your Total Net Worth</h2>
                             </div>
-                        )}
-                    </div>
-                </div>
-                <div className="mb-3">
-                    <p className="text-4xl font-bold text-white mb-2">
-                        {formatCurrency(netWorth.net_worth)}
-                    </p>
 
-                    {/* Progress Indicator */}
-                    {progress ? (
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-3">
-                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
-                                    progress.change >= 0
-                                        ? 'bg-emerald-500/20 border-emerald-400/30'
-                                        : 'bg-red-500/20 border-red-400/30'
-                                }`}>
-                                    {progress.change >= 0 ? (
-                                        <ArrowTrendingUpIcon className="w-4 h-4 text-emerald-300" />
-                                    ) : (
-                                        <ArrowTrendingDownIcon className="w-4 h-4 text-red-300" />
-                                    )}
-                                    <span className={`font-semibold text-sm ${
-                                        progress.change >= 0 ? 'text-emerald-300' : 'text-red-300'
-                                    }`}>
-                                        {progress.change >= 0 ? '+' : ''}{formatCurrency(progress.change)}
-                                    </span>
-                                    <span className={`font-medium text-xs ${
-                                        progress.change >= 0 ? 'text-emerald-300' : 'text-red-300'
-                                    }`}>
-                                        ({progress.change >= 0 ? '+' : ''}{progress.percentChange.toFixed(1)}%)
-                                    </span>
-                                </div>
-                                {netWorth.net_worth >= 0 && (
-                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/20">
-                                        <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
-                                        <span className="text-white/90 font-medium text-xs">Building Wealth</span>
+                            {/* Buttons for mobile/tablet */}
+                            <div className="flex lg:hidden items-center gap-2">
+                                {/* Percentile Opt-In Button */}
+                                {showPercentileButton && onShowPercentileOptIn && (
+                                    <button
+                                        type="button"
+                                        onClick={onShowPercentileOptIn}
+                                        className="inline-flex items-center gap-1.5 text-xs border border-amber-400/40 bg-amber-500/20 text-amber-100 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-amber-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400/50 shadow-sm"
+                                        title="See how your net worth compares to peers your age"
+                                    >
+                                        <TrophyIcon className="w-4 h-4" />
+                                        <span className="font-medium">See Your Rank</span>
+                                    </button>
+                                )}
+
+                                {/* Custom Dropdown */}
+                                {hasAccess('plaidSync') && (
+                                    <div className="relative" ref={dropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsOpen(!isOpen)}
+                                            className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+                                        >
+                                            <span>{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
+                                            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {isOpen && (
+                                            <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                                <div className="py-1">
+                                                    {dayOptions.map((option) => (
+                                                        <button
+                                                            key={option.value}
+                                                            onClick={() => handleSelectDays(option.value)}
+                                                            className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                                                                selectedDays === option.value
+                                                                    ? 'bg-gray-100 text-gray-900 font-medium'
+                                                                    : 'text-gray-700 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            {option.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                            <p className="text-white/60 text-xs">
-                                {selectedDays === 30 ? 'Past 30 days' : selectedDays === 90 ? 'Past 90 days' : 'Past 365 days'}
-                            </p>
                         </div>
-                    ) : (
-                        // Show "Building Wealth" badge when no progress data
-                        netWorth.net_worth >= 0 && (
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 rounded-full border border-emerald-400/30 inline-flex">
-                                <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
-                                <span className="text-emerald-300 font-semibold text-xs">Building Wealth</span>
+                        <div className="mb-3">
+                            <p className="text-4xl font-bold text-white mb-2">
+                                {formatCurrency(netWorth.net_worth)}
+                            </p>
+
+                            {/* Progress Indicator */}
+                            {progress ? (
+                                <div className="flex flex-col gap-1.5">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
+                                            progress.change >= 0
+                                                ? 'bg-emerald-500/20 border-emerald-400/30'
+                                                : 'bg-red-500/20 border-red-400/30'
+                                        }`}>
+                                            {progress.change >= 0 ? (
+                                                <ArrowTrendingUpIcon className="w-4 h-4 text-emerald-300" />
+                                            ) : (
+                                                <ArrowTrendingDownIcon className="w-4 h-4 text-red-300" />
+                                            )}
+                                            <span className={`font-semibold text-sm ${
+                                                progress.change >= 0 ? 'text-emerald-300' : 'text-red-300'
+                                            }`}>
+                                                {progress.change >= 0 ? '+' : ''}{formatCurrency(progress.change)}
+                                            </span>
+                                            <span className={`font-medium text-xs ${
+                                                progress.change >= 0 ? 'text-emerald-300' : 'text-red-300'
+                                            }`}>
+                                                ({progress.change >= 0 ? '+' : ''}{progress.percentChange.toFixed(1)}%)
+                                            </span>
+                                        </div>
+                                        {netWorth.net_worth >= 0 && (
+                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/20">
+                                                <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
+                                                <span className="text-white/90 font-medium text-xs">Building Wealth</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-white/60 text-xs">
+                                            {selectedDays === 30 ? 'Past 30 days' : selectedDays === 90 ? 'Past 90 days' : 'Past 365 days'}
+                                        </p>
+                                        {/* Time period dropdown for desktop */}
+                                        {hasAccess('plaidSync') && (
+                                            <div className="hidden lg:block relative" ref={dropdownRef}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsOpen(!isOpen)}
+                                                    className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+                                                >
+                                                    <span>{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
+                                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+
+                                                {isOpen && (
+                                                    <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                                        <div className="py-1">
+                                                            {dayOptions.map((option) => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    onClick={() => handleSelectDays(option.value)}
+                                                                    className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                                                                        selectedDays === option.value
+                                                                            ? 'bg-gray-100 text-gray-900 font-medium'
+                                                                            : 'text-gray-700 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    {option.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                // Show "Building Wealth" badge when no progress data
+                                netWorth.net_worth >= 0 && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 rounded-full border border-emerald-400/30 inline-flex">
+                                        <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
+                                        <span className="text-emerald-300 font-semibold text-xs">Building Wealth</span>
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right: Percentile Ranking Card or Opt-In Button - Top Right Corner */}
+                    {percentileData && percentileData.opted_in && typeof percentileData.current_percentile === 'number' ? (
+                        // Show percentile rank when opted in
+                        <div className="hidden lg:block w-64 flex-shrink-0 h-full">
+                            <div className="p-4 h-full flex flex-col justify-center items-center">
+                                {/* Header - Centered */}
+                                <div className="flex flex-col items-center mb-4 gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <TrophyIcon className="w-5 h-5 text-amber-400" />
+                                        <h3 className="text-white/90 font-semibold text-sm">Your Wealth Rank</h3>
+                                        <button
+                                            onClick={() => setIsLearnMoreOpen(true)}
+                                            className="text-white/60 hover:text-white/90 transition-colors"
+                                            title="Learn more"
+                                        >
+                                            <InformationCircleIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* TOP X% Badge - Centered */}
+                                <div className="flex flex-col items-center">
+                                    <div className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-amber-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-lg backdrop-blur-sm shadow-lg">
+                                        <span className="text-amber-100 text-3xl font-bold">
+                                            TOP {(100 - percentileData.current_percentile) < 1
+                                                ? (100 - percentileData.current_percentile).toFixed(1)
+                                                : Math.round(100 - percentileData.current_percentile)}%
+                                        </span>
+                                    </div>
+                                    <p className="text-white/60 text-xs mt-3">Ages {percentileData.age_bracket}</p>
+                                </div>
                             </div>
-                        )
-                    )}
+                        </div>
+                    ) : showPercentileButton && onShowPercentileOptIn ? (
+                        // Show opt-in button when not opted in (desktop only)
+                        <div className="hidden lg:flex items-start">
+                            <button
+                                type="button"
+                                onClick={onShowPercentileOptIn}
+                                className="inline-flex items-center gap-1.5 text-xs border border-amber-400/40 bg-amber-500/20 text-amber-100 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-amber-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400/50 shadow-sm"
+                                title="See how your net worth compares to peers your age"
+                            >
+                                <TrophyIcon className="w-4 h-4" />
+                                <span className="font-medium">See Your Rank</span>
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
 
-                {/* Net Worth Trend Chart */}
-                <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                        {/* Net Worth Trend Chart */}
+                        <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
                     {chartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={370}>
                             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
@@ -357,25 +525,8 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
                         </ResponsiveContainer>
                     ) : (
                         <GhostChart />
-                    )}
-                </div>
-
-                {/* Info Banner for Free Tier Users */}
-                {!hasAccess('plaidSync') && trendData && trendData.length > 0 && (
-                    <div className="mb-3 bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 backdrop-blur-sm">
-                        <div className="flex items-start gap-2">
-                            <InformationCircleIcon className="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <p className="text-blue-200 text-xs font-medium mb-1">Historical Data Note</p>
-                                <p className="text-blue-200/80 text-xs leading-relaxed">
-                                    Your chart shows historical net worth including any previously connected accounts.
-                                    Current net worth reflects only your active accounts.
-                                    <a href="/pricing" className="underline hover:text-blue-100 ml-1">Upgrade to Premium</a> to reconnect accounts.
-                                </p>
-                            </div>
+                        )}
                         </div>
-                    </div>
-                )}
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-3">
@@ -389,6 +540,19 @@ export default function HeroNetWorthCard({ netWorth, trendData, maxDays = 30 }: 
                     </div>
                 </div>
             </div>
+
+            {/* Learn More Modal */}
+            {percentileData && percentileData.opted_in && (
+                <PercentileLearnMoreModal
+                    isOpen={isLearnMoreOpen}
+                    onClose={() => setIsLearnMoreOpen(false)}
+                    ageBracket={percentileData.age_bracket || '26-28'}
+                    totalUsers={percentileData.total_users || 0}
+                    usesSeedData={percentileData.uses_seed_data || false}
+                    onOptOut={handleOptOut}
+                    onChangeAgeBracket={handleChangeAgeBracket}
+                />
+            )}
         </div>
     )
 }

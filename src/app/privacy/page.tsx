@@ -95,7 +95,47 @@ export default function PrivacyPolicy() {
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">8. Anonymized Data and Analytics</h2>
                 <p className="mb-4">
-                    We may use anonymized, aggregated data (that cannot identify you personally) for research, analytics, and to provide features like percentile rankings. This data helps us understand user trends and improve the platform.
+                    We may use anonymized, aggregated data (that cannot identify you personally) for research, analytics, and to improve the platform. For details on our percentile ranking feature, see Section 8A below.
+                </p>
+
+                <h2 id="percentile-ranking" className="text-2xl font-semibold mt-10 mb-4">8A. Percentile Ranking Feature</h2>
+                <p className="mb-4">
+                    Guapital offers an optional percentile ranking feature that allows you to see how your net worth compares to other users in your age group. This feature is entirely opt-in and requires your explicit consent.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">What Data We Collect</h3>
+                <p className="mb-4">If you opt in to percentile rankings, we collect:</p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2"><strong>Age bracket:</strong> Your self-reported age group (e.g., &quot;26-28 years old&quot;) - we do NOT collect your exact birthdate</li>
+                    <li className="mb-2"><strong>Net worth snapshots:</strong> Daily anonymized snapshots of your total net worth (assets minus liabilities)</li>
+                    <li className="mb-2"><strong>Consent timestamp:</strong> The date and time you opted in, for compliance and audit purposes</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">How Rankings Are Calculated</h3>
+                <p className="mb-4">
+                    Your percentile rank is calculated by comparing your net worth to other Guapital users in your age bracket. To ensure statistical accuracy, especially for newer age groups with fewer users, we blend our real user data with data from the Federal Reserve&apos;s Survey of Consumer Finances (SCF 2022), which includes 6,000+ households.
+                </p>
+                <p className="mb-4">
+                    As each age bracket reaches 1,000+ real Guapital users, we automatically transition to using 100% real user data for that bracket. This hybrid approach ensures you always get meaningful, accurate comparisons.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Privacy Protections</h3>
+                <p className="mb-4">We take the following steps to protect your privacy:</p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2"><strong>100% anonymous:</strong> Your exact net worth is NEVER shown to other users. Only aggregated statistics (medians, percentiles) are calculated.</li>
+                    <li className="mb-2"><strong>No personally identifiable information:</strong> Rankings do not include your name, email, or any identifiable data.</li>
+                    <li className="mb-2"><strong>Opt-in only:</strong> You must explicitly consent to participate. We never enroll users automatically.</li>
+                    <li className="mb-2"><strong>Easy opt-out:</strong> You may withdraw consent and opt out at any time through your account settings or the percentile ranking modal. Your data will be excluded from future calculations immediately.</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Data Retention</h3>
+                <p className="mb-4">
+                    While you remain opted in, we retain your daily net worth snapshots to calculate trends and percentile movements over time. If you opt out, your data will be excluded from percentile calculations immediately, and we will delete your percentile-specific data (net worth snapshots, age bracket) within 30 days of your opt-out request. Historical snapshots used for your personal net worth trend charts are retained separately and are not affected by opting out of percentile rankings.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Your Rights</h3>
+                <p className="mb-4">
+                    Under GDPR and other privacy laws, you have the right to access, correct, or delete your percentile ranking data at any time. You may exercise these rights by opting out through your account settings or contacting us at support@guapital.com.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">9. International Data Transfers</h2>

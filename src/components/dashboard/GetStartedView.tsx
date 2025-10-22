@@ -1,11 +1,20 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import PlaidLinkButton from '@/components/plaid/PlaidLinkButton';
 import AddAssetButton from '@/components/assets/AddAssetButton';
-import { BanknotesIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon, CubeIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useSubscription } from '@/lib/context/SubscriptionContext';
 
-const GetStartedView: React.FC = () => {
+interface GetStartedViewProps {
+  onDataAdded?: () => void;
+}
+
+const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
+  const { hasAccess } = useSubscription();
+  const hasPremium = hasAccess('plaidSync');
+
   return (
     <div className="max-w-4xl mx-auto py-12">
       <div className="text-center mb-12">
@@ -33,7 +42,17 @@ const GetStartedView: React.FC = () => {
             Your data updates automatically.
           </p>
           <div className="flex justify-center">
-            <PlaidLinkButton />
+            {hasPremium ? (
+              <PlaidLinkButton onSuccess={onDataAdded} />
+            ) : (
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#004D40] to-[#00695C] border-2 border-transparent rounded-md focus:outline-none focus:border-[#FFC107] transition-colors"
+              >
+                <SparklesIcon className="h-5 w-5" />
+                Upgrade to Premium
+              </Link>
+            )}
           </div>
           <div className="mt-6 space-y-2 text-sm text-gray-500">
             <div className="flex items-center gap-2">
@@ -54,6 +73,14 @@ const GetStartedView: React.FC = () => {
               </svg>
               <span>10,000+ institutions supported</span>
             </div>
+            {!hasPremium && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2 text-[#FFC107] font-semibold">
+                  <SparklesIcon className="h-4 w-4" />
+                  <span>Premium Feature</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -72,7 +99,7 @@ const GetStartedView: React.FC = () => {
             collectibles, or crypto wallets.
           </p>
           <div className="flex justify-center">
-            <AddAssetButton />
+            <AddAssetButton onAssetAdded={onDataAdded} />
           </div>
           <div className="mt-6 space-y-2 text-sm text-gray-500">
             <div className="flex items-center gap-2">

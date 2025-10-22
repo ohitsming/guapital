@@ -65,6 +65,7 @@ export function AccountsPageContent() {
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccountWithInstitution[]>([])
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWalletWithHoldings[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null)
@@ -76,53 +77,111 @@ export function AccountsPageContent() {
 
   const { hasAccess } = useSubscription()
 
-  const fetchAssets = async () => {
+  // SessionStorage cache helper (same cache as ManualAssetsSection)
+  const CACHE_KEY = 'guapital_accounts_cache'
+  const CACHE_DURATION = 30000 // 30 seconds
+
+  const getCachedData = () => {
     try {
-      setIsLoading(true)
+      const cached = sessionStorage.getItem(CACHE_KEY)
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached)
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          return data
+        }
+      }
+    } catch (err) {
+      console.error('Error reading cache:', err)
+    }
+    return null
+  }
+
+  const setCachedData = (data: any) => {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }))
+    } catch (err) {
+      console.error('Error setting cache:', err)
+    }
+  }
+
+  const clearCache = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY)
+    } catch (err) {
+      console.error('Error clearing cache:', err)
+    }
+  }
+
+  const fetchAssets = async (skipCache = false) => {
+    try {
+      // Try to load from cache first
+      if (!skipCache) {
+        const cached = getCachedData()
+        if (cached) {
+          setAssets(cached.assets || [])
+          setPlaidAccounts(cached.plaidAccounts || [])
+          setCryptoWallets(cached.cryptoWallets || [])
+          setIsLoading(false)
+          // Fetch fresh data in background
+          setIsRefreshing(true)
+        } else {
+          setIsLoading(true)
+        }
+      } else {
+        setIsLoading(true)
+      }
+
       setError(null)
 
-      const assetsResponse = await fetch('/api/assets')
-      const assetsData = await assetsResponse.json()
+      // Fetch all data in parallel using Promise.allSettled
+      const [assetsResult, plaidResult, cryptoResult] = await Promise.allSettled([
+        fetch('/api/assets').then(res => res.json()),
+        fetch('/api/plaid/accounts').then(res => res.json()),
+        fetch('/api/crypto/wallets').then(res => res.json())
+      ])
 
-      if (!assetsResponse.ok) {
-        throw new Error(assetsData.error || 'Failed to fetch assets')
+      // Process assets
+      if (assetsResult.status === 'fulfilled' && assetsResult.value.assets) {
+        setAssets(assetsResult.value.assets)
+      } else if (assetsResult.status === 'rejected') {
+        console.error('Error fetching assets:', assetsResult.reason)
       }
 
-      setAssets(assetsData.assets || [])
-
-      if (hasAccess('plaidSync')) {
-        try {
-          const plaidResponse = await fetch('/api/plaid/accounts')
-          if (plaidResponse.ok) {
-            const plaidData = await plaidResponse.json()
-            setPlaidAccounts(plaidData.accounts || [])
-          }
-        } catch (err) {
-          console.error('Error fetching Plaid accounts:', err)
-        }
+      // Process Plaid accounts
+      if (plaidResult.status === 'fulfilled' && plaidResult.value.accounts) {
+        setPlaidAccounts(plaidResult.value.accounts)
+      } else if (plaidResult.status === 'rejected') {
+        console.error('Error fetching Plaid accounts:', plaidResult.reason)
       }
 
-      // Fetch crypto wallets (available to all tiers)
-      try {
-        const cryptoResponse = await fetch('/api/crypto/wallets')
-        if (cryptoResponse.ok) {
-          const cryptoData = await cryptoResponse.json()
-          setCryptoWallets(cryptoData.wallets || [])
-        }
-      } catch (err) {
-        console.error('Error fetching crypto wallets:', err)
+      // Process crypto wallets
+      if (cryptoResult.status === 'fulfilled' && cryptoResult.value.wallets) {
+        setCryptoWallets(cryptoResult.value.wallets)
+      } else if (cryptoResult.status === 'rejected') {
+        console.error('Error fetching crypto wallets:', cryptoResult.reason)
       }
+
+      // Cache the results
+      setCachedData({
+        assets: assetsResult.status === 'fulfilled' ? assetsResult.value.assets || [] : [],
+        plaidAccounts: plaidResult.status === 'fulfilled' ? plaidResult.value.accounts || [] : [],
+        cryptoWallets: cryptoResult.status === 'fulfilled' ? cryptoResult.value.wallets || [] : []
+      })
+
     } catch (err: any) {
       setError(err.message || 'An error occurred')
     } finally {
       setIsLoading(false)
+      setIsRefreshing(false)
     }
   }
 
   useEffect(() => {
     fetchAssets()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasAccess])
+  }, [])
 
   const handleDeleteManualAsset = async (assetId: string) => {
     if (!confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
@@ -143,6 +202,7 @@ export function AccountsPageContent() {
       }
 
       setAssets(assets.filter((a) => a.id !== assetId))
+      clearCache()
     } catch (err: any) {
       alert(err.message || 'Failed to delete asset')
     } finally {
@@ -167,6 +227,7 @@ export function AccountsPageContent() {
       }
 
       setPlaidAccounts(plaidAccounts.filter((a) => a.id !== accountId))
+      clearCache()
     } catch (err: any) {
       alert(err instanceof Error ? err.message : 'Failed to delete account')
     } finally {
@@ -193,6 +254,7 @@ export function AccountsPageContent() {
       }
 
       setCryptoWallets(cryptoWallets.filter((w) => w.id !== walletId))
+      clearCache()
     } catch (err: any) {
       alert(err.message || 'Failed to delete wallet')
     } finally {
@@ -201,7 +263,8 @@ export function AccountsPageContent() {
   }
 
   const handleEditSuccess = () => {
-    fetchAssets()
+    clearCache()
+    fetchAssets(true)
   }
 
   const handleSyncStart = () => {
@@ -209,12 +272,14 @@ export function AccountsPageContent() {
   }
 
   const handleSyncComplete = async () => {
-    await fetchAssets()
+    clearCache()
+    await fetchAssets(true)
     setIsSyncing(false)
   }
 
   const handleRefresh = async () => {
-    await fetchAssets()
+    clearCache()
+    await fetchAssets(true)
   }
 
   const transformPlaidToUnified = (): UnifiedEntry[] => {
@@ -349,7 +414,15 @@ export function AccountsPageContent() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Accounts</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900">Accounts</h1>
+          {isRefreshing && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
+              <span>Updating...</span>
+            </div>
+          )}
+        </div>
         <p className="text-gray-600">Manage your connected accounts and manual assets</p>
       </div>
 

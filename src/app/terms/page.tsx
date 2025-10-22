@@ -42,8 +42,23 @@ export default function TermsOfService() {
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">4. Data Ownership and Intellectual Property</h2>
                 <p className="mb-4">
-                    You retain all ownership rights to your financial data. We do not sell or share your personal financial information with third parties for marketing purposes. We use your data solely to provide the Services, generate aggregated and anonymized analytics (such as percentile rankings), and improve our platform.
+                    You retain all ownership rights to your financial data. We do not sell or share your personal financial information with third parties for marketing purposes. We use your data solely to provide the Services, generate aggregated and anonymized analytics, and improve our platform.
                 </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">4.1 Percentile Ranking Feature</h3>
+                <p className="mb-4">
+                    Guapital offers an optional percentile ranking feature that allows you to compare your net worth to other users in your age group. This feature is entirely opt-in and requires your explicit consent. By opting in, you agree that:
+                </p>
+                <ul className="list-disc ml-6 mb-4">
+                    <li className="mb-2">We may use your anonymized net worth data (age bracket + net worth snapshots) to calculate percentile rankings</li>
+                    <li className="mb-2">Your data may be combined with Federal Reserve Survey of Consumer Finances (SCF) data to ensure statistical accuracy</li>
+                    <li className="mb-2">Your exact net worth will never be shared with other users - only aggregated, anonymized statistics are used</li>
+                    <li className="mb-2">You may opt out at any time, and your data will be excluded from future percentile calculations</li>
+                </ul>
+                <p className="mb-4">
+                    For full details on how percentile rankings work and how we protect your privacy, please see Section 8A of our <a href="/privacy" className="text-blue-600 underline">Privacy Policy</a>.
+                </p>
+
                 <p className="mb-4">
                     All intellectual property rights in the Services, including software, design, and branding, remain the exclusive property of Guapital and its licensors.
                 </p>

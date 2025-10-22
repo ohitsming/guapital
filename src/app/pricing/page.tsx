@@ -82,18 +82,18 @@ export default function PricingPage() {
               </ul>
             </div>
 
-            {/* Product */}
+            {/* Features */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Features</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="/pricing" className="text-gray-600 hover:text-[#004D40] transition-colors">
-                    Pricing
+                  <a href="/blog/net-worth-tracker" className="text-gray-600 hover:text-[#004D40] transition-colors">
+                    Net Worth Tracker
                   </a>
                 </li>
                 <li>
-                  <a href="/dashboard" className="text-gray-600 hover:text-[#004D40] transition-colors">
-                    Dashboard
+                  <a href="/blog/fire-calculator" className="text-gray-600 hover:text-[#004D40] transition-colors">
+                    FIRE Calculator
                   </a>
                 </li>
               </ul>
@@ -123,10 +123,10 @@ export default function PricingPage() {
                 Get updates on new features and wealth-building tips.
               </p>
               <a
-                href="/signup"
+                href="/join-email-list"
                 className="inline-block px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors text-sm font-medium"
               >
-                Join Waitlist
+                Join Email List
               </a>
             </div>
           </div>

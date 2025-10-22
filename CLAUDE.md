@@ -36,31 +36,274 @@ npm run test             # Run Jest tests
 
 ## Architecture Overview
 
-### Directory Structure (Simplified)
+### Directory Structure (Complete)
 
 ```
-src/
-├── app/
-│   ├── api/
-│   │   ├── plaid/         # Plaid integration (link-token, exchange-token, sync, accounts)
-│   │   ├── crypto/        # Crypto wallets (add/get/delete, sync via Alchemy)
-│   │   └── supabase/      # Legacy auth/settings endpoints
-│   └── [pages]/           # Auth, login, signup, marketing pages
-├── components/
-│   ├── plaid/             # PlaidLinkButton
-│   ├── assets/            # ManualAssetsSection (unified Plaid+manual), AddAssetModal
-│   ├── crypto/            # AddWalletModal, WalletsList
-│   ├── dashboard/         # HeroNetWorthCard, AssetBreakdown, RecentTransactions
-│   ├── pricing/           # PricingCard, PricingSection, FoundingMemberBanner
-│   └── ui/                # AddAccountDropdown, Dropdown
-├── lib/
-│   ├── interfaces/        # plaid.ts, crypto.ts, asset.ts, networth.ts, subscription.ts
-│   ├── context/           # SubscriptionContext.tsx
-│   ├── permissions.ts     # Feature access by tier
-│   └── constant.ts        # App constants (WEB_NAME, URLs)
-└── utils/
-    ├── supabase/          # client.ts, server.ts
-    └── formatters.ts      # Currency, date formatting
+/
+├── documentations/
+│   ├── API_COST_ANALYSIS.md              # Detailed API cost breakdown and projections
+│   ├── PERCENTILE_RANKING_SPEC.md        # Original spec for percentile feature
+│   ├── PERCENTILE_DATA_STRATEGY.md       # Hybrid data strategy documentation
+│   ├── PERCENTILE_DEPLOYMENT_GUIDE.md    # Production deployment checklist
+│   ├── PERCENTILE_IMPLEMENTATION_COMPLETE.md  # Implementation summary
+│   └── research.md                        # Market research and competitor analysis
+├── scripts/
+│   ├── process-scf-data.py               # SCF data transformation script
+│   ├── scf_seed_data.json                # Federal Reserve Survey of Consumer Finances seed data
+│   ├── generate-test-snapshots.sql       # Testing utility
+│   └── cleanup-duplicate-plaid-accounts.sql  # Database maintenance
+├── supabase/
+│   └── migrations/
+│       ├── 001_create_guapital_schema.sql         # Core database schema
+│       ├── 002_add_manual_entry_types.sql         # Manual asset types
+│       ├── 002_add_subscription_tier.sql          # Subscription system
+│       ├── 003_add_mortgage_category.sql          # Mortgage support
+│       ├── 004_add_snapshot_recording.sql         # Net worth snapshots
+│       ├── 004_add_unique_constraints_plaid.sql   # Plaid data integrity
+│       ├── 005_percentile_ranking.sql             # Percentile feature (main)
+│       ├── 005_percentile_ranking_CONSOLIDATED.sql # Consolidated version
+│       ├── 006_fix_user_demographics_rls.sql      # RLS policy fixes
+│       ├── 007_create_opt_in_function.sql         # Percentile opt-in
+│       ├── 008_fix_age_bracket_trigger.sql        # Age bracket automation
+│       ├── 009_fix_percentile_ambiguous_column.sql # Query optimization
+│       ├── 010_fix_percentile_calculation.sql     # Calculation improvements
+│       ├── 011_add_consent_timestamp.sql          # Privacy compliance
+│       └── README_PERCENTILE.md                   # Percentile migration guide
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── assets/
+│   │   │   │   ├── [id]/route.ts          # Update/delete specific asset
+│   │   │   │   └── route.ts               # Create/list manual assets
+│   │   │   ├── cashflow/
+│   │   │   │   └── monthly/route.ts       # Monthly cash flow calculation
+│   │   │   ├── crypto/
+│   │   │   │   ├── sync-wallet/route.ts   # Alchemy wallet sync
+│   │   │   │   └── wallets/route.ts       # CRUD crypto wallets
+│   │   │   ├── founding-members/
+│   │   │   │   └── remaining/route.ts     # Founding member slots counter
+│   │   │   ├── networth/
+│   │   │   │   ├── history/route.ts       # Historical net worth data
+│   │   │   │   ├── snapshot/route.ts      # Daily snapshot recording
+│   │   │   │   └── route.ts               # Current net worth calculation
+│   │   │   ├── percentile/
+│   │   │   │   ├── distribution/route.ts  # Age bracket distribution data
+│   │   │   │   ├── opt-in/route.ts        # Opt in/out of percentile tracking
+│   │   │   │   └── route.ts               # Get user's percentile rank
+│   │   │   ├── plaid/
+│   │   │   │   ├── accounts/route.ts      # Fetch Plaid accounts
+│   │   │   │   ├── create-link-token/route.ts # Plaid Link initialization
+│   │   │   │   ├── exchange-token/route.ts # Exchange public token
+│   │   │   │   ├── sync-accounts/route.ts  # Sync account balances
+│   │   │   │   ├── sync-transactions/route.ts # Sync transactions
+│   │   │   │   └── transactions/route.ts   # Fetch transaction history
+│   │   │   └── supabase/
+│   │   │       ├── auth/
+│   │   │       │   ├── callback/route.ts  # OAuth callback handler
+│   │   │       │   └── oauth/route.ts     # OAuth initiation
+│   │   │       ├── general/
+│   │   │       │   ├── interests/route.ts # User interests
+│   │   │       │   └── onboarding-status/route.ts # Onboarding state
+│   │   │       └── settings/
+│   │   │           ├── business-profile/route.ts
+│   │   │           ├── profile/route.ts
+│   │   │           ├── update-profile/route.ts
+│   │   │           ├── user-profiles/route.ts
+│   │   │           └── user-settings/route.ts
+│   │   ├── about/page.tsx                 # About page
+│   │   ├── auth/
+│   │   │   ├── auth-code-error/page.tsx   # Auth error handler
+│   │   │   └── confirm/
+│   │   │       ├── success/page.tsx       # Email confirmation success
+│   │   │       └── update-password/page.tsx # Password reset
+│   │   ├── contact/page.tsx               # Contact page
+│   │   ├── dashboard/
+│   │   │   ├── accounts/page.tsx          # Accounts management page
+│   │   │   ├── budget/page.tsx            # Budget/cash flow insights
+│   │   │   ├── reports/page.tsx           # Advanced reports (Premium)
+│   │   │   ├── transactions/page.tsx      # Transaction history (Premium)
+│   │   │   ├── layout.tsx                 # Dashboard layout wrapper
+│   │   │   └── page.tsx                   # Main dashboard
+│   │   ├── login/
+│   │   │   ├── forgot-password/page.tsx   # Password reset
+│   │   │   └── page.tsx                   # Login page
+│   │   ├── pricing/page.tsx               # Pricing page
+│   │   ├── privacy/page.tsx               # Privacy policy
+│   │   ├── signup/
+│   │   │   ├── check-email/page.tsx       # Email verification prompt
+│   │   │   └── page.tsx                   # Signup page
+│   │   ├── terms/page.tsx                 # Terms of service
+│   │   ├── layout.tsx                     # Root layout
+│   │   ├── not-found.tsx                  # 404 page
+│   │   └── page.tsx                       # Landing page
+│   ├── components/
+│   │   ├── accounts/
+│   │   │   ├── AccountsPageContent.tsx    # Accounts page main component
+│   │   │   └── AccountsList.tsx           # List of accounts
+│   │   ├── assets/
+│   │   │   ├── AddAssetButton.tsx         # Add manual asset button
+│   │   │   ├── AddAssetModal.tsx          # Add asset modal form
+│   │   │   ├── AssetsList.tsx             # List of assets
+│   │   │   ├── EditAssetModal.tsx         # Edit asset modal
+│   │   │   └── ManualAssetsSection.tsx    # Unified accounts panel (Plaid + manual + crypto)
+│   │   ├── business-onboarding/           # Legacy business onboarding
+│   │   │   ├── BusinessOnboardingStep1.tsx
+│   │   │   ├── BusinessOnboardingStep2.tsx
+│   │   │   └── BusinessOnboardingStep3.tsx
+│   │   ├── budget/
+│   │   │   ├── BudgetPageContent.tsx      # Budget page main component
+│   │   │   └── CashFlowInsights.tsx       # Monthly cash flow analysis
+│   │   ├── crypto/
+│   │   │   ├── AddWalletButton.tsx        # Add wallet button
+│   │   │   ├── AddWalletModal.tsx         # Add crypto wallet modal
+│   │   │   └── WalletsList.tsx            # List of crypto wallets
+│   │   ├── dashboard/
+│   │   │   ├── AssetBreakdownPanel.tsx    # Asset breakdown chart
+│   │   │   ├── DashboardContent.tsx       # Main dashboard layout
+│   │   │   ├── DashboardHeader.tsx        # Dashboard header
+│   │   │   ├── DashboardNav.tsx           # Dashboard navigation
+│   │   │   ├── EmptyState.tsx             # Empty state component
+│   │   │   ├── GetStartedView.tsx         # Onboarding view for new users
+│   │   │   ├── HeroNetWorthCard.tsx       # Net worth card with trend chart
+│   │   │   ├── LiabilityBreakdownPanel.tsx # Liability breakdown chart
+│   │   │   ├── ManualAssetsPanel.tsx      # Manual assets panel
+│   │   │   ├── MonthlyCashFlowPanel.tsx   # Cash flow panel
+│   │   │   └── RecentTransactionsPanel.tsx # Recent transactions
+│   │   ├── earner-onboarding/             # Legacy earner onboarding
+│   │   │   ├── EarnerOnboardingReview.tsx
+│   │   │   ├── EarnerOnboardingStep1.tsx
+│   │   │   ├── EarnerOnboardingStep2.tsx
+│   │   │   ├── EarnerOnboardingStep3.tsx
+│   │   │   ├── EarnerOnboardingStep4.tsx
+│   │   │   ├── EarnerOnboardingStep5.tsx
+│   │   │   └── EarnerOnboardingStep6.tsx
+│   │   ├── percentile/
+│   │   │   ├── PercentileLearnMoreModal.tsx # Data transparency modal
+│   │   │   ├── PercentileOptInModal.tsx    # Opt-in onboarding modal
+│   │   │   └── PercentileRankCard.tsx      # Percentile rank display card
+│   │   ├── plaid/
+│   │   │   └── PlaidLinkButton.tsx        # Plaid Link integration
+│   │   ├── pricing/
+│   │   │   ├── FoundingMemberBanner.tsx   # Founding member promo banner
+│   │   │   ├── PricingCard.tsx            # Pricing tier card
+│   │   │   └── PricingSection.tsx         # Pricing section component
+│   │   ├── reports/
+│   │   │   └── ReportsPageContent.tsx     # Reports page main component
+│   │   ├── settings/
+│   │   │   ├── AccountSettings.tsx        # Account settings
+│   │   │   ├── BillingSettings.tsx        # Billing settings
+│   │   │   └── BusinessProfileSettings.tsx # Business profile
+│   │   ├── toast/
+│   │   │   ├── Toast.tsx                  # Toast notification component
+│   │   │   └── ToastProvider.tsx          # Toast context provider
+│   │   ├── transactions/
+│   │   │   └── TransactionsPageContent.tsx # Transactions page main component
+│   │   ├── ui/
+│   │   │   ├── AddAccountDropdown.tsx     # Unified add account dropdown
+│   │   │   └── Dropdown.tsx               # Generic dropdown component
+│   │   ├── AnimatedText.tsx               # Text animation component
+│   │   ├── AppSidebar.tsx                 # App sidebar navigation
+│   │   ├── Blockquote.tsx                 # Blockquote component
+│   │   ├── Border.tsx                     # Border component
+│   │   ├── Button.tsx                     # Button component
+│   │   ├── ContactSection.tsx             # Contact section
+│   │   ├── Container.tsx                  # Container wrapper
+│   │   ├── CriteriaDisplay.tsx            # Criteria display
+│   │   ├── EmailSignupForm.tsx            # Email signup form
+│   │   ├── FadeIn.tsx                     # Fade-in animation
+│   │   ├── FaqSection.tsx                 # FAQ section
+│   │   ├── FeatureSection.tsx             # Feature section
+│   │   ├── Footer.tsx                     # Footer component
+│   │   ├── GrayscaleTransitionImage.tsx   # Image transition effect
+│   │   ├── GridList.tsx                   # Grid list component
+│   │   ├── GridPattern.tsx                # Grid pattern background
+│   │   ├── Hero3DAnimation.tsx            # 3D hero animation
+│   │   ├── HeroInteractive.tsx            # Interactive hero
+│   │   ├── InfoTooltip.tsx                # Tooltip component
+│   │   ├── LetterAvatar.tsx               # Avatar component
+│   │   ├── List.tsx                       # List component
+│   │   ├── LoadingOverlay.tsx             # Loading overlay
+│   │   ├── Logo.tsx                       # Logo component
+│   │   ├── LoginForm.tsx                  # Login form
+│   │   ├── MDXComponents.tsx              # MDX components
+│   │   ├── Modal.tsx                      # Modal component
+│   │   ├── Offices.tsx                    # Offices component
+│   │   ├── PageIntro.tsx                  # Page intro
+│   │   ├── PageLinks.tsx                  # Page links
+│   │   ├── RatingInput.tsx                # Rating input
+│   │   ├── RootLayout.tsx                 # Root layout wrapper
+│   │   ├── SectionIntro.tsx               # Section intro
+│   │   ├── SelectField.tsx                # Select field
+│   │   ├── SharedDashboardLayout.tsx      # Shared dashboard layout
+│   │   ├── SidebarLinkGroup.tsx           # Sidebar link group
+│   │   ├── SignupForm.tsx                 # Signup form
+│   │   ├── SocialMedia.tsx                # Social media links
+│   │   ├── StatList.tsx                   # Stat list
+│   │   ├── StylizedImage.tsx              # Stylized image
+│   │   ├── SurveyModeSelector.tsx         # Survey mode selector
+│   │   ├── Tabs.tsx                       # Tabs component
+│   │   ├── TagList.tsx                    # Tag list
+│   │   ├── Testimonial.tsx                # Testimonial component
+│   │   └── TextField.tsx                  # Text field
+│   ├── fonts/
+│   │   └── Mona-Sans.var.woff2            # Custom font
+│   ├── images/
+│   │   ├── screenshots/                   # App screenshots
+│   │   └── [various image assets]         # Marketing images
+│   ├── lib/
+│   │   ├── context/
+│   │   │   ├── CampaignFormContext.tsx    # Campaign form context
+│   │   │   └── SubscriptionContext.tsx    # Subscription tier context
+│   │   ├── interfaces/
+│   │   │   ├── account.ts                 # Account interfaces
+│   │   │   ├── asset.ts                   # Asset interfaces
+│   │   │   ├── budget.ts                  # Budget interfaces
+│   │   │   ├── businessStats.ts           # Business stats
+│   │   │   ├── criteria.ts                # Criteria interfaces
+│   │   │   ├── crypto.ts                  # Crypto interfaces
+│   │   │   ├── earner.ts                  # Earner interfaces
+│   │   │   ├── earnerTask.ts              # Earner task interfaces
+│   │   │   ├── networth.ts                # Net worth interfaces
+│   │   │   ├── percentile.ts              # Percentile interfaces
+│   │   │   ├── plaid.ts                   # Plaid interfaces
+│   │   │   ├── recentTask.ts              # Recent task interfaces
+│   │   │   ├── stat.ts                    # Stat interfaces
+│   │   │   ├── subscription.ts            # Subscription interfaces
+│   │   │   ├── survey.ts                  # Survey interfaces
+│   │   │   └── task.ts                    # Task interfaces
+│   │   ├── mock-data/
+│   │   │   └── dashboard.ts               # Mock dashboard data
+│   │   ├── stripe/
+│   │   │   └── stripeCalculator.ts        # Stripe pricing calculator
+│   │   ├── types/
+│   │   │   ├── common.ts                  # Common types
+│   │   │   └── earner-onboarding.ts       # Earner onboarding types
+│   │   ├── constant.ts                    # App constants (WEB_NAME, URLs)
+│   │   ├── env.ts                         # Environment variable validation
+│   │   ├── featureFlags.ts                # Feature flags
+│   │   ├── formatDate.ts                  # Date formatting
+│   │   ├── mdx.ts                         # MDX utilities
+│   │   ├── permissions.ts                 # Feature access by tier
+│   │   ├── quota.ts                       # Usage quotas
+│   │   └── supabaseClient.ts              # Supabase client instance
+│   ├── styles/
+│   │   ├── base.css                       # Base styles
+│   │   └── typography.css                 # Typography styles
+│   └── utils/
+│       ├── supabase/
+│       │   ├── client.ts                  # Client-side Supabase
+│       │   └── server.ts                  # Server-side Supabase
+│       ├── avatarUtils.ts                 # Avatar utilities
+│       ├── formatters.ts                  # Currency, date formatting
+│       └── timeUtils.ts                   # Time utilities
+├── .eslintrc.json                         # ESLint configuration
+├── jest.config.js                         # Jest configuration
+├── next.config.mjs                        # Next.js configuration
+├── package.json                           # Dependencies
+├── postcss.config.js                      # PostCSS configuration
+├── prettier.config.js                     # Prettier configuration
+├── tsconfig.json                          # TypeScript configuration
+└── CLAUDE.md                              # This file
 ```
 
 ### Database Schema
@@ -71,6 +314,9 @@ src/
 - `manual_assets`, `manual_asset_history` - Manual entry
 - `net_worth_snapshots` - Daily historical tracking
 - `user_demographics`, `user_settings` - User data & preferences
+- `percentile_seed_data` - Federal Reserve SCF 2022 benchmark data (49 records)
+- `percentile_snapshots` - Daily percentile calculations per user
+- `percentile_milestones` - Achievement tracking (Top 50%, 25%, 10%, etc.)
 
 **Security:** RLS enabled on all tables, users can only access their own data
 
@@ -122,7 +368,7 @@ Required in `.env.local`:
 
 ## Implementation Status
 
-**Phase 1 MVP Completion: ~85%**
+**Phase 1 MVP Completion: ~95%**
 
 | Feature | Status | Priority | Details |
 |---------|--------|----------|---------|
@@ -138,11 +384,17 @@ Required in `.env.local`:
 | **Advanced Reports** | ✅ Done | - | Net worth trends, breakdowns with charts (Premium+) |
 | **Crypto Wallet Tracking** | ✅ Done | - | Multi-chain support (Ethereum, Polygon, Base, Arbitrum, Optimism) |
 | **Pricing & Subscription** | ✅ Done | - | Founding member offer, Stripe integration |
-| **Percentile Ranking** | ❌ Not Started | **#1** | **THE killer feature** - Only compelling reason to switch from Monarch |
+| **Percentile Ranking** | ✅ Done | **#1** | **THE killer feature** - Hybrid SCF + real user data, opt-in modal, percentile card, distribution charts |
 | **FIRE Calculator** | ❌ Not Started | **#2** | Years to FI, required net worth, withdrawal scenarios - Aligns with wealth-building positioning |
 
 ### Key Recent Updates (October 2025)
 
+- **Percentile Ranking** ✅ - Complete implementation with hybrid SCF data strategy
+  - Backend: 3 new database tables, daily cron job, percentile calculation function
+  - API: 3 endpoints (percentile, opt-in, distribution)
+  - Frontend: Opt-in modal, percentile rank card, learn more modal
+  - Data: Federal Reserve SCF 2022 seed data (49 records across 7 age brackets)
+  - Integration: Seamlessly integrated into dashboard with auto-prompt after 2 seconds
 - **Dashboard simplified** - Removed tabs for single-view design
 - **Transactions page** - Complete with filters, stats, sync (Premium+)
 - **Reports page** - Historical trends, breakdowns (Premium+)
@@ -153,28 +405,33 @@ Required in `.env.local`:
 
 ### Next Steps
 
-**Critical Priorities (Week 1-2):**
-1. **Percentile Ranking** (3-4 days) - THE killer feature that differentiates from Monarch
-   - Anonymous opt-in wealth rankings by age group
-   - Screenshot-worthy UI for viral sharing
-   - See PERCENTILE_RANKING_SPEC.md for full implementation
-2. **FIRE Calculator** (2-3 days) - Aligns with wealth-building positioning
+**Critical Priorities (Week 1):**
+1. **FIRE Calculator** (2-3 days) - Aligns with wealth-building positioning
    - Years to Financial Independence calculator
    - Required net worth for FI
    - Withdrawal rate scenarios (4% rule, etc.)
    - Progress visualization
 
-**Secondary Priorities (Week 3):**
-3. Mobile responsiveness testing (2-3 days)
-4. End-to-end user flow testing (2-3 days)
-5. Performance optimization (1-2 days)
+**Secondary Priorities (Week 2):**
+2. Mobile responsiveness testing (2-3 days)
+3. End-to-end user flow testing (2-3 days)
+4. Performance optimization (1-2 days)
+
+**Pre-Production Deployment:**
+5. Apply percentile migrations to production Supabase (30 minutes)
+6. Enable pg_cron extension (10 minutes)
+7. Create test users and verify percentile calculations (1-2 hours)
+8. Configure Stripe production products (1 hour)
+9. Social OAuth production URL configuration (1 hour)
 
 **On Hold:**
 - Budgeting features (not core differentiator vs. Monarch - revisit post-launch)
+- Social sharing for percentile milestones (Phase 2)
+- Milestone achievement badges (Phase 2)
 
-**Estimated Time to Launch-Ready MVP:** 10-12 days
+**Estimated Time to Launch-Ready MVP:** 5-7 days
 
-**Competitive Urgency:** Without percentile ranking, there is NO compelling reason for users to switch from Monarch Money. This feature is non-negotiable for launch.
+**Major Milestone Achieved:** Percentile ranking is complete! This is THE killer feature that differentiates us from Monarch Money.
 
 ## Project Roadmap
 
@@ -662,45 +919,115 @@ npm run dev  # Visit http://localhost:3000
 
 ## Key API Routes
 
+**Net Worth & Assets:**
 - `/api/networth` - Current net worth from all sources
 - `/api/networth/history` - Historical snapshots with fallback
 - `/api/networth/snapshot` - Record daily snapshot (cron job)
 - `/api/assets` - CRUD for manual assets
+- `/api/assets/[id]` - Update/delete specific asset
+
+**Plaid Integration:**
+- `/api/plaid/create-link-token` - Initialize Plaid Link
+- `/api/plaid/exchange-token` - Exchange public token for access token
 - `/api/plaid/accounts` - Fetch Plaid accounts (Premium+)
+- `/api/plaid/sync-accounts` - Sync account balances
 - `/api/plaid/transactions` - Transaction history (Premium+)
+- `/api/plaid/sync-transactions` - Sync transactions
+
+**Crypto Integration:**
 - `/api/crypto/wallets` - Crypto wallet management
 - `/api/crypto/sync-wallet` - Sync wallet via Alchemy
+
+**Percentile Ranking:**
+- `/api/percentile` - Get user's current percentile rank
+- `/api/percentile/opt-in` - POST: Opt into percentile tracking, DELETE: Opt out
+- `/api/percentile/distribution` - Get age bracket distribution data for charts
+
+**Other:**
 - `/api/cashflow/monthly` - Monthly cash flow (Premium+)
+- `/api/founding-members/remaining` - Founding member slots remaining
 
 ## Key Components
 
+**Dashboard:**
 - `DashboardContent.tsx` - Main dashboard layout
 - `HeroNetWorthCard.tsx` - Net worth card with trend chart
-- `ManualAssetsSection.tsx` - Unified accounts panel
-- `AddAccountDropdown.tsx` - Dropdown for Plaid/crypto/manual
+- `GetStartedView.tsx` - Onboarding view for new users
+- `AssetBreakdownPanel.tsx` - Asset breakdown chart
+- `LiabilityBreakdownPanel.tsx` - Liability breakdown chart
+- `RecentTransactionsPanel.tsx` - Recent transactions panel
+- `MonthlyCashFlowPanel.tsx` - Cash flow panel
+
+**Accounts & Assets:**
+- `ManualAssetsSection.tsx` - Unified accounts panel (Plaid + manual + crypto)
+- `AccountsPageContent.tsx` - Accounts page main component
+- `AddAccountDropdown.tsx` - Unified dropdown for Plaid/crypto/manual
+- `AddAssetModal.tsx` - Add manual asset modal
+- `EditAssetModal.tsx` - Edit asset modal
+- `PlaidLinkButton.tsx` - Plaid Link integration
+
+**Crypto:**
+- `AddWalletModal.tsx` - Add crypto wallet modal
+- `WalletsList.tsx` - List of crypto wallets
+
+**Percentile Ranking:**
+- `PercentileRankCard.tsx` - Percentile rank display card (THE killer feature)
+- `PercentileOptInModal.tsx` - Opt-in onboarding modal
+- `PercentileLearnMoreModal.tsx` - Data transparency modal
+
+**Pages:**
 - `TransactionsPageContent.tsx` - Transaction history (Premium+)
 - `ReportsPageContent.tsx` - Advanced analytics (Premium+)
-- `PricingCard.tsx` / `FoundingMemberBanner.tsx` - Pricing components
+- `BudgetPageContent.tsx` / `CashFlowInsights.tsx` - Budget/cash flow page
+
+**Pricing & Subscription:**
+- `PricingCard.tsx` / `PricingSection.tsx` - Pricing components
+- `FoundingMemberBanner.tsx` - Founding member promo banner
 - `SubscriptionContext.tsx` - Tier-based access control
+
+**Shared UI:**
+- `Modal.tsx` - Generic modal component
+- `Toast.tsx` / `ToastProvider.tsx` - Toast notifications
+- `Dropdown.tsx` - Generic dropdown component
+- `Button.tsx`, `TextField.tsx`, `SelectField.tsx` - Form components
 
 ## Pre-Launch Checklist
 
-- [ ] Apply database migrations to production Supabase
+**Database & Backend:**
+- [ ] Apply core database migrations to production Supabase (001-004)
+- [ ] Apply percentile migrations to production (005-011)
+- [ ] Enable pg_cron extension in Supabase
+- [ ] Verify percentile seed data loaded (49 records)
+- [ ] Verify daily cron job scheduled (1am UTC)
+
+**Integrations:**
 - [ ] Configure Plaid production account
 - [ ] Set up Stripe products ($79 founding, $99 regular)
-- [ ] Implement founding member tracking (remaining slots API)
 - [ ] Configure Stripe webhook for subscription events
-- [ ] End-to-end user flow testing
-- [ ] Mobile responsiveness testing
-- [ ] Performance optimization
+- [ ] Verify Alchemy API key for production
 - [ ] Social OAuth production URL configuration
+
+**Testing:**
+- [ ] Create 10 test users with varying net worth
+- [ ] Test percentile opt-in flow end-to-end
+- [ ] Verify percentile calculations are accurate
+- [ ] Test founding member tracking (remaining slots API)
+- [ ] End-to-end user flow testing (signup → add accounts → see dashboard)
+- [ ] Mobile responsiveness testing (iOS Safari, Android Chrome)
+- [ ] Performance optimization (Lighthouse score >90)
+
+**Documentation:**
+- [ ] Verify all API endpoints documented
+- [ ] Update environment variable setup guide
+- [ ] Prepare deployment runbook
 
 ## Strategic Context
 
 **Target Market:** Gen Z wealth builders ($50K-$500K net worth) over HNWIs ($2M+)
 
 **Timeline:**
-- Launch-ready MVP: 10-12 days (with percentile ranking + FIRE calculator)
+- ✅ Percentile ranking complete (3 days as planned)
+- Launch-ready MVP: 5-7 days (FIRE calculator + testing + deployment)
 - First 1,000 users (ramen profitability): 6-9 months
 - 5,000 users (lifestyle business): 12-18 months
 
@@ -711,7 +1038,7 @@ npm run dev  # Visit http://localhost:3000
 
 **Competitive Positioning:**
 - **Price:** 45% cheaper than Monarch ($79-99/year vs $180/year)
-- **Differentiation:** Percentile ranking (viral hook) + FIRE calculator (wealth-building focus)
+- **Differentiation:** Percentile ranking (viral hook) ✅ + FIRE calculator (wealth-building focus)
 - **Moat:** Network effects (more users = more valuable percentile data)
 
 **Key Success Metrics:**
@@ -732,6 +1059,15 @@ npm run dev  # Visit http://localhost:3000
 - Small team (1-10 people), high efficiency
 - Feature discipline: Every feature must drive viral growth or retention
 
-**Critical Success Factor:** Ship percentile ranking before launch. Without it, we're just another Monarch clone with lower prices. WITH it, we have the viral hook that drives organic growth.
+**Critical Success Factor:** ✅ Percentile ranking is COMPLETE! This is the viral hook that drives organic growth and differentiates us from Monarch.
 
-See `research.md` for detailed market analysis and `API_COST_ANALYSIS.md` for complete financial modeling.
+## Additional Documentation
+
+For detailed documentation on specific features and strategies, see:
+- `documentations/research.md` - Detailed market analysis and competitor research
+- `documentations/API_COST_ANALYSIS.md` - Complete financial modeling and unit economics
+- `documentations/PERCENTILE_RANKING_SPEC.md` - Original percentile feature specification
+- `documentations/PERCENTILE_DATA_STRATEGY.md` - Hybrid data strategy (SCF + real users)
+- `documentations/PERCENTILE_IMPLEMENTATION_COMPLETE.md` - Implementation summary and deployment guide
+- `documentations/PERCENTILE_DEPLOYMENT_GUIDE.md` - Production deployment checklist
+- `supabase/migrations/README_PERCENTILE.md` - Database migration guide for percentile feature

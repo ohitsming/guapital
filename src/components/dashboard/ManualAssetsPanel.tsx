@@ -4,6 +4,10 @@ import ManualAssetsSection from '@/components/assets/ManualAssetsSection'
 
 interface ManualAssetsPanelProps {
     onUpdate: () => void
+    onAllDataDeleted?: () => void
+    limitDisplay?: number // Optional: limit number of accounts to display
+    showSeeMoreButton?: boolean // Optional: show "See More" button
+    hideCount?: boolean // Optional: hide the count numbers
 }
 
 /**
@@ -13,6 +17,14 @@ interface ManualAssetsPanelProps {
  * - Premium+ users can connect Plaid accounts (auto-sync)
  * Wraps the ManualAssetsSection component (renamed to "Accounts")
  */
-export default function ManualAssetsPanel({ onUpdate }: ManualAssetsPanelProps) {
-    return <ManualAssetsSection onUpdate={onUpdate} />
+export default function ManualAssetsPanel({ onUpdate, onAllDataDeleted, limitDisplay, showSeeMoreButton, hideCount }: ManualAssetsPanelProps) {
+    return (
+        <ManualAssetsSection
+            onUpdate={onUpdate}
+            onAllDataDeleted={onAllDataDeleted}
+            limitDisplay={limitDisplay}
+            showSeeMoreButton={showSeeMoreButton}
+            hideCount={hideCount}
+        />
+    )
 }

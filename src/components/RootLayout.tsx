@@ -437,7 +437,7 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
 
                     <main className="w-full flex-auto">{children}</main>
 
-                    {!isDashboard && <Footer />}
+                    {/* {!isDashboard && <Footer />} */}
                 </motion.div>
             </motion.div>
         </MotionConfig>

@@ -54,7 +54,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             // In development, always use pro tier
             if (isDevelopment) {
                 setSubscription({
-                    tier: 'pro',
+                    tier: 'free',
                     status: 'active',
                 })
                 return

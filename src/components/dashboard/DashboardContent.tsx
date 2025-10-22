@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { NetWorthCalculation } from '@/lib/interfaces/networth'
 import { TrendDataPoint } from '@/lib/interfaces/subscription'
+import { PercentileResponse, AgeBracket } from '@/lib/interfaces/percentile'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
 import HeroNetWorthCard from '@/components/dashboard/HeroNetWorthCard'
 import AssetBreakdownPanel from '@/components/dashboard/AssetBreakdownPanel'
@@ -10,10 +11,17 @@ import LiabilityBreakdownPanel from '@/components/dashboard/LiabilityBreakdownPa
 import ManualAssetsPanel from '@/components/dashboard/ManualAssetsPanel'
 import MonthlyCashFlowPanel from '@/components/dashboard/MonthlyCashFlowPanel'
 import RecentTransactionsPanel from '@/components/dashboard/RecentTransactionsPanel'
+import PercentileOptInModal from '@/components/percentile/PercentileOptInModal'
 
-export default function DashboardContent() {
+interface DashboardContentProps {
+    onAllDataDeleted?: () => void
+}
+
+export default function DashboardContent({ onAllDataDeleted }: DashboardContentProps) {
     const [netWorth, setNetWorth] = useState<NetWorthCalculation | null>(null)
     const [trendData, setTrendData] = useState<TrendDataPoint[]>([])
+    const [percentileData, setPercentileData] = useState<PercentileResponse | null>(null)
+    const [showOptInModal, setShowOptInModal] = useState(false)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -25,6 +33,7 @@ export default function DashboardContent() {
     useEffect(() => {
         fetchNetWorth()
         fetchTrendData(historyDays)
+        fetchPercentileData()
     }, [historyDays])
 
     const fetchNetWorth = async () => {
@@ -61,6 +70,44 @@ export default function DashboardContent() {
         }
     }
 
+    const fetchPercentileData = async () => {
+        try {
+            const response = await fetch('/api/percentile')
+            if (!response.ok) {
+                console.error('Failed to fetch percentile data')
+                return
+            }
+            const data: PercentileResponse = await response.json()
+            setPercentileData(data)
+            // Note: Removed automatic modal trigger - now user-initiated via button
+        } catch (err) {
+            console.error('Error fetching percentile data:', err)
+            // Don't block dashboard on percentile errors
+        }
+    }
+
+    const handleOptIn = async (ageBracket: AgeBracket) => {
+        try {
+            const response = await fetch('/api/percentile/opt-in', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ age_bracket: ageBracket })
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Failed to opt in')
+            }
+
+            // Refresh percentile data
+            await fetchPercentileData()
+            setShowOptInModal(false)
+        } catch (err) {
+            console.error('Error opting in:', err)
+            throw err // Re-throw to let modal handle error display
+        }
+    }
+
     return (
         <div className="px-4 py-4 mt-6 min-h-screen" style={{ background: '#F7F9F9' }}>
             {/* Loading State */}
@@ -76,7 +123,15 @@ export default function DashboardContent() {
 
             {/* Hero Net Worth Card - Always shown when not loading */}
             {!loading && netWorth && (
-                <HeroNetWorthCard netWorth={netWorth} trendData={trendData} maxDays={historyDays} />
+                <HeroNetWorthCard
+                    netWorth={netWorth}
+                    trendData={trendData}
+                    maxDays={historyDays}
+                    onShowPercentileOptIn={() => setShowOptInModal(true)}
+                    showPercentileButton={percentileData?.opted_in === false && netWorth.net_worth !== 0}
+                    percentileData={percentileData}
+                    onPercentileUpdate={fetchPercentileData}
+                />
             )}
 
             {/* Error State */}
@@ -91,8 +146,14 @@ export default function DashboardContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Left Column - 2/3 width */}
                 <div className="lg:col-span-2 space-y-4">
-                    {/* Accounts (Plaid + Manual Assets) - All tiers */}
-                    <ManualAssetsPanel onUpdate={fetchNetWorth} />
+                    {/* Accounts (Plaid + Manual Assets) - All tiers, showing top 3 assets and top 3 liabilities */}
+                    <ManualAssetsPanel
+                        onUpdate={fetchNetWorth}
+                        onAllDataDeleted={onAllDataDeleted}
+                        limitDisplay={3}
+                        showSeeMoreButton={true}
+                        hideCount={true}
+                    />
 
                     {/* Recent Transactions - Premium+ only */}
                     {hasAccess('transactionHistory') && (
@@ -124,6 +185,13 @@ export default function DashboardContent() {
                     )}
                 </div>
             </div>
+
+            {/* Percentile Opt-In Modal */}
+            <PercentileOptInModal
+                isOpen={showOptInModal}
+                onClose={() => setShowOptInModal(false)}
+                onOptIn={handleOptIn}
+            />
         </div>
     )
 }

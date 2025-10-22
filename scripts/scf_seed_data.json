@@ -1,0 +1,345 @@
+[
+  {
+    "age_bracket": "18-21",
+    "percentile": 10,
+    "net_worth": -8900.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 25,
+    "net_worth": -1200.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 50,
+    "net_worth": 10800.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 75,
+    "net_worth": 48200.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 90,
+    "net_worth": 114900.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 95,
+    "net_worth": 185200.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "18-21",
+    "percentile": 99,
+    "net_worth": 551000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 10,
+    "net_worth": -8525.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 25,
+    "net_worth": 2216.67,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 50,
+    "net_worth": 22550.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 75,
+    "net_worth": 84366.67,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 90,
+    "net_worth": 226191.67,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 95,
+    "net_worth": 379283.33,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "22-25",
+    "percentile": 99,
+    "net_worth": 1071416.67,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 10,
+    "net_worth": -8000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 25,
+    "net_worth": 7000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 50,
+    "net_worth": 39000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 75,
+    "net_worth": 135000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 90,
+    "net_worth": 382000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 95,
+    "net_worth": 651000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "26-28",
+    "percentile": 99,
+    "net_worth": 1800000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 10,
+    "net_worth": -6530.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 25,
+    "net_worth": 16940.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 50,
+    "net_worth": 76940.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 75,
+    "net_worth": 220400.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 90,
+    "net_worth": 527600.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 95,
+    "net_worth": 873600.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "29-32",
+    "percentile": 99,
+    "net_worth": 2465000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 10,
+    "net_worth": -4380.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 25,
+    "net_worth": 29720.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 50,
+    "net_worth": 123120.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 75,
+    "net_worth": 328600.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 90,
+    "net_worth": 728000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 95,
+    "net_worth": 1189400.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "33-35",
+    "percentile": 99,
+    "net_worth": 3290000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 10,
+    "net_worth": -640.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 25,
+    "net_worth": 48200.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 50,
+    "net_worth": 183400.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 75,
+    "net_worth": 470400.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 90,
+    "net_worth": 1006000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 95,
+    "net_worth": 1634000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "36-40",
+    "percentile": 99,
+    "net_worth": 4400000.0,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 10,
+    "net_worth": 15600,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 25,
+    "net_worth": 115000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 50,
+    "net_worth": 370000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 75,
+    "net_worth": 920000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 90,
+    "net_worth": 1970000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 95,
+    "net_worth": 3180000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  },
+  {
+    "age_bracket": "41+",
+    "percentile": 99,
+    "net_worth": 8500000,
+    "source": "SCF_2022",
+    "data_year": 2022
+  }
+]

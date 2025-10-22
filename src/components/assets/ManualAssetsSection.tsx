@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown';
 import EditAssetModal from './EditAssetModal';
@@ -65,13 +66,24 @@ interface UnifiedEntry {
 
 interface ManualAssetsSectionProps {
   onUpdate?: () => void;
+  onAllDataDeleted?: () => void;
+  limitDisplay?: number; // Optional: limit number of accounts to display (applies to both assets and liabilities separately)
+  showSeeMoreButton?: boolean; // Optional: show "See More" button
+  hideCount?: boolean; // Optional: hide the count numbers next to Assets/Liabilities headings
 }
 
-const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) => {
+const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
+  onUpdate,
+  onAllDataDeleted,
+  limitDisplay,
+  showSeeMoreButton = false,
+  hideCount = false
+}) => {
   const [assets, setAssets] = useState<ManualAsset[]>([]);
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccountWithInstitution[]>([]);
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWalletWithHoldings[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null);
@@ -80,57 +92,123 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
 
   const { hasAccess } = useSubscription();
 
-  const fetchAssets = async () => {
+  // SessionStorage cache helper
+  const CACHE_KEY = 'guapital_accounts_cache';
+  const CACHE_DURATION = 30000; // 30 seconds
+
+  const getCachedData = () => {
     try {
-      setIsLoading(true);
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_DURATION) {
+          return data;
+        }
+      }
+    } catch (err) {
+      console.error('Error reading cache:', err);
+    }
+    return null;
+  };
+
+  const setCachedData = (data: any) => {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    } catch (err) {
+      console.error('Error setting cache:', err);
+    }
+  };
+
+  const clearCache = () => {
+    try {
+      sessionStorage.removeItem(CACHE_KEY);
+    } catch (err) {
+      console.error('Error clearing cache:', err);
+    }
+  };
+
+  const fetchAssets = async (skipCache = false) => {
+    try {
+      // Try to load from cache first
+      if (!skipCache) {
+        const cached = getCachedData();
+        if (cached) {
+          setAssets(cached.assets || []);
+          setPlaidAccounts(cached.plaidAccounts || []);
+          setCryptoWallets(cached.cryptoWallets || []);
+          setIsLoading(false);
+          // Fetch fresh data in background
+          setIsRefreshing(true);
+        } else {
+          setIsLoading(true);
+        }
+      } else {
+        setIsLoading(true);
+      }
+
       setError(null);
 
-      // Fetch manual assets
-      const assetsResponse = await fetch('/api/assets');
-      const assetsData = await assetsResponse.json();
+      // Fetch all data in parallel using Promise.allSettled for better error handling
+      const [assetsResult, plaidResult, cryptoResult] = await Promise.allSettled([
+        fetch('/api/assets').then(res => res.json()),
+        fetch('/api/plaid/accounts').then(res => res.json()),
+        fetch('/api/crypto/wallets').then(res => res.json())
+      ]);
 
-      if (!assetsResponse.ok) {
-        throw new Error(assetsData.error || 'Failed to fetch assets');
+      // Process assets
+      if (assetsResult.status === 'fulfilled' && assetsResult.value.assets) {
+        setAssets(assetsResult.value.assets);
+      } else if (assetsResult.status === 'rejected') {
+        console.error('Error fetching assets:', assetsResult.reason);
       }
 
-      setAssets(assetsData.assets || []);
-
-      // Fetch Plaid accounts if user has Premium+ access
-      if (hasAccess('plaidSync')) {
-        try {
-          const plaidResponse = await fetch('/api/plaid/accounts');
-          if (plaidResponse.ok) {
-            const plaidData = await plaidResponse.json();
-            setPlaidAccounts(plaidData.accounts || []);
-          }
-        } catch (err) {
-          console.error('Error fetching Plaid accounts:', err);
-          // Don't fail the whole fetch if Plaid fails
-        }
+      // Process Plaid accounts
+      if (plaidResult.status === 'fulfilled' && plaidResult.value.accounts) {
+        setPlaidAccounts(plaidResult.value.accounts);
+      } else if (plaidResult.status === 'rejected') {
+        console.error('Error fetching Plaid accounts:', plaidResult.reason);
       }
 
-      // Fetch crypto wallets (available to all tiers)
-      try {
-        const cryptoResponse = await fetch('/api/crypto/wallets');
-        if (cryptoResponse.ok) {
-          const cryptoData = await cryptoResponse.json();
-          setCryptoWallets(cryptoData.wallets || []);
-        }
-      } catch (err) {
-        console.error('Error fetching crypto wallets:', err);
-        // Don't fail the whole fetch if crypto fails
+      // Process crypto wallets
+      if (cryptoResult.status === 'fulfilled' && cryptoResult.value.wallets) {
+        setCryptoWallets(cryptoResult.value.wallets);
+      } else if (cryptoResult.status === 'rejected') {
+        console.error('Error fetching crypto wallets:', cryptoResult.reason);
       }
+
+      // Cache the results
+      setCachedData({
+        assets: assetsResult.status === 'fulfilled' ? assetsResult.value.assets || [] : [],
+        plaidAccounts: plaidResult.status === 'fulfilled' ? plaidResult.value.accounts || [] : [],
+        cryptoWallets: cryptoResult.status === 'fulfilled' ? cryptoResult.value.wallets || [] : []
+      });
+
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchAssets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasAccess]);
+  }, []);
+
+  // Check if all data has been deleted
+  const checkIfAllDataDeleted = (
+    remainingAssets: ManualAsset[],
+    remainingPlaid: PlaidAccountWithInstitution[],
+    remainingCrypto: CryptoWalletWithHoldings[]
+  ) => {
+    const hasNoData = remainingAssets.length === 0 && remainingPlaid.length === 0 && remainingCrypto.length === 0;
+    if (hasNoData && onAllDataDeleted) {
+      onAllDataDeleted();
+    }
+  };
 
   const handleDeleteManualAsset = async (assetId: string) => {
     if (!confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
@@ -151,7 +229,14 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
       }
 
       // Remove from local state
-      setAssets(assets.filter((a) => a.id !== assetId));
+      const updatedAssets = assets.filter((a) => a.id !== assetId);
+      setAssets(updatedAssets);
+
+      // Clear cache since data changed
+      clearCache();
+
+      // Check if all data is now deleted
+      checkIfAllDataDeleted(updatedAssets, plaidAccounts, cryptoWallets);
 
       // Notify parent to refresh net worth
       if (onUpdate) {
@@ -181,7 +266,14 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
       }
 
       // Remove from local state
-      setPlaidAccounts(plaidAccounts.filter((a) => a.id !== accountId));
+      const updatedPlaid = plaidAccounts.filter((a) => a.id !== accountId);
+      setPlaidAccounts(updatedPlaid);
+
+      // Clear cache since data changed
+      clearCache();
+
+      // Check if all data is now deleted
+      checkIfAllDataDeleted(assets, updatedPlaid, cryptoWallets);
 
       // Notify parent to refresh net worth
       if (onUpdate) {
@@ -213,7 +305,14 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
       }
 
       // Remove from local state
-      setCryptoWallets(cryptoWallets.filter((w) => w.id !== walletId));
+      const updatedCrypto = cryptoWallets.filter((w) => w.id !== walletId);
+      setCryptoWallets(updatedCrypto);
+
+      // Clear cache since data changed
+      clearCache();
+
+      // Check if all data is now deleted
+      checkIfAllDataDeleted(assets, plaidAccounts, updatedCrypto);
 
       // Notify parent to refresh net worth
       if (onUpdate) {
@@ -227,7 +326,9 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
   };
 
   const handleEditSuccess = () => {
-    fetchAssets();
+    // Clear cache and skip cache on refetch
+    clearCache();
+    fetchAssets(true);
 
     // Notify parent to refresh net worth
     if (onUpdate) {
@@ -240,7 +341,9 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
   };
 
   const handleSyncComplete = async () => {
-    await fetchAssets();
+    // Clear cache and skip cache on refetch
+    clearCache();
+    await fetchAssets(true);
     setIsSyncing(false);
 
     // Notify parent to refresh net worth
@@ -339,9 +442,25 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
     return null;
   }
 
-  // Separate assets and liabilities
-  const assetEntries = allEntries.filter((a) => a.type === 'asset');
-  const liabilityEntries = allEntries.filter((a) => a.type === 'liability');
+  // Separate assets and liabilities first
+  let assetEntries = allEntries.filter((a) => a.type === 'asset');
+  let liabilityEntries = allEntries.filter((a) => a.type === 'liability');
+
+  // Store total counts before limiting
+  const totalAssetsCount = assetEntries.length;
+  const totalLiabilitiesCount = liabilityEntries.length;
+  const totalEntriesCount = totalAssetsCount + totalLiabilitiesCount;
+
+  // Sort by value (highest to lowest) and limit if specified
+  if (limitDisplay && limitDisplay > 0) {
+    assetEntries = assetEntries
+      .sort((a, b) => b.value - a.value)
+      .slice(0, limitDisplay);
+
+    liabilityEntries = liabilityEntries
+      .sort((a, b) => b.value - a.value)
+      .slice(0, limitDisplay);
+  }
 
   // Render the full section when entries exist
   return (
@@ -360,7 +479,15 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
       )}
 
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
+          {isRefreshing && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
+              <span>Updating...</span>
+            </div>
+          )}
+        </div>
         <AddAccountDropdown
           onAccountAdded={handleEditSuccess}
           onSyncStart={handleSyncStart}
@@ -368,12 +495,12 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
         />
       </div>
 
-      <div className="space-y-6 max-h-[500px] overflow-y-auto">
+      <div className="space-y-6">
         {/* Assets Section */}
         {assetEntries.length > 0 && (
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Assets ({assetEntries.length})
+              {hideCount ? 'Assets' : `Assets (${assetEntries.length})`}
             </h3>
             <div className="space-y-3">
               {assetEntries.map((entry) => (
@@ -423,9 +550,16 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
                           {entry.notes}
                         </p>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
-                        Last updated: {formatDate(entry.updatedAt)}
-                      </p>
+                      {/* Show frozen warning for Plaid accounts without Premium access */}
+                      {entry.source === 'plaid' && !hasAccess('plaidSync') ? (
+                        <p className="text-xs text-orange-600 font-medium mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
+                          Last synced: {formatDate(entry.updatedAt)}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Last updated: {formatDate(entry.updatedAt)}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
@@ -511,7 +645,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
         {liabilityEntries.length > 0 && (
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Liabilities ({liabilityEntries.length})
+              {hideCount ? 'Liabilities' : `Liabilities (${liabilityEntries.length})`}
             </h3>
             <div className="space-y-3">
               {liabilityEntries.map((entry) => (
@@ -563,9 +697,16 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
                         {entry.notes}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">
-                      Last updated: {formatDate(entry.updatedAt)}
-                    </p>
+                    {/* Show frozen warning for Plaid accounts without Premium access */}
+                    {entry.source === 'plaid' && !hasAccess('plaidSync') ? (
+                      <p className="text-xs text-orange-600 font-medium mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
+                        ⚠️ Last synced: {formatDate(entry.updatedAt)}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Last updated: {formatDate(entry.updatedAt)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
@@ -599,6 +740,18 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({ onUpdate }) =
           </div>
         )}
       </div>
+
+      {/* See More Button */}
+      {showSeeMoreButton && limitDisplay && (totalAssetsCount > limitDisplay || totalLiabilitiesCount > limitDisplay) && (
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <Link
+            href="/account"
+            className="block w-full text-center py-3 px-4 bg-[#004D40] hover:bg-[#00695C] text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
+          >
+            See All Accounts ({totalEntriesCount})
+          </Link>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editingAsset && (
