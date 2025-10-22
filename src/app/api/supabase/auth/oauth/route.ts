@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     if (!error && data.user) {
       // After successful login, check if onboarding is completed.
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('onboarding')
         .eq('id', data.user.id)
         .single()

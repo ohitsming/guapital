@@ -11,11 +11,12 @@ const COLORS = {
 }
 
 interface LiabilityBreakdownPanelProps {
-    breakdown: NetWorthBreakdown
+    breakdown: NetWorthBreakdown | null
     totalLiabilities: number
+    loading?: boolean
 }
 
-export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities }: LiabilityBreakdownPanelProps) {
+export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities, loading = false }: LiabilityBreakdownPanelProps) {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -26,6 +27,7 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities }:
     }
 
     const getLiabilityChartData = () => {
+        if (!breakdown) return []
         const data = []
         if (breakdown.credit_card_debt > 0) data.push({ name: 'Credit Cards', value: breakdown.credit_card_debt, color: COLORS.credit_card_debt })
         if (breakdown.loans > 0) data.push({ name: 'Loans', value: breakdown.loans, color: COLORS.loans })
@@ -33,6 +35,44 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities }:
     }
 
     const liabilityChartData = getLiabilityChartData()
+
+    // Skeleton loader
+    if (loading || !breakdown) {
+        return (
+            <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gray-200 animate-pulse"></div>
+                    <div>
+                        <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-1"></div>
+                        <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                </div>
+
+                {/* Chart skeleton */}
+                <div className="mb-4 h-[150px] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full border-8 border-gray-200"></div>
+                </div>
+
+                {/* Category skeletons */}
+                <div className="space-y-2">
+                    {[1, 2].map((i) => (
+                        <div key={i}>
+                            <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gray-200 animate-pulse"></div>
+                                    <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+                                </div>
+                                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                <div className="h-1.5 rounded-full bg-gray-200 animate-pulse" style={{ width: '60%' }}></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 hover:shadow-lg transition-shadow">

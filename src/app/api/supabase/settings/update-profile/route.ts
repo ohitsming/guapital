@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const fullName = `${firstName} ${lastName}`.trim()
 
     const { error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update({ full_name: fullName })
         .eq('id', user.id)
 

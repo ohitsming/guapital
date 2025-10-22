@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     
     if (user) {
         const { data: profile, error } = await supabase
-            .from('profiles')
+            .from('user_profiles')
             .select('onboarding')
             .eq('id', user.id)
             .single()

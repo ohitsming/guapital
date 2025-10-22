@@ -382,12 +382,59 @@ export function AccountsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
+      <div className="p-4 lg:p-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-6 lg:mb-8">
+          <div className="h-8 w-48 bg-gray-200 rounded mb-2"></div>
+          <div className="h-5 w-96 bg-gray-200 rounded"></div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
+              <div className="h-4 w-24 bg-gray-200 rounded mb-3"></div>
+              <div className="h-8 w-32 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 w-20 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actions and Filters Skeleton */}
+        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div className="h-10 w-full md:w-96 bg-gray-200 rounded-lg"></div>
+            <div className="flex gap-2">
+              <div className="h-10 w-48 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-48 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-40 bg-gray-200 rounded-lg"></div>
+            </div>
           </div>
-          <p className="text-lg font-semibold text-gray-900">Loading accounts...</p>
+        </div>
+
+        {/* Accounts List Skeleton */}
+        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-white border-2 border-gray-100 rounded-xl">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-5 w-40 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-24 bg-gray-200 rounded-lg"></div>
+                    <div className="h-5 w-16 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="h-8 w-32 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-5 w-48 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+                  <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -411,11 +458,11 @@ export function AccountsPageContent() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 lg:mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">Accounts</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Accounts</h1>
           {isRefreshing && (
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <div className="w-4 h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>

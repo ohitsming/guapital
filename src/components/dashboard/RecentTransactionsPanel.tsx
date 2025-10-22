@@ -114,8 +114,19 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center py-8">
-                    <div className="w-8 h-8 border-3 border-[#004D40]/20 border-t-[#FFC107] rounded-full animate-spin"></div>
+                <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 animate-pulse">
+                            <div className="flex-1 min-w-0">
+                                <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
+                                <div className="h-3 w-48 bg-gray-200 rounded mb-1"></div>
+                                <div className="h-3 w-24 bg-gray-200 rounded"></div>
+                            </div>
+                            <div className="ml-4">
+                                <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : error ? (
                 <div className="bg-red-50 rounded-lg p-4">

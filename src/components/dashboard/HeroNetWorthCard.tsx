@@ -18,13 +18,14 @@ import { useSubscription } from '@/lib/context/SubscriptionContext'
 import PercentileLearnMoreModal from '@/components/percentile/PercentileLearnMoreModal'
 
 interface HeroNetWorthCardProps {
-    netWorth: NetWorthCalculation
+    netWorth: NetWorthCalculation | null
     trendData?: TrendDataPoint[]
     maxDays?: number
     onShowPercentileOptIn?: () => void
     showPercentileButton?: boolean
     percentileData?: PercentileResponse | null
     onPercentileUpdate?: () => void
+    loading?: boolean
 }
 
 export default function HeroNetWorthCard({
@@ -34,7 +35,8 @@ export default function HeroNetWorthCard({
     onShowPercentileOptIn,
     showPercentileButton = false,
     percentileData,
-    onPercentileUpdate
+    onPercentileUpdate,
+    loading = false
 }: HeroNetWorthCardProps) {
     const [selectedDays, setSelectedDays] = useState(maxDays)
     const [isOpen, setIsOpen] = useState(false)
@@ -121,7 +123,7 @@ export default function HeroNetWorthCard({
 
     // Calculate progress based on selected time period
     const calculateProgress = () => {
-        if (!trendData || trendData.length === 0) {
+        if (!netWorth || !trendData || trendData.length === 0) {
             return null
         }
 
@@ -161,7 +163,7 @@ export default function HeroNetWorthCard({
 
     // Prepare chart data filtered by selected time period
     const chartData = useMemo(() => {
-        if (!trendData || trendData.length === 0) {
+        if (!netWorth || !trendData || trendData.length === 0) {
             return []
         }
 
@@ -211,7 +213,7 @@ export default function HeroNetWorthCard({
                 day: 'numeric'
             })
         }))
-    }, [trendData, selectedDays, netWorth.net_worth])
+    }, [trendData, selectedDays, netWorth])
 
     // Custom tooltip for the chart
     const CustomTooltip = ({ active, payload }: any) => {
@@ -282,6 +284,64 @@ export default function HeroNetWorthCard({
                     <p className="text-white/60 text-xs mt-1">
                         Your net worth trend will appear here as you track over time
                     </p>
+                </div>
+            </div>
+        )
+    }
+
+    // Skeleton loading component
+    const SkeletonLoader = () => (
+        <div className="animate-pulse">
+            {/* Header skeleton */}
+            <div className="flex items-start justify-between mb-2 gap-4">
+                <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-5 h-5 bg-white/20 rounded"></div>
+                        <div className="h-4 w-32 bg-white/20 rounded"></div>
+                    </div>
+                    <div className="mb-3">
+                        {/* Net worth skeleton */}
+                        <div className="h-10 w-48 bg-white/20 rounded mb-2"></div>
+                        {/* Progress skeleton */}
+                        <div className="h-8 w-64 bg-white/20 rounded"></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Chart skeleton */}
+            <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                <div className="h-[370px] bg-white/10 rounded flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-white/20 border-t-[#FFC107] rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-white/60 text-sm">Calculating your net worth...</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Quick stats skeleton */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="h-3 w-12 bg-white/20 rounded mb-2"></div>
+                    <div className="h-6 w-24 bg-white/20 rounded"></div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="h-3 w-16 bg-white/20 rounded mb-2"></div>
+                    <div className="h-6 w-24 bg-white/20 rounded"></div>
+                </div>
+            </div>
+        </div>
+    )
+
+    // If loading, show skeleton
+    if (loading || !netWorth) {
+        return (
+            <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-5 shadow-lg">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-24 -mt-24"></div>
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
+
+                <div className="relative z-10">
+                    <SkeletonLoader />
                 </div>
             </div>
         )

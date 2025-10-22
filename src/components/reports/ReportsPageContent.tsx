@@ -79,7 +79,7 @@ export function ReportsPageContent() {
   // Wait for subscription to load before checking access
   if (subscriptionLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
+      <div className="p-4 lg:p-8 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
             <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
@@ -93,8 +93,8 @@ export function ReportsPageContent() {
   // Access gate for non-Premium users
   if (!hasAccess('advancedReports')) {
     return (
-      <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Reports</h1>
+      <div className="p-4 lg:p-8">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Reports</h1>
         <div className="bg-gradient-to-r from-[#004D40] to-[#00695C] rounded-xl p-8 text-center text-white shadow-lg">
           <h2 className="text-2xl font-bold mb-4">Premium Feature</h2>
           <p className="text-lg mb-6">
@@ -186,7 +186,7 @@ export function ReportsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen">
+      <div className="p-4 lg:p-8 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
             <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
@@ -199,7 +199,7 @@ export function ReportsPageContent() {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="p-4 lg:p-8">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <p className="text-red-800 font-medium">Error loading reports</p>
           <p className="text-red-600 text-sm mt-2">{error}</p>
@@ -216,9 +216,9 @@ export function ReportsPageContent() {
 
   if (snapshots.length === 0) {
     return (
-      <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Reports</h1>
-        <div className="bg-white rounded-xl p-12 shadow-md border-2 border-gray-200 text-center">
+      <div className="p-4 lg:p-8">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Reports</h1>
+        <div className="bg-white rounded-xl p-8 lg:p-12 shadow-md border-2 border-gray-200 text-center">
           <p className="text-gray-600 mb-4">
             No historical data available yet. Reports will appear once you start tracking your net worth.
           </p>
@@ -234,11 +234,11 @@ export function ReportsPageContent() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Reports</h1>
           <p className="text-gray-600">Advanced analytics and insights</p>
         </div>
         <div className="flex items-center gap-3">

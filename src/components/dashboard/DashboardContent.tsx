@@ -109,30 +109,18 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     }
 
     return (
-        <div className="px-4 py-4 mt-6 min-h-screen" style={{ background: '#F7F9F9' }}>
-            {/* Loading State */}
-            {loading && (
-                <div className="mb-4 bg-white rounded-xl p-8 shadow-md border border-gray-200">
-                    <div className="flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 border-4 border-[#004D40]/20 border-t-[#FFC107] rounded-full animate-spin mb-3"></div>
-                        <p className="text-base font-semibold text-[#004D40]">Calculating your net worth...</p>
-                        <p className="text-xs text-gray-600 mt-1">Analyzing all your accounts</p>
-                    </div>
-                </div>
-            )}
-
-            {/* Hero Net Worth Card - Always shown when not loading */}
-            {!loading && netWorth && (
-                <HeroNetWorthCard
-                    netWorth={netWorth}
-                    trendData={trendData}
-                    maxDays={historyDays}
-                    onShowPercentileOptIn={() => setShowOptInModal(true)}
-                    showPercentileButton={percentileData?.opted_in === false && netWorth.net_worth !== 0}
-                    percentileData={percentileData}
-                    onPercentileUpdate={fetchPercentileData}
-                />
-            )}
+        <div className="px-10 lg:px-6 py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
+            {/* Hero Net Worth Card - Always shown with skeleton during loading */}
+            <HeroNetWorthCard
+                netWorth={netWorth}
+                trendData={trendData}
+                maxDays={historyDays}
+                onShowPercentileOptIn={() => setShowOptInModal(true)}
+                showPercentileButton={!loading && percentileData?.opted_in === false && netWorth?.net_worth !== 0}
+                percentileData={percentileData}
+                onPercentileUpdate={fetchPercentileData}
+                loading={loading}
+            />
 
             {/* Error State */}
             {!loading && error && (
@@ -163,19 +151,21 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
 
                 {/* Right Column - 1/3 width */}
                 <div className="space-y-4">
-                    {/* Asset Breakdown - Always shown when assets exist */}
-                    {netWorth && netWorth.total_assets > 0 && (
+                    {/* Asset Breakdown - Always shown with skeleton during loading or when assets exist */}
+                    {(loading || (netWorth && netWorth.total_assets > 0)) && (
                         <AssetBreakdownPanel
-                            breakdown={netWorth.breakdown}
-                            totalAssets={netWorth.total_assets}
+                            breakdown={netWorth?.breakdown || null}
+                            totalAssets={netWorth?.total_assets || 0}
+                            loading={loading}
                         />
                     )}
 
-                    {/* Liability Breakdown - Only shown when liabilities exist */}
-                    {netWorth && netWorth.total_liabilities > 0 && (
+                    {/* Liability Breakdown - Always shown with skeleton during loading or when liabilities exist */}
+                    {(loading || (netWorth && netWorth.total_liabilities > 0)) && (
                         <LiabilityBreakdownPanel
-                            breakdown={netWorth.breakdown}
-                            totalLiabilities={netWorth.total_liabilities}
+                            breakdown={netWorth?.breakdown || null}
+                            totalLiabilities={netWorth?.total_liabilities || 0}
+                            loading={loading}
                         />
                     )}
 

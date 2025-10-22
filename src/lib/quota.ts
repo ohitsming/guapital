@@ -3,7 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 export async function getRecommendedMaxQuota(supabase: SupabaseClient): Promise<number> {
     const { count, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*', { count: 'exact', head: true })
         .contains('roles', ['earner']);
 

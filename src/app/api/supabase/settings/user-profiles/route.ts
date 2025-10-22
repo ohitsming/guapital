@@ -11,7 +11,7 @@ export async function GET() {
 
     // Fetch user profile to get onboarding status
     const { data: userProfile, error: userProfileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('onboarding')
         .eq('id', user.id)
         .single()

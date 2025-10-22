@@ -63,8 +63,34 @@ export default function MonthlyCashFlowPanel() {
             <h2 className="text-base font-bold mb-3">This Month</h2>
 
             {loading ? (
-                <div className="flex items-center justify-center py-8">
-                    <div className="w-8 h-8 border-3 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
+                <div className="space-y-2 animate-pulse">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="h-3 w-12 bg-white/20 rounded mb-2"></div>
+                                <div className="h-5 w-24 bg-white/20 rounded"></div>
+                            </div>
+                            <div className="w-6 h-6 bg-white/20 rounded"></div>
+                        </div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="h-3 w-16 bg-white/20 rounded mb-2"></div>
+                                <div className="h-5 w-24 bg-white/20 rounded"></div>
+                            </div>
+                            <div className="w-6 h-6 bg-white/20 rounded"></div>
+                        </div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="h-3 w-20 bg-white/20 rounded mb-2"></div>
+                                <div className="h-5 w-24 bg-white/20 rounded"></div>
+                            </div>
+                            <div className="w-6 h-6 bg-white/20 rounded"></div>
+                        </div>
+                    </div>
                 </div>
             ) : error ? (
                 <div className="text-center py-4">

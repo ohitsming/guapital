@@ -10,43 +10,20 @@ export async function GET(request: Request) {
     }
 
     const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('full_name, email')
         .eq('id', user.id)
         .single()
 
     if (profileError) {
-        return new NextResponse(JSON.stringify({ error: profileError.message }), { status: 500 })
-    }
-
-    const { data: settingsData, error: settingsError } = await supabase
-        .from('user_settings')
-        .select('twitter_url, linkedin_url, instagram_url, tiktok_url')
-        .eq('user_id', user.id)
-        .single()
-
-    if (settingsError) {
-        // If no settings row exists, return default social media values
-        if (settingsError.code === 'PGRST116') {
-            return NextResponse.json({
-                fullName: profileData.full_name,
-                email: profileData.email,
-                twitterUrl: '',
-                linkedinUrl: '',
-                instagramUrl: '',
-                tiktokUrl: '',
-            })
-        }
-        return new NextResponse(JSON.stringify({ error: settingsError.message }), { status: 500 })
+        // If no profile exists, return error with details
+        console.error('Error fetching user profile:', profileError)
+        return new NextResponse(JSON.stringify({ error: profileError.message, code: profileError.code }), { status: 500 })
     }
 
     return NextResponse.json({
-        fullName: profileData.full_name,
-        email: profileData.email,
-        twitterUrl: settingsData.twitter_url,
-        linkedinUrl: settingsData.linkedin_url,
-        instagramUrl: settingsData.instagram_url,
-        tiktokUrl: settingsData.tiktok_url,
+        fullName: profileData.full_name || '',
+        email: profileData.email || '',
     })
 }
 
@@ -58,32 +35,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
     }
 
-    const { fullName, twitterUrl, linkedinUrl, instagramUrl, tiktokUrl } = await request.json()
+    const { fullName } = await request.json()
 
-    // Update full_name in profiles table
+    // Update full_name in user_profiles table
     const { error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update({ full_name: fullName })
         .eq('id', user.id)
 
     if (profileError) {
+        console.error('Error updating user profile:', profileError)
         return new NextResponse(JSON.stringify({ error: profileError.message }), { status: 500 })
     }
 
-    // Upsert social media links in user_settings table
-    const { error: settingsError } = await supabase
-        .from('user_settings')
-        .upsert({
-            user_id: user.id,
-            twitter_url: twitterUrl,
-            linkedin_url: linkedinUrl,
-            instagram_url: instagramUrl,
-            tiktok_url: tiktokUrl,
-        }, { onConflict: 'user_id' })
-
-    if (settingsError) {
-        return new NextResponse(JSON.stringify({ error: settingsError.message }), { status: 500 })
-    }
-
-    return NextResponse.json({ message: 'Account settings updated successfully' })
+    return NextResponse.json({ message: 'Profile updated successfully' })
 }

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .single()
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const { full_name } = await request.json()
 
     const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update({ full_name })
         .eq('id', user.id)
         .select()
