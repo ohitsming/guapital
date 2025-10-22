@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { PricingCard } from './PricingCard';
 import { FoundingMemberBanner } from './FoundingMemberBanner';
+import { FadeIn } from '../FadeIn';
 
 interface PricingSectionProps {
   showFoundingBanner?: boolean;
@@ -54,13 +55,18 @@ export function PricingSection({
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-12">
       {/* Header */}
+      
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
-          Simple, Transparent Pricing
-        </h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-          Start free, upgrade when you need automation. No hidden fees, no complexity.
-        </p>
+        <FadeIn>
+          <div className="text-center mb-20">
+            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+              Simple, Honest Pricing
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.
+            </p>
+          </div>
+        </FadeIn>
 
         {/* Billing Period Toggle */}
         <div className="flex items-center justify-center gap-4">

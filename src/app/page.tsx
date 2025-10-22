@@ -1,214 +1,558 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { } from '@headlessui/react'
+import Link from 'next/link'
+import { motion, useInView } from 'framer-motion'
 import {
-    CloudArrowUpIcon,
-    LockClosedIcon,
-    ChartPieIcon,
+    SparklesIcon,
+    ChartBarIcon,
+    ShieldCheckIcon,
+    BoltIcon,
+    CurrencyDollarIcon,
+    UserGroupIcon,
+    ArrowRightIcon,
+    CheckIcon,
     TrophyIcon,
-    CubeIcon,
-    PencilSquareIcon,
-} from '@heroicons/react/20/solid'
-import dashboard_screenshot from '@/images/screenshots/dashboard_screenshot.png'
+    LockClosedIcon,
+    CubeTransparentIcon,
+    ChartPieIcon,
+} from '@heroicons/react/24/outline'
+import { PricingSection } from '@/components/pricing/PricingSection'
+import { Footer } from '@/components/Footer'
+import dashboard_screenshot from '@/images/screenshots/dashboard_screenshot2.png'
 
-export default function Example() {
+// Animation wrapper component
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+    const ref = useRef(null)
+    const isInView = useInView(ref, { once: true, margin: "-100px" })
+
     return (
-        <main>
-            {/* Hero section */}
-            <div className="relative isolate overflow-hidden pb-16 pt-14 sm:pb-20">
-                <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl py-16 sm:py-48 lg:py-26">
-                        <div className="hidden sm:mb-8 sm:flex sm:justify-center">
-                            <div className="relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:text-gray-400 dark:ring-white/10 dark:hover:ring-white/20">
-                                Now in open beta.{' '}
-                                <a href="/signup" className="font-semibold text-primary-700 dark:text-primary-300">
-                                    <span aria-hidden="true" className="absolute inset-0" />
-                                    Sign up for early access <span aria-hidden="true">&rarr;</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <h1 className="text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl dark:text-white">
-                                Track your guap. Build your wealth.
-                            </h1>
-                            <p className="mt-8 text-pretty text-lg font-medium text-gray-600 sm:text-xl/8 dark:text-gray-400">
-                                The single, reliable source of truth for your net worth. Guapital is a modern, privacy-first app for Gen Z wealth-builders to track traditional and crypto assets in one place. No budget-shaming, just wealth-building.
-                            </p>
-                            <div className="mt-10 flex items-center justify-center gap-x-6">
-                                <a
+        <motion.div
+            ref={ref}
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.5, delay, ease: "easeOut" }}
+        >
+            {children}
+        </motion.div>
+    )
+}
+
+export default function LandingPage() {
+    const [remainingSlots, setRemainingSlots] = useState<number | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchRemainingSlots() {
+            try {
+                const response = await fetch('/api/founding-members/remaining')
+                const data = await response.json()
+                setRemainingSlots(data.remaining)
+            } catch (error) {
+                console.error('Error fetching remaining slots:', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchRemainingSlots()
+    }, [])
+
+    return (
+        <main className="">
+            {/* HERO SECTION */}
+            <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden">
+                {/* Animated background gradient */}
+                <div className="absolute inset-0 " />
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.3, 0.5, 0.3],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#FFC107]/20 rounded-full blur-3xl"
+                />
+                <motion.div
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        opacity: [0.2, 0.4, 0.2],
+                    }}
+                    transition={{
+                        duration: 10,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1
+                    }}
+                    className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#004D40]/20 rounded-full blur-3xl"
+                />
+
+                <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+                    <div className="text-center">
+                        {/* Founding member badge */}
+                        {!isLoading && remainingSlots !== null && remainingSlots > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-full text-sm font-semibold mb-8 shadow-lg"
+                            >
+                                <motion.div
+                                    animate={{ rotate: [0, 360] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                >
+                                    <SparklesIcon className="h-4 w-4 text-[#FFC107]" />
+                                </motion.div>
+                                <span>{remainingSlots} founding spots left • Lock in $79/year forever</span>
+                            </motion.div>
+                        )}
+
+                        {/* Main headline */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="font-display text-6xl sm:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+                        >
+                            <span className="text-gray-900 dark:text-white">Your Net Worth,</span>
+                            <br />
+                            <span className="bg-gradient-to-r from-[#004D40] to-[#00695C] bg-clip-text text-transparent">
+                                All in One Place
+                            </span>
+                        </motion.h1>
+
+                        {/* Subheadline */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            className="text-2xl sm:text-3xl text-gray-600 dark:text-gray-400 mb-12 max-w-4xl mx-auto font-light"
+                        >
+                            Track stocks, crypto, real estate, and more.
+                            <br className="hidden sm:block" />
+                            <strong className="text-gray-900 dark:text-white font-semibold">See where you rank</strong> compared to your peers.
+                        </motion.p>
+
+                        {/* CTA Buttons */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.6 }}
+                            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+                        >
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Link
                                     href="/signup"
-                                    className="rounded-md bg-accent px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-accent-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:bg-accent-500 dark:hover:bg-accent-400 dark:focus-visible:outline-accent-500"
+                                    className="group inline-flex items-center gap-3 px-10 py-5 bg-[#FFC107] text-gray-900 text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:bg-[#FFD54F] transition-all"
                                 >
-                                    Get started
-                                </a>
-                                <a href="/about" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-                                    Learn more <span aria-hidden="true">→</span>
-                                </a>
+                                    Get Started Free
+                                    <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                                <Link
+                                    href="#how-it-works"
+                                    className="inline-flex items-center gap-2 px-10 py-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-lg font-semibold rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#004D40] dark:hover:border-[#FFC107] transition-all"
+                                >
+                                    See How It Works
+                                </Link>
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Trust badges */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.8 }}
+                            className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600 dark:text-gray-400"
+                        >
+                            <div className="flex items-center gap-2">
+                                <CheckIcon className="h-5 w-5 text-green-600" />
+                                <span>No credit card needed</span>
                             </div>
-                        </div>
+                            <div className="flex items-center gap-2">
+                                <CheckIcon className="h-5 w-5 text-green-600" />
+                                <span>Bank-level security</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <CheckIcon className="h-5 w-5 text-green-600" />
+                                <span>Free plan forever</span>
+                            </div>
+                        </motion.div>
                     </div>
-                </div>
-            </div>
 
-            {/* Feature section */}
-            <div className="mt-32 sm:mt-56">
-                <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                    <div className="mx-auto max-w-2xl sm:text-center">
-                        <h2 className="text-base/7 font-semibold text-primary-700 dark:text-primary-300">A modern tool for modern wealth</h2>
-                        <p className="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-balance sm:text-5xl dark:text-white">
-                            Finally, a complete picture of your financial health.
-                        </p>
-                        <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-                            From stocks and savings to crypto and collectibles, see it all in one beautifully designed dashboard. We focus on wealth generation, not penny-pinching.
-                        </p>
-                    </div>
-                </div>
-                <div className="relative overflow-hidden pt-16">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                        <Image
-                            alt="App screenshot"
-                            src={dashboard_screenshot}
-                            width={2432}
-                            height={1442}
-                            className="mb-[-12%] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:hidden dark:ring-white/10"
-                        />
-                        <Image
-                            alt="App screenshot"
-                            src={dashboard_screenshot}
-                            width={2432}
-                            height={1442}
-                            className="mb-[-12%] hidden rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:block dark:ring-white/10"
-                        />
-                        <div aria-hidden="true" className="relative">
-                            <div className="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-white pt-[7%] dark:from-gray-900" />
-                        </div>
-                    </div>
-                </div>
-                <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-20 md:mt-24 lg:px-8">
-                    <dl className="mx-auto grid max-w-2xl grid-cols-1 gap-x-6 gap-y-10 text-base/7 text-gray-600 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16 dark:text-gray-400">
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <CloudArrowUpIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                Unified Account Aggregation
-                            </dt>{' '}
-                            <dd className="inline">Securely connect your bank accounts, brokerages, and credit cards with Plaid. See your traditional assets update automatically.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <CubeIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                First-Class Crypto Tracking
-                            </dt>{' '}
-                            <dd className="inline">Connect your crypto wallets from Ethereum, Polygon, Base, and more. We&apos;re built for the modern investor.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <PencilSquareIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                Manual Asset Entry
-                            </dt>{' '}
-                            <dd className="inline">Track your real estate, vehicles, private equity, and other off-line assets with our simple manual entry system.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <ChartPieIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                The Big Picture Dashboard
-                            </dt>{' '}
-                            <dd className="inline">Visualize your net worth, asset allocation, and historical growth with our clean, intuitive dashboard and charts.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <TrophyIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                Anonymous Percentile Ranking
-                            </dt>{' '}
-                            <dd className="inline">Opt-in to see how you stack up. Anonymously compare your net worth with peers in your age and income bracket.</dd>
-                        </div>
-                        <div className="relative pl-9">
-                            <dt className="inline font-semibold text-gray-900 dark:text-white">
-                                <LockClosedIcon
-                                    aria-hidden="true"
-                                    className="absolute left-1 top-1 size-5 text-primary-700 dark:text-primary-300"
-                                />
-                                Privacy by Design
-                            </dt>{' '}
-                            <dd className="inline">We will never sell your data. Our business is funded by subscriptions from users who love our product, not by selling out your privacy.</dd>
-                        </div>
-                    </dl>
-                </div>
-            </div>
+                    {/* Dashboard preview */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 60 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 1 }}
+                        className="mt-20"
+                    >
+                        <div className="relative max-w-6xl mx-auto">
+                            {/* Glow effect */}
+                            <div className="absolute -inset-4 bg-gradient-to-r from-[#004D40] to-[#FFC107] rounded-3xl blur-2xl opacity-20" />
 
-            {/* Testimonial section */}
-            <div className="relative z-10 mb-20 mt-32 sm:mb-24 sm:mt-56 xl:mb-0">
-                <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
-                    <div className="absolute left-[calc(50%-19rem)] top-[calc(50%-36rem)] transform-gpu blur-3xl">
-                        <div
-                            style={{
-                                clipPath:
-                                    'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-                            }}
-                            className="aspect-[1097/1023] w-[68.5625rem] bg-gradient-to-r from-[#ff4694] to-[#776fff] opacity-25"
-                        />
-                    </div>
-                </div>
-                <div className="bg-gray-900 pb-20 sm:pb-24 xl:pb-0 dark:bg-gray-800/50 dark:outline dark:outline-1 dark:outline-white/5">
-                    <div className="mx-auto flex max-w-7xl flex-col items-center gap-x-8 gap-y-10 px-6 sm:gap-y-8 lg:px-8 xl:flex-row xl:items-stretch">
-                        <div className="-mt-8 w-full max-w-2xl xl:-mb-8 xl:w-96 xl:flex-none">
-                            <div className="relative aspect-[2/1] h-full after:absolute after:inset-0 after:rounded-2xl after:ring-1 after:ring-white/15 md:-mx-8 xl:mx-0 xl:aspect-auto">
+                            {/* Screenshot */}
+                            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
                                 <Image
-                                    alt=""
-                                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2102&q=80"
-                                    className="absolute inset-0 size-full rounded-2xl bg-gray-800 object-cover shadow-2xl dark:bg-gray-700 dark:shadow-none"
-                                    width={2102}
-                                    height={1401}
+                                    src={dashboard_screenshot}
+                                    alt="Guapital Dashboard"
+                                    width={1400}
+                                    height={900}
+                                    className="w-full h-auto"
+                                    priority
                                 />
                             </div>
+
+                            {/* Floating stats */}
+                            <motion.div
+                                initial={{ opacity: 0, x: -30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: 1.4 }}
+                                className="absolute -left-8 top-1/4 hidden lg:block"
+                            >
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                                            <ChartBarIcon className="h-6 w-6 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Net Worth</p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">$247,582</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: 1.6 }}
+                                className="absolute -right-8 bottom-1/4 hidden lg:block"
+                            >
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-[#FFC107]/20 rounded-xl">
+                                            <TrophyIcon className="h-6 w-6 text-[#FFC107]" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
+                                            <p className="text-2xl font-bold text-[#004D40] dark:text-[#FFC107]">Top 13%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
                         </div>
-                        <div className="w-full max-w-2xl xl:max-w-none xl:flex-auto xl:px-16 xl:py-24">
-                            <figure className="relative isolate pt-6 sm:pt-12">
-                                <svg
-                                    fill="none"
-                                    viewBox="0 0 162 128"
-                                    aria-hidden="true"
-                                    className="absolute left-0 top-0 -z-10 h-32 stroke-white/20"
-                                >
-                                    <path
-                                        d="M65.5697 118.507L65.8918 118.89C68.9503 116.314 71.367 113.253 73.1386 109.71C74.9162 106.155 75.8027 102.28 75.8027 98.0919C75.8027 94.237 75.16 90.6155 73.8708 87.2314C72.5851 83.8565 70.8137 80.9533 68.553 78.5292C66.4529 76.1079 63.9476 74.2482 61.0407 72.9536C58.2795 71.4949 55.276 70.767 52.0386 70.767C48.9935 70.767 46.4686 71.1668 44.4872 71.9924L44.4799 71.9955L44.4726 71.9988C42.7101 72.7999 41.1035 73.6831 39.6544 74.6492C38.2407 75.5916 36.8279 76.455 35.4159 77.2394L35.4047 77.2457L35.3938 77.2525C34.2318 77.9787 32.6713 78.3634 30.6736 78.3634C29.0405 78.3634 27.5131 77.2868 26.1274 74.8257C24.7483 72.2185 24.0519 69.2166 24.0519 65.8071C24.0519 60.0311 25.3782 54.4081 28.0373 48.9335C30.703 43.4454 34.3114 38.345 38.8667 33.6325C43.5812 28.761 49.0045 24.5159 55.1389 20.8979C60.1667 18.0071 65.4966 15.6179 71.1291 13.7305C73.8626 12.8145 75.8027 10.2968 75.8027 7.38572C75.8027 3.6497 72.6341 0.62247 68.8814 1.1527C61.1635 2.2432 53.7398 4.41426 46.6119 7.66522C37.5369 11.6459 29.5729 17.0612 22.7236 23.9105C16.0322 30.6019 10.618 38.4859 6.47981 47.558L6.47976 47.558L6.47682 47.5647C2.4901 56.6544 0.5 66.6148 0.5 77.4391C0.5 84.2996 1.61702 90.7679 3.85425 96.8404L3.8558 96.8445C6.08991 102.749 9.12394 108.02 12.959 112.654L12.959 112.654L12.9646 112.661C16.8027 117.138 21.2829 120.739 26.4034 123.459L26.4033 123.459L26.4144 123.465C31.5505 126.033 37.0873 127.316 43.0178 127.316C47.5035 127.316 51.6783 126.595 55.5376 125.148L55.5376 125.148L55.5477 125.144C59.5516 123.542 63.0052 121.456 65.9019 118.881L65.5697 118.507Z"
-                                        id="b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb"
-                                    />
-                                    <use x={86} href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" />
-                                </svg>
-                                <blockquote className="text-xl/8 font-semibold text-white sm:text-2xl/9 dark:text-gray-100">
-                                    <p>
-                                        &ldquo;Guapital is exactly what I&apos;ve been looking for. It&apos;s the only app that seamlessly tracks my Robinhood, Coinbase, and real estate in one place. Seeing my net worth trend upwards is the best motivation.&rdquo;
+                    </motion.div>
+                </div>
+            </section>
+
+
+            {/* HOW IT WORKS */}
+            <section id="how-it-works" className="py-32 bg-white dark:bg-gray-950">
+                <div className="max-w-7xl mx-auto px-6">
+                    <FadeIn>
+                        <div className="text-center mb-20">
+                            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                                Get Started in Minutes
+                            </h2>
+                            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                                No complicated setup. Connect your accounts and start tracking immediately.
+                            </p>
+                        </div>
+                    </FadeIn>
+
+                    <div className="grid md:grid-cols-3 gap-12">
+                        {/* Step 1 */}
+                        <FadeIn delay={0.1}>
+                            <motion.div
+                                className="relative"
+                            >
+                                <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-8 pt-12 h-full border border-gray-200 dark:border-gray-800">
+                                    <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
+                                        <UserGroupIcon className="h-8 w-8 text-[#FFC107]" />
+                                    </div>
+                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                        Sign Up Free
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        Create your account in 30 seconds. No credit card required, ever.
                                     </p>
-                                </blockquote>
-                                <figcaption className="mt-8 text-base">
-                                    <div className="font-semibold text-white dark:text-gray-100">Sarah J., 29</div>
-                                    <div className="mt-1 text-gray-400">Product Manager</div>
-                                </figcaption>
-                            </figure>
-                        </div>
+                                </div>
+                            </motion.div>
+                        </FadeIn>
+
+                        {/* Step 2 */}
+                        <FadeIn delay={0.2}>
+                            <motion.div
+                                className="relative"
+                            >
+                                <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-8 pt-12 h-full border border-gray-200 dark:border-gray-800">
+                                    <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
+                                        <CubeTransparentIcon className="h-8 w-8 text-[#FFC107]" />
+                                    </div>
+                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                        Connect Accounts
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        Link your banks, crypto wallets, and add manual assets. All secure and encrypted.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </FadeIn>
+
+                        {/* Step 3 */}
+                        <FadeIn delay={0.3}>
+                            <motion.div
+                                className="relative"
+                            >
+                                <div className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-8 pt-12 h-full border border-gray-200 dark:border-gray-800">
+                                    <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
+                                        <ChartPieIcon className="h-8 w-8 text-[#FFC107]" />
+                                    </div>
+                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                        Watch It Grow
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        Track your net worth, see your rank, and celebrate your progress.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </FadeIn>
                     </div>
                 </div>
-            </div>
+            </section>
 
+            {/* PERCENTILE FEATURE */}
+            <section className="py-32 bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#004D40] text-white relative overflow-hidden">
+                <motion.div
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 90, 0]
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                    }}
+                    className="absolute top-0 right-0 w-96 h-96 bg-[#FFC107]/10 rounded-full blur-3xl"
+                />
 
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
+                        <FadeIn>
+                            <div>
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFC107] text-[#004D40] rounded-full text-sm font-bold mb-6">
+                                    <TrophyIcon className="h-4 w-4" />
+                                    <span>UNIQUE TO GUAPITAL</span>
+                                </div>
+                                <h2 className="font-display text-5xl sm:text-6xl font-bold mb-6">
+                                    See Where You Really Stand
+                                </h2>
+                                <p className="text-2xl text-white/90 mb-8 leading-relaxed">
+                                    Are you ahead or behind? Guapital shows you your percentile rank compared to others your age.
+                                    It&apos;s motivating, private, and totally opt-in.
+                                </p>
+                                <ul className="space-y-4 mb-8">
+                                    <li className="flex items-start gap-3">
+                                        <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
+                                        <span className="text-lg">Compare against real federal data + anonymous users</span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
+                                        <span className="text-lg">Watch your rank improve as you build wealth</span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
+                                        <span className="text-lg">100% anonymous—no one knows it&apos;s you</span>
+                                    </li>
+                                </ul>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <Link
+                                        href="/signup"
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-[#FFC107] text-[#004D40] text-lg font-bold rounded-xl shadow-xl hover:bg-[#FFD54F] transition-all"
+                                    >
+                                        See Your Rank
+                                        <ArrowRightIcon className="h-5 w-5" />
+                                    </Link>
+                                </motion.div>
+                            </div>
+                        </FadeIn>
 
+                        <FadeIn delay={0.2}>
+                            <div className="relative">
+                                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+                                    <div className="text-center mb-8">
+                                        <p className="text-white/80 text-sm mb-2">Your Net Worth Percentile</p>
+                                        <div className="text-7xl font-bold text-[#FFC107] mb-2">18%</div>
+                                        <p className="text-white/80">You&apos;re doing better than 82% of people your age</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="text-white/80">Bottom 50%</span>
+                                                <span className="text-white/60">$12,000</span>
+                                            </div>
+                                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                                <div className="h-full w-[50%] bg-gray-400" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="text-white/80">Top 50%</span>
+                                                <span className="text-white/60">$76,000</span>
+                                            </div>
+                                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                                <div className="h-full w-[70%] bg-blue-400" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="text-[#FFC107] font-semibold">You (Top 18%)</span>
+                                                <span className="text-[#FFC107] font-semibold">$247,582</span>
+                                            </div>
+                                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                                <div className="h-full w-[82%] bg-[#FFC107]" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="text-white/80">Top 10%</span>
+                                                <span className="text-white/60">$450,000+</span>
+                                            </div>
+                                            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                                <div className="h-full w-[90%] bg-green-400" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </FadeIn>
+                    </div>
+                </div>
+            </section>
 
+            {/* FEATURES GRID */}
+            <section className="py-32 bg-white dark:bg-gray-950">
+                <div className="max-w-7xl mx-auto px-6">
+                    <FadeIn>
+                        <div className="text-center mb-20">
+                            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                                Everything You Need
+                            </h2>
+                            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                                Track every dollar across all your accounts—automatically and securely.
+                            </p>
+                        </div>
+                    </FadeIn>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[
+                            {
+                                icon: BoltIcon,
+                                title: 'Auto-Sync Everything',
+                                description: 'Connect your banks, brokerages, and credit cards. Balances update automatically.'
+                            },
+                            {
+                                icon: CubeTransparentIcon,
+                                title: 'Unlimited Crypto',
+                                description: 'Track unlimited wallets across Ethereum, Polygon, Base, Arbitrum, and Optimism.'
+                            },
+                            {
+                                icon: ChartPieIcon,
+                                title: 'Manual Assets',
+                                description: 'Add your house, car, collections—anything you own. Track value over time.'
+                            },
+                            {
+                                icon: ChartBarIcon,
+                                title: 'Beautiful Charts',
+                                description: 'See your net worth trends, asset allocation, and growth over time.'
+                            },
+                            {
+                                icon: ShieldCheckIcon,
+                                title: 'Bank-Level Security',
+                                description: 'Your data is encrypted end-to-end. We can&apos;t move your money, only read balances.'
+                            },
+                            {
+                                icon: LockClosedIcon,
+                                title: 'Privacy First',
+                                description: 'We never sell your data. You pay us, so we work for you—not advertisers.'
+                            },
+                        ].map((feature, i) => (
+                            <FadeIn key={i} delay={i * 0.1}>
+                                <motion.div
+                                    className="bg-gray-50 dark:bg-gray-900 rounded-3xl p-8 border border-gray-200 dark:border-gray-800 h-full"
+                                >
+                                    <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
+                                        <feature.icon className="h-8 w-8 text-[#FFC107]" />
+                                    </div>
+                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                        {feature.title}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        {feature.description}
+                                    </p>
+                                </motion.div>
+                            </FadeIn>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* PRICING */}
+            <section id="pricing" className="py-32 bg-gray-50 dark:bg-gray-900/50">
+                <div className="max-w-7xl mx-auto px-6">
+                    <PricingSection
+                        showFoundingBanner={true}
+                        remainingFoundingSlots={remainingSlots ?? undefined}
+                    />
+                </div>
+            </section>
+
+            {/* FINAL CTA */}
+            <section className="py-32 bg-gradient-to-br from-[#004D40] to-[#00695C] text-white relative overflow-hidden">
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.2, 0.3, 0.2],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    className="absolute inset-0 bg-[#FFC107]/10 rounded-full blur-3xl"
+                />
+
+                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+                    <FadeIn>
+                        <h2 className="font-display text-5xl sm:text-6xl font-bold mb-6">
+                            Ready to Track Your Wealth?
+                        </h2>
+                        <p className="text-2xl text-white/90 mb-12">
+                            Join thousands tracking their net worth with Guapital. Start free today.
+                        </p>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <Link
+                                href="/signup"
+                                className="inline-flex items-center gap-3 px-12 py-6 bg-[#FFC107] text-[#004D40] text-xl font-bold rounded-2xl shadow-2xl hover:bg-[#FFD54F] transition-all"
+                            >
+                                Get Started Free
+                                <ArrowRightIcon className="h-6 w-6" />
+                            </Link>
+                        </motion.div>
+                        <p className="mt-8 text-white/70">
+                            No credit card • 5-minute setup • Free forever plan
+                        </p>
+                    </FadeIn>
+                </div>
+            </section>
+
+            {/* FOOTER */}
+            <Footer />
         </main>
     )
 }

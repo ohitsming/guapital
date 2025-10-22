@@ -220,9 +220,9 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                                 <p className="text-xs text-gray-500">Account</p>
                             </div>
                             {isAccountDropdownOpen ? (
-                                <ChevronUpIcon className="h-5 w-5 text-gray-400" />
-                            ) : (
                                 <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                            ) : (
+                                <ChevronUpIcon className="h-5 w-5 text-gray-400" />
                             )}
                         </button>
 

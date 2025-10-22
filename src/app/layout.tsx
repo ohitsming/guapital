@@ -1,8 +1,24 @@
 import type { Metadata } from 'next'
+import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google'
 import '@/styles/tailwind.css'
 import { RootLayout } from '@/components/RootLayout'
 import { ToastProvider } from '@/components/toast/ToastProvider'
 import { WEB_NAME, WEB_DESC, WEB_LONG_DESC, URL } from '@/lib/constant'
+
+// Optimized Google Fonts
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
+})
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+})
 
 export const metadata: Metadata = {
   title: {
@@ -47,8 +63,8 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
 
     return (
-        <html lang="en" className="h-full  text-base antialiased">
-            <body className="flex min-h-full flex-col">
+        <html lang="en" className={`h-full text-base antialiased ${dmSans.variable} ${plusJakartaSans.variable}`}>
+            <body className="flex min-h-full flex-col font-sans">
                 <ToastProvider>
                     <RootLayout>
                         {children}

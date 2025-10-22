@@ -111,7 +111,7 @@ export function Footer() {
                         <p><Link href={"/privacy"}>Privacy</Link></p>
                         <p><Link href={"/terms"}>Terms</Link></p>
                         <p className="text-sm text-neutral-700">
-                            Guapital LLC. {new Date().getFullYear()}
+                            © {new Date().getFullYear()} LocalMoco LLC. All rights reserved. 
                         </p>
                     </div>
                 </div>
