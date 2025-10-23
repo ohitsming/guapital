@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import EmptyState from '@/components/dashboard/EmptyState'
 import { ReceiptPercentIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+import { useToast } from '@/components/toast/ToastProvider'
 
 interface Transaction {
     id: string
@@ -35,26 +36,34 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const { showToast } = useToast()
 
-    const fetchTransactions = useCallback(async () => {
+    const fetchTransactions = useCallback(async (showErrorToast: boolean = false) => {
         try {
             setLoading(true)
             setError(null)
             const response = await fetch(`/api/plaid/transactions?limit=${limit}`)
 
             if (!response.ok) {
-                throw new Error('Failed to fetch transactions')
+                const errorData = await response.json()
+                const errorMessage = errorData.error || 'Failed to fetch transactions'
+                throw new Error(errorMessage)
             }
 
             const data = await response.json()
             setTransactions(data.transactions || [])
         } catch (err) {
             console.error('Error fetching transactions:', err)
-            setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch transactions'
+            setError(errorMessage)
+            // Only show toast if explicitly requested (e.g., after sync)
+            if (showErrorToast) {
+                showToast(errorMessage, 'error')
+            }
         } finally {
             setLoading(false)
         }
-    }, [limit])
+    }, [limit, showToast])
 
     useEffect(() => {
         fetchTransactions()
@@ -63,6 +72,8 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
     const handleSync = async () => {
         try {
             setSyncing(true)
+            setError(null) // Clear any existing errors
+
             const response = await fetch('/api/plaid/sync-transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,14 +81,34 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
             })
 
             if (!response.ok) {
-                throw new Error('Failed to sync transactions')
+                const errorData = await response.json()
+
+                // Provide specific error messages based on status
+                if (response.status === 404) {
+                    showToast('No connected accounts found. Please connect a bank account first.', 'error')
+                } else if (response.status === 401) {
+                    showToast('Please log in again to sync transactions.', 'error')
+                } else {
+                    const errorMessage = errorData.details || errorData.error || 'Failed to sync transactions'
+                    showToast(`Sync failed: ${errorMessage}`, 'error')
+                }
+                return
             }
 
-            // Refresh transactions after sync
-            await fetchTransactions()
+            const data = await response.json()
+
+            // Show success message with details
+            if (data.transactions_synced > 0) {
+                showToast(`Successfully synced ${data.transactions_synced} transaction${data.transactions_synced !== 1 ? 's' : ''} from ${data.items_processed} account${data.items_processed !== 1 ? 's' : ''}.`, 'success')
+            } else {
+                showToast('Sync completed. No new transactions found.', 'info')
+            }
+
+            // Refresh transactions after sync (show errors via toast)
+            await fetchTransactions(true)
         } catch (err) {
             console.error('Error syncing transactions:', err)
-            setError(err instanceof Error ? err.message : 'Failed to sync transactions')
+            showToast('Unable to sync transactions. Please try again later.', 'error')
         } finally {
             setSyncing(false)
         }

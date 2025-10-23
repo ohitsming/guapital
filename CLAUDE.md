@@ -989,7 +989,6 @@ npm run dev  # Visit http://localhost:3000
 
 **Shared UI:**
 - `Modal.tsx` - Generic modal component
-- `Toast.tsx` / `ToastProvider.tsx` - Toast notifications
 - `Dropdown.tsx` - Generic dropdown component
 - `Button.tsx`, `TextField.tsx`, `SelectField.tsx` - Form components
 
