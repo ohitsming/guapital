@@ -48,24 +48,16 @@ export async function GET(request: Request) {
             });
         }
 
-        // Ensure user has a net worth snapshot for today (needed for percentile calculation)
+        // Always update the snapshot for today to ensure percentile reflects current net worth
+        // The record_user_snapshot function has ON CONFLICT logic to update if exists
         const today = new Date().toISOString().split('T')[0];
-        const { data: existingSnapshot } = await supabase
-            .from('net_worth_snapshots')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('snapshot_date', today)
-            .single();
+        const { error: snapshotError } = await supabase.rpc('record_user_snapshot', {
+            target_user_id: user.id,
+            p_snapshot_date: today
+        });
 
-        if (!existingSnapshot) {
-            const { error: snapshotError } = await supabase.rpc('record_user_snapshot', {
-                target_user_id: user.id,
-                p_snapshot_date: today
-            });
-
-            if (snapshotError) {
-                console.error('Error creating snapshot:', snapshotError);
-            }
+        if (snapshotError) {
+            console.error('Error creating/updating snapshot:', snapshotError);
         }
 
         // Call the hybrid percentile calculation function

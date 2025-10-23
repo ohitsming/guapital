@@ -59,11 +59,11 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
     },
     premium: {
       name: 'Premium',
-      price: isMonthly ? '$15' : '$99',
+      price: isMonthly ? '$9.99' : '$99',
       period: isMonthly ? 'per month' : 'per year',
       description: 'Everything you need to track your wealth',
       badge: isMonthly ? undefined : 'Best Value',
-      savings: isMonthly ? undefined : 'Save $81 (45% off)',
+      savings: isMonthly ? undefined : 'Save $20.88 (17% off)',
       features: [
         { name: 'Everything in Free, plus:', included: true },
         { name: 'Unlimited Plaid-connected accounts', included: true, highlight: true },
@@ -155,7 +155,7 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
         {/* Annual cost comparison for monthly */}
         {isMonthly && isPremium && (
           <p className="mt-2 text-xs text-gray-600">
-            $180/year • Annual saves you $81!
+            $119.88/year • Annual saves you $20.88!
           </p>
         )}
       </div>

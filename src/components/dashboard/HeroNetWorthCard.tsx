@@ -12,6 +12,7 @@ import {
     ChevronDownIcon,
     InformationCircleIcon,
     TrophyIcon,
+    LockClosedIcon,
 } from '@heroicons/react/24/outline'
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
@@ -26,6 +27,7 @@ interface HeroNetWorthCardProps {
     percentileData?: PercentileResponse | null
     onPercentileUpdate?: () => void
     loading?: boolean
+    percentileLoading?: boolean
 }
 
 export default function HeroNetWorthCard({
@@ -36,7 +38,8 @@ export default function HeroNetWorthCard({
     showPercentileButton = false,
     percentileData,
     onPercentileUpdate,
-    loading = false
+    loading = false,
+    percentileLoading = false
 }: HeroNetWorthCardProps) {
     const [selectedDays, setSelectedDays] = useState(maxDays)
     const [isOpen, setIsOpen] = useState(false)
@@ -379,39 +382,7 @@ export default function HeroNetWorthCard({
                                     </button>
                                 )}
 
-                                {/* Custom Dropdown */}
-                                {hasAccess('plaidSync') && (
-                                    <div className="relative" ref={dropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsOpen(!isOpen)}
-                                            className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
-                                        >
-                                            <span>{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
-                                            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-
-                                        {isOpen && (
-                                            <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                                                <div className="py-1">
-                                                    {dayOptions.map((option) => (
-                                                        <button
-                                                            key={option.value}
-                                                            onClick={() => handleSelectDays(option.value)}
-                                                            className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
-                                                                selectedDays === option.value
-                                                                    ? 'bg-gray-100 text-gray-900 font-medium'
-                                                                    : 'text-gray-700 hover:bg-gray-50'
-                                                            }`}
-                                                        >
-                                                            {option.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                {/* Mobile Dropdown - Hidden, using main dropdown below */}
                             </div>
                         </div>
                         <div className="mb-3">
@@ -444,20 +415,15 @@ export default function HeroNetWorthCard({
                                                 ({progress.change >= 0 ? '+' : ''}{progress.percentChange.toFixed(1)}%)
                                             </span>
                                         </div>
-                                        {netWorth.net_worth >= 0 && (
-                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/20">
-                                                <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
-                                                <span className="text-white/90 font-medium text-xs">Building Wealth</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-white/60 text-xs">
-                                            {selectedDays === 30 ? 'Past 30 days' : selectedDays === 90 ? 'Past 90 days' : 'Past 365 days'}
-                                        </p>
-                                        {/* Time period dropdown for desktop */}
-                                        {hasAccess('plaidSync') && (
-                                            <div className="hidden lg:block relative" ref={dropdownRef}>
+                                        <div className="flex items-center gap-2">
+                                            {netWorth.net_worth >= 0 && (
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/20">
+                                                    <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
+                                                    <span className="text-white/90 font-medium text-xs">Building Wealth</span>
+                                                </div>
+                                            )}
+                                            {/* Time period dropdown - always visible */}
+                                            <div className="relative" ref={dropdownRef}>
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsOpen(!isOpen)}
@@ -470,24 +436,35 @@ export default function HeroNetWorthCard({
                                                 {isOpen && (
                                                     <div className="absolute right-0 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                                                         <div className="py-1">
-                                                            {dayOptions.map((option) => (
-                                                                <button
-                                                                    key={option.value}
-                                                                    onClick={() => handleSelectDays(option.value)}
-                                                                    className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
-                                                                        selectedDays === option.value
-                                                                            ? 'bg-gray-100 text-gray-900 font-medium'
-                                                                            : 'text-gray-700 hover:bg-gray-50'
-                                                                    }`}
-                                                                >
-                                                                    {option.label}
-                                                                </button>
-                                                            ))}
+                                                            {dayOptions.map((option) => {
+                                                                const isLocked = !hasAccess('plaidSync') && (option.value === 90 || option.value === 365)
+                                                                return (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        onClick={() => !isLocked && handleSelectDays(option.value)}
+                                                                        disabled={isLocked}
+                                                                        className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                                                                            isLocked
+                                                                                ? 'text-gray-400 cursor-not-allowed opacity-60'
+                                                                                : selectedDays === option.value
+                                                                                ? 'bg-gray-100 text-gray-900 font-medium'
+                                                                                : 'text-gray-700 hover:bg-gray-50'
+                                                                        }`}
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span>{option.label}</span>
+                                                                            {isLocked && (
+                                                                                <LockClosedIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                                            )}
+                                                                        </div>
+                                                                    </button>
+                                                                )
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -505,7 +482,7 @@ export default function HeroNetWorthCard({
                     {/* Right: Percentile Ranking Card or Opt-In Button - Top Right Corner */}
                     {percentileData && percentileData.opted_in && typeof percentileData.current_percentile === 'number' ? (
                         // Show percentile rank when opted in
-                        <div className="hidden lg:block w-64 flex-shrink-0 h-full">
+                        <div className="hidden lg:block w-64 flex-shrink-0 h-full relative">
                             <div className="p-4 h-full flex flex-col justify-center items-center">
                                 {/* Header - Centered */}
                                 <div className="flex flex-col items-center mb-4 gap-2">
@@ -526,14 +503,27 @@ export default function HeroNetWorthCard({
                                 <div className="flex flex-col items-center">
                                     <div className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-amber-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-lg backdrop-blur-sm shadow-lg">
                                         <span className="text-amber-100 text-3xl font-bold">
-                                            TOP {(100 - percentileData.current_percentile) < 1
-                                                ? (100 - percentileData.current_percentile).toFixed(1)
-                                                : Math.round(100 - percentileData.current_percentile)}%
+                                            TOP {(() => {
+                                                const topPercentile = 100 - percentileData.current_percentile;
+                                                if (topPercentile < 1) {
+                                                    // Floor to nearest hundredth for values below 1%, minimum 0.01%
+                                                    const floored = Math.floor(topPercentile * 100) / 100;
+                                                    return Math.max(floored, 0.01).toFixed(2);
+                                                }
+                                                return Math.round(topPercentile);
+                                            })()}%
                                         </span>
                                     </div>
                                     <p className="text-white/60 text-xs mt-3">Ages {percentileData.age_bracket}</p>
                                 </div>
                             </div>
+
+                            {/* Loading Overlay */}
+                            {percentileLoading && (
+                                <div className="absolute inset-0 bg-[#004D40]/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin"></div>
+                                </div>
+                            )}
                         </div>
                     ) : showPercentileButton && onShowPercentileOptIn ? (
                         // Show opt-in button when not opted in (desktop only)

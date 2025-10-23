@@ -5,6 +5,7 @@ import { NetWorthCalculation } from '@/lib/interfaces/networth'
 import { TrendDataPoint } from '@/lib/interfaces/subscription'
 import { PercentileResponse, AgeBracket } from '@/lib/interfaces/percentile'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
+import { recalculatePercentile } from '@/utils/percentileUtils'
 import HeroNetWorthCard from '@/components/dashboard/HeroNetWorthCard'
 import AssetBreakdownPanel from '@/components/dashboard/AssetBreakdownPanel'
 import LiabilityBreakdownPanel from '@/components/dashboard/LiabilityBreakdownPanel'
@@ -23,6 +24,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     const [percentileData, setPercentileData] = useState<PercentileResponse | null>(null)
     const [showOptInModal, setShowOptInModal] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [percentileLoading, setPercentileLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const { hasAccess, getLimit, isLoading: subscriptionLoading } = useSubscription()
@@ -72,6 +74,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
 
     const fetchPercentileData = async () => {
         try {
+            setPercentileLoading(true)
             const response = await fetch('/api/percentile')
             if (!response.ok) {
                 console.error('Failed to fetch percentile data')
@@ -83,7 +86,18 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
         } catch (err) {
             console.error('Error fetching percentile data:', err)
             // Don't block dashboard on percentile errors
+        } finally {
+            setPercentileLoading(false)
         }
+    }
+
+    // Combined handler for net worth updates - also recalculates percentile
+    const handleNetWorthUpdate = async () => {
+        await fetchNetWorth()
+        // Recalculate percentile (utility handles opt-in check automatically)
+        await recalculatePercentile()
+        // Refresh percentile display data
+        await fetchPercentileData()
     }
 
     const handleOptIn = async (ageBracket: AgeBracket) => {
@@ -109,7 +123,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     }
 
     return (
-        <div className="px-10 lg:px-6 py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
+        <div className="px-4 lg:px-6 py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
             {/* Hero Net Worth Card - Always shown with skeleton during loading */}
             <HeroNetWorthCard
                 netWorth={netWorth}
@@ -120,6 +134,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                 percentileData={percentileData}
                 onPercentileUpdate={fetchPercentileData}
                 loading={loading}
+                percentileLoading={percentileLoading}
             />
 
             {/* Error State */}
@@ -136,7 +151,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                 <div className="lg:col-span-2 space-y-4">
                     {/* Accounts (Plaid + Manual Assets) - All tiers, showing top 3 assets and top 3 liabilities */}
                     <ManualAssetsPanel
-                        onUpdate={fetchNetWorth}
+                        onUpdate={handleNetWorthUpdate}
                         onAllDataDeleted={onAllDataDeleted}
                         limitDisplay={3}
                         showSeeMoreButton={true}

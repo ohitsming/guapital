@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Guapital** is a modern, privacy-first financial application designed to help Gen Z wealth builders (ages 24-35) track their net worth across traditional and modern assets. The project focuses on wealth generation rather than simple budgeting, targeting users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
+**Guapital** is a modern, privacy-first financial application designed to help young adults (ages 24-35) track their net worth across traditional and modern assets. The project focuses on wealth generation rather than simple budgeting, targeting users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
 
 **Core Value Proposition:** The single, reliable source of truth for net worth calculation across all asset classes - without the budget shame, sync failures, or feature bloat of existing tools.
 
@@ -337,7 +337,7 @@ Required environment variables (in `.env.local`):
 
 2. **Crypto Wallet Tracking**
    - Read-only wallet balance via Alchemy/Moralis API
-   - Support: Ethereum, Polygon, Base (where most Gen Z holds assets)
+   - Support: Ethereum, Polygon, Base (where most young adults hold assets)
    - Display: Total balance in USD, top 5 holdings by value
    - Build time: 3-4 weeks
 
@@ -413,7 +413,7 @@ Required environment variables (in `.env.local`):
 - Financial advisor integrations
 - API access for power users
 - White-label solutions for fintech companies
-- "Grow with your users" - as Gen Z users age into complexity ($500K-$2M net worth), add features they need
+- "Grow with your users" - as young adult users age into complexity ($500K-$2M net worth), add features they need
 
 **Success Metrics:**
 - 100,000+ total users
@@ -522,7 +522,7 @@ Required environment variables (in `.env.local`):
    - Daily updates during launch week
 
 4. **Indie Hacker / Hacker News**
-   - "Show HN: I built a net worth tracker for Gen Z wealth builders"
+   - "Show HN: I built a net worth tracker for young adults"
    - Focus on technical architecture and privacy-first approach
 
 **Goal:** 500 total signups, 100 paying users ($2K MRR) by end of Month 6
@@ -595,7 +595,7 @@ Required environment variables (in `.env.local`):
 
 ### Always Prioritize:
 1. **Reliability over features** - One aggregator working perfectly > two working poorly
-2. **Mobile-first design** - Gen Z lives on their phones
+2. **Mobile-first design** - Young adults live on their phones
 3. **Speed & performance** - Fast load times, instant sync feedback
 4. **Beautiful UX** - Design is a competitive advantage in fintech
 5. **Privacy & security** - Non-negotiable for financial data
@@ -747,7 +747,7 @@ Visit http://localhost:3000
 ## Strategic Context
 
 See `research.md` for detailed market analysis and competitive landscape research. Key takeaways:
-- Target Gen Z wealth builders ($50K-$500K net worth) over HNWIs ($2M+)
+- Target young adults ($50K-$500K net worth) over HNWIs ($2M+)
 - Prioritize speed to market (4-6 months) over feature completeness
 - Focus on reliability and crypto integration as key differentiators
 - Build sustainable lifestyle business ($500K-$2M ARR) not venture-scale unicorn

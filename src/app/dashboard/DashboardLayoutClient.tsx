@@ -23,7 +23,7 @@ export default function DashboardLayoutClient({ user, children }: DashboardLayou
             />
 
             {/* Main Content */}
-            <div className="lg:ml-64">
+            <div className="lg:ml-64 pt-20 lg:pt-0">
                 {children}
             </div>
         </div>

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Guapital** is a modern, privacy-first financial application for Gen Z wealth builders (ages 24-35) to track net worth across traditional and modern assets. Targets users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
+**Guapital** is a modern, privacy-first financial application for young adults (ages 24-35) to track net worth across traditional and modern assets. Targets users with $50K-$500K net worth who hold a mix of traditional investments, cryptocurrency, and emerging assets.
 
 **Core Value Proposition:** Single, reliable source of truth for net worth calculation across all asset classes - without budget shame, sync failures, or feature bloat.
 
@@ -500,8 +500,9 @@ Required in `.env.local`:
 
 ### Premium Tier
 **Price:**
+- **Monthly:** $9.99/month
+- **Annual:** $99/year (17% savings vs monthly)
 - **Founding Members (First 1,000):** $79/year forever
-- **Regular Pricing:** $99/year
 
 **Features (UNLIMITED EVERYTHING):**
 - Unlimited Plaid accounts, crypto wallets, manual assets
@@ -514,14 +515,15 @@ Required in `.env.local`:
 - CSV export
 
 **Competitive Positioning:**
-- 45% cheaper than Monarch Money ($180/year)
-- 9% cheaper than YNAB ($109/year)
+- Same annual price as Monarch Money ($99/year) but 33% cheaper monthly ($9.99 vs $14.99)
+- 9% cheaper annual than YNAB ($99 vs $109/year)
 - Only app with UNLIMITED crypto wallets at this price
 
 ### Pricing Rationale
 
-- **Annual-only pricing** reduces churn, improves cash flow
-- **Founding member strategy** creates urgency, builds loyal community
+- **Flexible pricing:** Monthly ($9.99) for commitment testing, annual ($99) for best value
+- **Annual incentive:** 17% savings drives conversions, reduces churn, improves cash flow
+- **Founding member strategy:** Creates urgency, builds loyal community
 - **Value-based pricing:** Users save 2-5 hours/month (worth $50-200 at their hourly rate)
 - **Target:** 1,000 paying = $99K ARR (Year 1), 5,000 paying = $495K ARR (Year 2)
 
@@ -545,7 +547,7 @@ Required in `.env.local`:
 **Important Notes:**
 - **CoinGecko actual cost: $0/month** - Currently only pricing native tokens (ETH, MATIC), well within free tier limits
 - **Limitation:** ERC20 tokens show $0 USD value (known limitation, acceptable for MVP)
-- **Stripe optimization:** Annual billing = 3.20% effective rate vs 4.93% for monthly
+- **Stripe optimization:** Annual billing = 3.20% effective rate vs 5.91% for monthly
 - **Alchemy scaling:** Crypto tracking remains free up to ~5K users with moderate usage
 
 **Cost per User by Scale:**
@@ -567,15 +569,15 @@ Required in `.env.local`:
 
 **Profit Projections at Different Scales:**
 
-| Users | Monthly Revenue | Gross Profit (87.9%) | Operating Expenses | **Net Profit/Mo** | **Annual Net Profit** | **Net Margin** |
+| Users | Monthly Revenue | Gross Profit (85-88%) | Operating Expenses | **Net Profit/Mo** | **Annual Net Profit** | **Net Margin** |
 |-------|----------------|----------------------|-------------------|-------------------|----------------------|----------------|
-| 1,000 | $9,950 | $8,624 | ~$5,000 | **$3,600** | **$43K** | **36%** |
-| 5,000 | $47,880 | $41,714 | ~$20,000 | **$21,700** | **$260K** | **45%** |
-| 15,000 | $142,140 | $124,110 | ~$53,000 | **$71,000** | **$850K** | **50%** |
-| 25,000 | $237,660 | $209,972 | ~$95,000 | **$115,000** | **$1.38M** | **48%** |
+| 1,000 | $8,946 | $7,669 | ~$5,000 | **$2,669** | **$32K** | **30%** |
+| 5,000 | $43,860 | $37,939 | ~$20,000 | **$17,939** | **$215K** | **41%** |
+| 15,000 | $128,970 | $112,204 | ~$50,000 | **$62,204** | **$746K** | **48%** |
+| 25,000 | $214,950 | $188,726 | ~$95,000 | **$93,726** | **$1.125M** | **44%** |
 
 **Assumptions:**
-- Blended pricing: 60% annual ($99), 30% annual founding ($79), 10% monthly-to-annual conversions
+- Blended pricing: 40% monthly ($9.99/mo) + 60% annual ($99/yr) at 1K users, shifting to 20% monthly + 80% annual at scale
 - Operating expenses: 2 founders @ $2.5K/mo initially, scaling to small team (5-10 people) at 25K users
 - Marketing spend: $50-100 CAC, organic growth focus (Reddit, Twitter, Product Hunt)
 - Customer support: Initially founder-led, scaling to part-time then full-time at 10K+ users
@@ -583,10 +585,10 @@ Required in `.env.local`:
 **Key Insight:** With disciplined cost control, Guapital can achieve 40-50% net margins at scale - significantly better than most SaaS businesses (typical 15-25%).
 
 **Break-Even Analysis:**
-- **50 paying users** covers all infrastructure costs ($1,326/mo)
-- **500 users** supports 2 founders at ramen profitability (~$5K/mo take-home)
-- **1,000 users** = sustainable indie business ($43K/year profit + founder salaries)
-- **5,000 users** = comfortable lifestyle business ($260K/year profit)
+- **63 paying users** covers all infrastructure costs ($1,275/mo)
+- **600 users** supports 2 founders at ramen profitability (~$5K/mo take-home)
+- **1,000 users** = sustainable indie business ($32K/year profit + founder salaries)
+- **5,000 users** = comfortable lifestyle business ($215K/year profit)
 
 ## Competitor Profitability Analysis
 
@@ -690,7 +692,7 @@ Understanding competitor economics validates our pricing strategy and reveals ma
 | **Monarch** | $75M* | -10% to +5% | -$5M to +$5M | Growth mode, burning $75M | 100-200 |
 | **Copilot** | $18M | 15-20% | $3-4M/year | Efficient, profitable, scaled | 10-20 |
 | **Empower** | $973M** | 25-30% | $250-300M | Very profitable (diff. model) | Large |
-| **Guapital (Projected)** | $1.2M*** | **45%*** | $260K/year | Pre-launch (5K users) | 1-2 |
+| **Guapital (Projected)** | $526K*** | **41%*** | $215K/year | Pre-launch (5K users) | 1-2 |
 
 *Estimated
 **Entire Empower business
@@ -711,14 +713,14 @@ Understanding competitor economics validates our pricing strategy and reveals ma
 - Without percentile ranking, we can't compete. WITH it, we can steal market share.
 
 **3. Realistic Path to $1M+ Annual Profit:**
-- **Year 1 (1,000 users):** $43K profit = ramen profitability
-- **Year 2 (5,000 users):** $260K profit = sustainable lifestyle business
-- **Year 3 (15,000 users):** $850K profit = comfortable living + reinvestment
-- **Year 4 (25,000 users):** $1.4M profit = generational wealth builder
+- **Year 1 (1,000 users):** $32K profit = ramen profitability
+- **Year 2 (5,000 users):** $215K profit = sustainable lifestyle business
+- **Year 3 (15,000 users):** $746K profit = comfortable living + reinvestment
+- **Year 4 (25,000 users):** $1.125M profit = generational wealth builder
 
 **4. Exit Opportunity:**
-- At 25,000 users: $2.4M ARR (blended pricing)
-- 10-15x ARR valuation = **$24-36M acquisition potential**
+- At 25,000 users: $2.58M ARR (blended pricing)
+- 10-15x ARR valuation = **$25-39M acquisition potential**
 - Comparable: Monarch valued at $850M on ~$75M ARR (11x multiple)
 
 ## Competitive Strategy
@@ -765,7 +767,7 @@ Understanding competitor economics validates our pricing strategy and reveals ma
 ### The Secondary Feature: FIRE Calculator
 
 **Why This Works:**
-1. **Target Audience Alignment:** Gen Z wealth builders care about Financial Independence
+1. **Target Audience Alignment:** Young adults care about Financial Independence
 2. **Emotional Connection:** "You'll reach FI in 8.3 years" is motivating
 3. **Differentiation:** Monarch/YNAB focus on budgeting, not wealth building
 4. **Sticky Feature:** Users check progress monthly (retention driver)
@@ -1023,7 +1025,7 @@ npm run dev  # Visit http://localhost:3000
 
 ## Strategic Context
 
-**Target Market:** Gen Z wealth builders ($50K-$500K net worth) over HNWIs ($2M+)
+**Target Market:** Young adults ($50K-$500K net worth) over HNWIs ($2M+)
 
 **Timeline:**
 - ✅ Percentile ranking complete (3 days as planned)
@@ -1032,26 +1034,26 @@ npm run dev  # Visit http://localhost:3000
 - 5,000 users (lifestyle business): 12-18 months
 
 **Business Model:** Follow Copilot's playbook
-- Sustainable lifestyle business ($260K-$1.4M profit/year at 5K-25K users)
+- Sustainable lifestyle business ($215K-$1.125M profit/year at 5K-25K users)
 - Bootstrap to profitability FIRST, raise small round ($1-3M) if/when needed
 - NOT venture-scale unicorn (avoiding Monarch's burn-to-grow trap)
 
 **Competitive Positioning:**
-- **Price:** 45% cheaper than Monarch ($79-99/year vs $180/year)
+- **Price:** Same annual ($99/yr) as Monarch, but 33% cheaper monthly ($9.99 vs $14.99)
 - **Differentiation:** Percentile ranking (viral hook) ✅ + FIRE calculator (wealth-building focus)
 - **Moat:** Network effects (more users = more valuable percentile data)
 
 **Key Success Metrics:**
-- **50 users:** Infrastructure break-even
-- **500 users:** Ramen profitability for 2 founders
-- **1,000 users:** $99K ARR, sustainable indie business
-- **5,000 users:** $495K ARR, $260K net profit (lifestyle business)
-- **15,000 users:** $1.5M ARR, $850K net profit (exit opportunity territory)
+- **63 users:** Infrastructure break-even
+- **600 users:** Ramen profitability for 2 founders
+- **1,000 users:** $107K ARR, sustainable indie business
+- **5,000 users:** $526K ARR, $215K net profit (lifestyle business)
+- **15,000 users:** $1.55M ARR, $746K net profit (exit opportunity territory)
 
 **Exit Opportunity (if desired):**
-- 25,000 users = $2.4M ARR
-- 10-15x ARR valuation = **$24-36M acquisition**
-- Or stay indie and generate $1.4M/year profit indefinitely
+- 25,000 users = $2.58M ARR
+- 10-15x ARR valuation = **$25-39M acquisition**
+- Or stay indie and generate $1.125M/year profit indefinitely
 
 **Philosophy:**
 - Build for 1,000 users first, not 1,000,000

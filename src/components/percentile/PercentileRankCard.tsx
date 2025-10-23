@@ -26,7 +26,10 @@ export default function PercentileRankCard({ data, onRefresh }: PercentileRankCa
 
     const percentile = data.current_percentile
     const topPercentile = 100 - percentile
-    const displayPercentile = topPercentile < 1 ? topPercentile.toFixed(1) : Math.round(topPercentile)
+    // Floor to nearest hundredth for values below 1%, minimum 0.01%, otherwise round normally
+    const displayPercentile = topPercentile < 1
+        ? Math.max(Math.floor(topPercentile * 100) / 100, 0.01).toFixed(2)
+        : Math.round(topPercentile)
 
     // Determine badge color based on percentile
     const getBadgeColor = () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/Button'
 import { TextField } from '@/components/TextField'
 import { DropdownSelect } from '@/components/ui/DropdownSelect'
@@ -47,11 +47,7 @@ export function ProfileSettings() {
         percentileOptedIn: false,
     })
 
-    useEffect(() => {
-        fetchProfileData()
-    }, [])
-
-    const fetchProfileData = async () => {
+    const fetchProfileData = useCallback(async () => {
         try {
             setIsLoading(true)
 
@@ -80,7 +76,11 @@ export function ProfileSettings() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [showToast])
+
+    useEffect(() => {
+        fetchProfileData()
+    }, [fetchProfileData])
 
     const handleSave = async () => {
         try {

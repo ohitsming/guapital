@@ -2,11 +2,11 @@
 
 ## 1. Core Concept
 
-Project Guapital is a modern, privacy-first financial application designed to help users, particularly from Gen Z, understand and track their net worth. The core mission is to provide a clear, simple, and motivating picture of one's financial health, moving beyond simple budgeting to focus on wealth generation.
+Project Guapital is a modern, privacy-first financial application designed to help young adults understand and track their net worth. The core mission is to provide a clear, simple, and motivating picture of one's financial health, moving beyond simple budgeting to focus on wealth generation.
 
 The app will be built on the principle of manual entry first, promoting mindfulness about financial assets and liabilities. Future iterations will introduce gamification and social features in a secure, opt-in, and anonymous manner.
 
-- **Target Audience:** Gen Z and young millennials seeking financial clarity and independence.
+- **Target Audience:** Young adults seeking financial clarity and independence.
 - **Core Value:** Simplicity, Privacy, and Motivation.
 
 ---

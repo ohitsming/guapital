@@ -13,27 +13,9 @@ export async function GET(request: Request) {
     const { error, data } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // After successful login, check if onboarding is completed.
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('onboarding')
-        .eq('id', data.user.id)
-        .single()
-
-      if (profileError) {
-        // Handle error, maybe redirect to an error page
-        console.error(profileError)
-        const redirectUrl = new URL('/auth/auth-code-error', siteUrl);
-        return NextResponse.redirect(redirectUrl)
-      }
-
-      if (profile.onboarding) {
-        const redirectUrl = new URL(next, siteUrl);
-        return NextResponse.redirect(redirectUrl)
-      } else {
-        const redirectUrl = new URL('/onboarding', siteUrl);
-        return NextResponse.redirect(redirectUrl)
-      }
+      // After successful OAuth login, redirect to dashboard
+      const redirectUrl = new URL(next, siteUrl);
+      return NextResponse.redirect(redirectUrl)
     }
   }
 

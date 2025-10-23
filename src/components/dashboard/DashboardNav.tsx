@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
     HomeIcon,
     WalletIcon,
@@ -17,10 +17,12 @@ import {
     ChevronDownIcon,
     Bars3Icon
 } from '@heroicons/react/24/outline'
+import { SparklesIcon } from '@heroicons/react/24/solid'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Logo } from '@/components/Logo'
+import { PaymentModal } from '@/components/stripe'
 
 interface NavItem {
     name: string
@@ -46,10 +48,12 @@ interface DashboardNavProps {
 
 export function DashboardNav({ isOpen = false, onClose, onOpen, user }: DashboardNavProps) {
     const pathname = usePathname()
-    const { hasAccess, isLoading } = useSubscription()
+    const { hasAccess, isLoading, tier } = useSubscription()
     const supabase = createClient()
+    const isPremium = tier === 'premium'
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
     const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
@@ -69,7 +73,7 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
         if (isOpen && onClose) {
             onClose()
         }
-    }, [pathname])
+    }, [pathname, isOpen, onClose])
 
     // Close dropdown when sidebar is closed
     useEffect(() => {
@@ -122,10 +126,16 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                 style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
             >
                 {/* Logo Section */}
-                <div className="flex items-center justify-center py-6 px-6 flex-shrink-0" style={{ willChange: 'auto' }}>
+                <div className="flex flex-col items-center justify-center py-6 px-6 flex-shrink-0 gap-3" style={{ willChange: 'auto' }}>
                     <Link href="/" aria-label="Home" prefetch={true}>
-                        <Logo className="h-8 w-auto" />
+                        <Logo className="h-12 w-auto" />
                     </Link>
+                    {isPremium && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-[#FFC107] to-[#FFD54F] rounded-full shadow-md">
+                            <SparklesIcon className="h-3.5 w-3.5 text-[#004D40]" />
+                            <span className="text-xs font-bold text-[#004D40] tracking-wide">PREMIUM</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Close button for mobile */}
@@ -195,12 +205,12 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                             <div className="bg-gradient-to-r from-[#004D40] to-[#00695C] rounded-lg p-4 text-white">
                                 <p className="text-xs font-semibold mb-2">Upgrade to Premium</p>
                                 <p className="text-xs mb-3 opacity-90">Unlock reports, transactions & more</p>
-                                <a
-                                    href="/pricing"
+                                <button
+                                    onClick={() => setIsPaymentModalOpen(true)}
                                     className="block w-full px-3 py-2 bg-white text-[#004D40] text-xs font-semibold rounded text-center hover:bg-gray-100 transition-colors"
                                 >
-                                    View Plans
-                                </a>
+                                    Choose Plan
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -214,10 +224,14 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                         >
                             <UserCircleIcon className="h-10 w-10 text-gray-600" />
                             <div className="flex-1 min-w-0 text-left">
-                                <p className="text-sm font-medium text-gray-900 truncate">
-                                    {user.email}
+                                <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                        {user.email}
+                                    </p>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {isPremium ? 'Premium Account' : 'Account'}
                                 </p>
-                                <p className="text-xs text-gray-500">Account</p>
                             </div>
                             {isAccountDropdownOpen ? (
                                 <ChevronDownIcon className="h-5 w-5 text-gray-400" />
@@ -256,6 +270,12 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                     </div>
                 </div>
             </div>
+
+            {/* Payment Modal */}
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+            />
         </>
     )
 }

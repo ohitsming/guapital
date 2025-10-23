@@ -23,7 +23,7 @@ export function SignupForm() {
                 email,
                 password,
                 options: {
-                    emailRedirectTo: `${location.origin}/api/supabase/auth/callback}`,
+                    emailRedirectTo: `${location.origin}/api/supabase/auth/callback?type=signup`,
                 },
             })
 

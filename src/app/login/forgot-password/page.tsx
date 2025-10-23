@@ -25,11 +25,16 @@ export default function ForgotPasswordPage() {
 
         if (error) {
             setError(error.message);
+            setLoading(false);
         } else {
-            setMessage('If an account with that email exists, a password reset link has been sent to your inbox.');
+            setMessage('Password reset link sent! Check your email inbox. Redirecting to login...');
             setEmail(''); // Clear email input
+
+            // Redirect to login page after 2 seconds
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
         }
-        setLoading(false);
     };
 
     return (

@@ -6,6 +6,7 @@ import { ArrowPathIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@hero
 import { formatCurrency } from '@/utils/formatters'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { PaymentModal } from '@/components/stripe'
 
 interface NetWorthSnapshot {
   snapshot_date: string
@@ -44,6 +45,7 @@ export function ReportsPageContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<'30' | '90' | '365'>('90')
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
   const { hasAccess, isLoading: subscriptionLoading } = useSubscription()
 
@@ -93,21 +95,29 @@ export function ReportsPageContent() {
   // Access gate for non-Premium users
   if (!hasAccess('advancedReports')) {
     return (
-      <div className="p-4 lg:p-8">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Reports</h1>
-        <div className="bg-gradient-to-r from-[#004D40] to-[#00695C] rounded-xl p-8 text-center text-white shadow-lg">
-          <h2 className="text-2xl font-bold mb-4">Premium Feature</h2>
-          <p className="text-lg mb-6">
-            Advanced reports and analytics are available on Premium and Pro plans.
-          </p>
-          <a
-            href="/pricing"
-            className="inline-block px-6 py-3 bg-white text-[#004D40] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Upgrade to Premium
-          </a>
+      <>
+        <div className="p-4 lg:p-8">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Reports</h1>
+          <div className="bg-gradient-to-r from-[#004D40] to-[#00695C] rounded-xl p-8 text-center text-white shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Premium Feature</h2>
+            <p className="text-lg mb-6">
+              Advanced reports and analytics are available on Premium plans.
+            </p>
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="px-8 py-3 bg-white text-[#004D40] font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+            >
+              Upgrade to Premium
+            </button>
+          </div>
         </div>
-      </div>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+        />
+      </>
     )
   }
 

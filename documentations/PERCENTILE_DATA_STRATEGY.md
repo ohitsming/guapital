@@ -129,7 +129,7 @@ From existing Guapital infrastructure:
 **Source:** https://www.pewresearch.org/social-trends/
 
 **What It Is:**
-- Research reports on generational wealth (Gen Z, Millennials, Gen X)
+- Research reports on generational wealth (young adults, middle-aged, older adults)
 - Periodic studies with detailed analysis
 
 **Data Available:**
@@ -138,7 +138,7 @@ From existing Guapital infrastructure:
 - Trends over time
 
 **Pros:**
-- ✅ Generation-specific (resonates with Gen Z target)
+- ✅ Generation-specific (resonates with young adult target)
 - ✅ Well-researched, credible
 - ✅ Great for marketing ("Based on Pew Research")
 

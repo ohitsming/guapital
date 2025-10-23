@@ -2,15 +2,18 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import GetStartedView from '@/components/dashboard/GetStartedView'
 import DashboardContent from '@/components/dashboard/DashboardContent'
+import { useSubscription } from '@/lib/context/SubscriptionContext'
 
 export default function Dashboard() {
     const [hasAnyData, setHasAnyData] = useState<boolean | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+    const searchParams = useSearchParams()
     const supabase = createClient()
+    const { refetch } = useSubscription()
 
     const checkForData = useCallback(async () => {
         try {
@@ -44,6 +47,19 @@ export default function Dashboard() {
     useEffect(() => {
         checkForData()
     }, [checkForData])
+
+    // Handle Stripe checkout success - refresh subscription
+    useEffect(() => {
+        const checkoutStatus = searchParams.get('checkout')
+        if (checkoutStatus === 'success') {
+            // Refetch subscription data after successful payment
+            refetch()
+
+            // Clean up URL parameter
+            const newUrl = window.location.pathname
+            window.history.replaceState({}, '', newUrl)
+        }
+    }, [searchParams, refetch])
 
     // Show loading state while checking for data
     // Also check hasAnyData === null to prevent flash of GetStartedView

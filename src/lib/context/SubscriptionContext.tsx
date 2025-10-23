@@ -51,16 +51,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
                 return
             }
 
-            // In development, always use pro tier
-            if (isDevelopment) {
-                setSubscription({
-                    tier: 'free',
-                    status: 'active',
-                })
-                return
-            }
-
-            // PRODUCTION: Fetch subscription from user_settings
+            // Fetch subscription from user_settings (both dev and production)
             const { data, error: fetchError } = await supabase
                 .from('user_settings')
                 .select('subscription_tier, subscription_status, subscription_start_date, subscription_end_date, stripe_customer_id, stripe_subscription_id')

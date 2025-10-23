@@ -43,6 +43,7 @@
     "framer-motion": "^10.15.2",
     "next": "^14.0.4",
     "plaid": "^39.0.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-charts": "^5.2.1",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/qrcode.react": "^1.0.5",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
     "husky": "^9.1.7",

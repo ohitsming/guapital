@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: `%s | ${WEB_NAME}`,
   },
   description: WEB_LONG_DESC,
-  keywords: ['net worth', 'financial tracking', 'wealth management', 'personal finance', 'assets', 'liabilities', 'financial independence', 'Gen Z finance'],
+  keywords: ['net worth', 'financial tracking', 'wealth management', 'personal finance', 'assets', 'liabilities', 'financial independence', 'young adults finance'],
   openGraph: {
     title: `${WEB_NAME}: ${WEB_DESC}`,
     description: WEB_LONG_DESC,

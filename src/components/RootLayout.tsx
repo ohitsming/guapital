@@ -14,6 +14,7 @@ import clsx from 'clsx'
 import { motion, MotionConfig, useReducedMotion } from 'framer-motion'
 import { BanknotesIcon } from '@heroicons/react/24/solid'
 import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/solid'
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
@@ -38,22 +39,6 @@ export function RootLayout({ children }: { children: React.ReactNode }) {
     )
 }
 
-function XIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
-    return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-            <path d="m5.636 4.223 14.142 14.142-1.414 1.414L4.222 5.637z" />
-            <path d="M4.222 18.363 18.364 4.22l1.414 1.414L5.636 19.777z" />
-        </svg>
-    )
-}
-
-function MenuIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
-    return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-            <path d="M2 6h20v2H2zM2 16h20v2H2z" />
-        </svg>
-    )
-}
 
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
@@ -63,14 +48,12 @@ import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/20/solid'
 
 function Header({
     panelId,
-    icon: Icon,
     expanded,
     onToggle,
     toggleRef,
     invert = false,
 }: {
     panelId: string
-    icon: React.ComponentType<{ className?: string }>
     expanded: boolean
     onToggle: () => void
     toggleRef: React.RefObject<HTMLButtonElement>
@@ -112,7 +95,9 @@ function Header({
                     onMouseLeave={() => setLogoHovered(false)}
                 >
                     <Logo
-                        className="hidden h-8 sm:block"
+                        className={clsx(
+                            "hidden sm:block h-12"
+                        )}
                         invert={invert}
                         filled={logoHovered}
                     />
@@ -223,19 +208,30 @@ function Header({
                             aria-expanded={expanded ? 'true' : 'false'}
                             aria-controls={panelId}
                             className={clsx(
-                                'group -m-2.5 rounded-full p-2.5 transition',
+                                'group -m-2.5 rounded-lg p-2.5 transition',
                                 invert ? 'hover:bg-white/10' : 'hover:bg-neutral-950/10',
                             )}
                             aria-label="Toggle navigation"
                         >
-                            <Icon
-                                className={clsx(
-                                    'h-6 w-6',
-                                    invert
-                                        ? 'fill-white group-hover:fill-neutral-200'
-                                        : 'fill-neutral-950 group-hover:fill-neutral-700',
-                                )}
-                            />
+                            {expanded ? (
+                                <XMarkIcon
+                                    className={clsx(
+                                        'h-6 w-6',
+                                        invert
+                                            ? 'text-white group-hover:text-neutral-200'
+                                            : 'text-neutral-950 group-hover:text-neutral-700',
+                                    )}
+                                />
+                            ) : (
+                                <Bars3Icon
+                                    className={clsx(
+                                        'h-6 w-6',
+                                        invert
+                                            ? 'text-white group-hover:text-neutral-200'
+                                            : 'text-neutral-950 group-hover:text-neutral-700',
+                                    )}
+                                />
+                            )}
                         </button>
                     </div>
                 </div>
@@ -299,7 +295,7 @@ function Navigation() {
     return (
         <nav className="mt-px font-display text-xl font-medium tracking-tight text-white">
             <NavigationRow>
-                <NavigationItem href="/about">About Us</NavigationItem>
+                <NavigationItem href="/about">About</NavigationItem>
                 <NavigationItem href="/pricing">Pricing</NavigationItem>
             </NavigationRow>
             <NavigationRow>
@@ -366,7 +362,6 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
                     >
                         <Header
                             panelId={panelId}
-                            icon={MenuIcon}
                             toggleRef={openRef}
                             expanded={expanded}
                             onToggle={() => {
@@ -393,7 +388,6 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
                                 <Header
                                     invert
                                     panelId={panelId}
-                                    icon={XIcon}
                                     toggleRef={closeRef}
                                     expanded={expanded}
                                     onToggle={() => {

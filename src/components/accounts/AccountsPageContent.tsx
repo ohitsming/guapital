@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown'
 import EditAssetModal from '@/components/assets/EditAssetModal'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
+import { recalculatePercentile } from '@/utils/percentileUtils'
 import type { ManualAsset } from '@/lib/interfaces/asset'
 import type { PlaidAccount } from '@/lib/interfaces/plaid'
 import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto'
@@ -115,7 +116,7 @@ export function AccountsPageContent() {
     }
   }
 
-  const fetchAssets = async (skipCache = false) => {
+  const fetchAssets = useCallback(async (skipCache = false) => {
     try {
       // Try to load from cache first
       if (!skipCache) {
@@ -177,11 +178,11 @@ export function AccountsPageContent() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchAssets()
-  }, [])
+  }, [fetchAssets])
 
   const handleDeleteManualAsset = async (assetId: string) => {
     if (!confirm('Are you sure you want to delete this asset? This action cannot be undone.')) {
@@ -203,6 +204,8 @@ export function AccountsPageContent() {
 
       setAssets(assets.filter((a) => a.id !== assetId))
       clearCache()
+      // Recalculate percentile ranking after deleting account
+      await recalculatePercentile()
     } catch (err: any) {
       alert(err.message || 'Failed to delete asset')
     } finally {
@@ -228,6 +231,8 @@ export function AccountsPageContent() {
 
       setPlaidAccounts(plaidAccounts.filter((a) => a.id !== accountId))
       clearCache()
+      // Recalculate percentile ranking after deleting account
+      await recalculatePercentile()
     } catch (err: any) {
       alert(err instanceof Error ? err.message : 'Failed to delete account')
     } finally {
@@ -255,6 +260,8 @@ export function AccountsPageContent() {
 
       setCryptoWallets(cryptoWallets.filter((w) => w.id !== walletId))
       clearCache()
+      // Recalculate percentile ranking after deleting wallet
+      await recalculatePercentile()
     } catch (err: any) {
       alert(err.message || 'Failed to delete wallet')
     } finally {
@@ -262,9 +269,11 @@ export function AccountsPageContent() {
     }
   }
 
-  const handleEditSuccess = () => {
+  const handleEditSuccess = async () => {
     clearCache()
-    fetchAssets(true)
+    await fetchAssets(true)
+    // Recalculate percentile ranking after account changes
+    await recalculatePercentile()
   }
 
   const handleSyncStart = () => {
@@ -275,11 +284,15 @@ export function AccountsPageContent() {
     clearCache()
     await fetchAssets(true)
     setIsSyncing(false)
+    // Recalculate percentile ranking after syncing accounts
+    await recalculatePercentile()
   }
 
   const handleRefresh = async () => {
     clearCache()
     await fetchAssets(true)
+    // Recalculate percentile ranking after refresh
+    await recalculatePercentile()
   }
 
   const transformPlaidToUnified = (): UnifiedEntry[] => {

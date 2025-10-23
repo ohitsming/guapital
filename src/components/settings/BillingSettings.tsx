@@ -4,6 +4,7 @@ import { Button } from '@/components/Button'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
 import { CreditCardIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { UpgradeButton } from '@/components/stripe'
 
 export function BillingSettings() {
     const { tier, isLoading } = useSubscription()
@@ -79,10 +80,19 @@ export function BillingSettings() {
                                 <p className="text-sm text-gray-600 mb-4">
                                     You&apos;re currently on the free plan. Upgrade to unlock all features!
                                 </p>
-                                <Link href="/pricing">
-                                    <Button>
-                                        Upgrade to Premium
-                                    </Button>
+                                <div className="flex gap-3">
+                                    <UpgradeButton priceType="annual" variant="gradient" size="md">
+                                        Annual $99/yr
+                                    </UpgradeButton>
+                                    <UpgradeButton priceType="monthly" variant="secondary" size="md">
+                                        Monthly $9.99/mo
+                                    </UpgradeButton>
+                                </div>
+                                <Link
+                                    href="/pricing"
+                                    className="inline-block mt-3 text-sm text-[#004D40] hover:text-[#00695C] hover:underline"
+                                >
+                                    Compare all plans →
                                 </Link>
                             </div>
                         )}

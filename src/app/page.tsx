@@ -98,7 +98,7 @@ export default function LandingPage() {
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-full text-sm font-semibold mb-8 shadow-lg"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-full text-xs font-semibold mb-8 shadow-lg"
                             >
                                 <motion.div
                                     animate={{ rotate: [0, 360] }}
@@ -110,17 +110,37 @@ export default function LandingPage() {
                             </motion.div>
                         )}
 
+                        {/* Guap definition */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="text-sm sm:text-base text-gray-500 dark:text-gray-500 mb-6 font-medium italic"
+                        >
+                            <a
+                                href="https://www.urbandictionary.com/define.php?term=guap"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer"
+                            >
+                                <span className="text-[#FFC107] hover:text-[#FFD54F] transition-colors">guap</span> 
+                            </a>
+                            <span>
+                                /ɡwäp/ <span className="mx-2">•</span> slang for money
+                            </span>
+                        </motion.p>
+
                         {/* Main headline */}
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="font-display text-6xl sm:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            className="font-display text-6xl font-bold mb-6 leading-tight"
                         >
-                            <span className="text-gray-900 dark:text-white">Your Net Worth,</span>
+                            <span className="text-gray-900 dark:text-white">Get Your Guap Together { ' ' }</span>
                             <br />
                             <span className="bg-gradient-to-r from-[#004D40] to-[#00695C] bg-clip-text text-transparent">
-                                All in One Place
+                                Watch Your Capital Grow
                             </span>
                         </motion.h1>
 
@@ -129,11 +149,11 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
-                            className="text-2xl sm:text-3xl text-gray-600 dark:text-gray-400 mb-12 max-w-4xl mx-auto font-light"
+                            className="text-xl text-2xl text-gray-600 dark:text-gray-400 mb-12 max-w-4xl mx-auto font-light"
                         >
-                            Track stocks, crypto, real estate, and more.
+                            Track everything from stocks to crypto to real estate.
                             <br className="hidden sm:block" />
-                            <strong className="text-gray-900 dark:text-white font-semibold">See where you rank</strong> compared to your peers.
+                            <strong className="text-gray-900 dark:text-white font-semibold">See where you stack-up</strong> Literally.
                         </motion.p>
 
                         {/* CTA Buttons */}
@@ -146,18 +166,10 @@ export default function LandingPage() {
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Link
                                     href="/signup"
-                                    className="group inline-flex items-center gap-3 px-10 py-5 bg-[#FFC107] text-gray-900 text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:bg-[#FFD54F] transition-all"
+                                    className="group inline-flex items-center gap-3 px-8 py-3 bg-[#FFC107] text-gray-900 text-base font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:bg-[#FFD54F] transition-all"
                                 >
-                                    Get Started Free
+                                    Get Started For Free
                                     <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                <Link
-                                    href="#how-it-works"
-                                    className="inline-flex items-center gap-2 px-10 py-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-lg font-semibold rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-[#004D40] dark:hover:border-[#FFC107] transition-all"
-                                >
-                                    See How It Works
                                 </Link>
                             </motion.div>
                         </motion.div>
@@ -167,7 +179,7 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.8 }}
-                            className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600 dark:text-gray-400"
+                            className="flex flex-wrap items-center justify-center gap-8 text-xs text-gray-600 dark:text-gray-400"
                         >
                             <div className="flex items-center gap-2">
                                 <CheckIcon className="h-5 w-5 text-green-600" />
@@ -220,8 +232,8 @@ export default function LandingPage() {
                                             <ChartBarIcon className="h-6 w-6 text-green-600" />
                                         </div>
                                         <div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Net Worth</p>
-                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">$247,582</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">Net Worth</p>
+                                            <p className="text-xl font-bold text-gray-900 dark:text-white">$247,582</p>
                                         </div>
                                     </div>
                                 </div>
@@ -239,8 +251,8 @@ export default function LandingPage() {
                                             <TrophyIcon className="h-6 w-6 text-[#FFC107]" />
                                         </div>
                                         <div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
-                                            <p className="text-2xl font-bold text-[#004D40] dark:text-[#FFC107]">Top 13%</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">Your Rank</p>
+                                            <p className="text-xl font-bold text-[#004D40] dark:text-[#FFC107]">Top 13%</p>
                                         </div>
                                     </div>
                                 </div>
@@ -256,10 +268,10 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeIn>
                         <div className="text-center mb-20">
-                            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
                                 Get Started in Minutes
                             </h2>
-                            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                                 No complicated setup. Connect your accounts and start tracking immediately.
                             </p>
                         </div>
@@ -275,7 +287,7 @@ export default function LandingPage() {
                                     <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
                                         <UserGroupIcon className="h-8 w-8 text-[#FFC107]" />
                                     </div>
-                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                    <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-4">
                                         Sign Up Free
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -294,7 +306,7 @@ export default function LandingPage() {
                                     <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
                                         <CubeTransparentIcon className="h-8 w-8 text-[#FFC107]" />
                                     </div>
-                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                    <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-4">
                                         Connect Accounts
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -313,7 +325,7 @@ export default function LandingPage() {
                                     <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
                                         <ChartPieIcon className="h-8 w-8 text-[#FFC107]" />
                                     </div>
-                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                    <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-4">
                                         Watch It Grow
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -345,35 +357,35 @@ export default function LandingPage() {
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <FadeIn>
                             <div>
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFC107] text-[#004D40] rounded-full text-sm font-bold mb-6">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFC107] text-[#004D40] rounded-full text-xs font-bold mb-6">
                                     <TrophyIcon className="h-4 w-4" />
                                     <span>UNIQUE TO GUAPITAL</span>
                                 </div>
-                                <h2 className="font-display text-5xl sm:text-6xl font-bold mb-6">
+                                <h2 className="font-display text-4xl sm:text-5xl font-bold mb-6">
                                     See Where You Really Stand
                                 </h2>
-                                <p className="text-2xl text-white/90 mb-8 leading-relaxed">
+                                <p className="text-xl text-white/90 mb-8 leading-relaxed">
                                     Are you ahead or behind? Guapital shows you your percentile rank compared to others your age.
                                     It&apos;s motivating, private, and totally opt-in.
                                 </p>
                                 <ul className="space-y-4 mb-8">
                                     <li className="flex items-start gap-3">
                                         <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
-                                        <span className="text-lg">Compare against real federal data + anonymous users</span>
+                                        <span className="text-base">Compare against real federal data + anonymous users</span>
                                     </li>
                                     <li className="flex items-start gap-3">
                                         <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
-                                        <span className="text-lg">Watch your rank improve as you build wealth</span>
+                                        <span className="text-base">Watch your rank improve as you build wealth</span>
                                     </li>
                                     <li className="flex items-start gap-3">
                                         <CheckIcon className="h-6 w-6 text-[#FFC107] flex-shrink-0 mt-1" />
-                                        <span className="text-lg">100% anonymous—no one knows it&apos;s you</span>
+                                        <span className="text-base">100% anonymous—no one knows it&apos;s you</span>
                                     </li>
                                 </ul>
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                     <Link
                                         href="/signup"
-                                        className="inline-flex items-center gap-2 px-8 py-4 bg-[#FFC107] text-[#004D40] text-lg font-bold rounded-xl shadow-xl hover:bg-[#FFD54F] transition-all"
+                                        className="inline-flex items-center gap-2 px-8 py-3 bg-[#FFC107] text-[#004D40] text-base font-bold rounded-xl shadow-xl hover:bg-[#FFD54F] transition-all"
                                     >
                                         See Your Rank
                                         <ArrowRightIcon className="h-5 w-5" />
@@ -386,13 +398,13 @@ export default function LandingPage() {
                             <div className="relative">
                                 <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
                                     <div className="text-center mb-8">
-                                        <p className="text-white/80 text-sm mb-2">Your Net Worth Percentile</p>
-                                        <div className="text-7xl font-bold text-[#FFC107] mb-2">18%</div>
+                                        <p className="text-white/80 text-xs mb-2">Your Net Worth Percentile</p>
+                                        <div className="text-6xl font-bold text-[#FFC107] mb-2">18%</div>
                                         <p className="text-white/80">You&apos;re doing better than 82% of people your age</p>
                                     </div>
                                     <div className="space-y-4">
                                         <div>
-                                            <div className="flex justify-between text-sm mb-2">
+                                            <div className="flex justify-between text-xs mb-2">
                                                 <span className="text-white/80">Bottom 50%</span>
                                                 <span className="text-white/60">$12,000</span>
                                             </div>
@@ -401,7 +413,7 @@ export default function LandingPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-sm mb-2">
+                                            <div className="flex justify-between text-xs mb-2">
                                                 <span className="text-white/80">Top 50%</span>
                                                 <span className="text-white/60">$76,000</span>
                                             </div>
@@ -410,7 +422,7 @@ export default function LandingPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-sm mb-2">
+                                            <div className="flex justify-between text-xs mb-2">
                                                 <span className="text-[#FFC107] font-semibold">You (Top 18%)</span>
                                                 <span className="text-[#FFC107] font-semibold">$247,582</span>
                                             </div>
@@ -419,7 +431,7 @@ export default function LandingPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-sm mb-2">
+                                            <div className="flex justify-between text-xs mb-2">
                                                 <span className="text-white/80">Top 10%</span>
                                                 <span className="text-white/60">$450,000+</span>
                                             </div>
@@ -440,10 +452,10 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeIn>
                         <div className="text-center mb-20">
-                            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                            <h2 className="font-display text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6">
                                 Everything You Need
                             </h2>
-                            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
                                 Track every dollar across all your accounts—automatically and securely.
                             </p>
                         </div>
@@ -489,7 +501,7 @@ export default function LandingPage() {
                                     <div className="p-4 bg-[#004D40] rounded-2xl w-fit mb-6">
                                         <feature.icon className="h-8 w-8 text-[#FFC107]" />
                                     </div>
-                                    <h3 className="font-display text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                    <h3 className="font-display text-xl font-bold text-gray-900 dark:text-white mb-4">
                                         {feature.title}
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -529,19 +541,18 @@ export default function LandingPage() {
 
                 <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
                     <FadeIn>
-                        <h2 className="font-display text-5xl sm:text-6xl font-bold mb-6">
+                        <h2 className="font-display text-4xl sm:text-5xl font-bold mb-6">
                             Ready to Track Your Wealth?
                         </h2>
-                        <p className="text-2xl text-white/90 mb-12">
+                        <p className="text-xl text-white/90 mb-12">
                             Join thousands tracking their net worth with Guapital. Start free today.
                         </p>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Link
                                 href="/signup"
-                                className="inline-flex items-center gap-3 px-12 py-6 bg-[#FFC107] text-[#004D40] text-xl font-bold rounded-2xl shadow-2xl hover:bg-[#FFD54F] transition-all"
+                                className="inline-flex items-center gap-3 px-8 py-3 bg-[#FFC107] text-[#004D40] text-lg font-bold rounded-2xl shadow-2xl hover:bg-[#FFD54F] transition-all"
                             >
-                                Get Started Free
-                                <ArrowRightIcon className="h-6 w-6" />
+                                Get Started Free!
                             </Link>
                         </motion.div>
                         <p className="mt-8 text-white/70">

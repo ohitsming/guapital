@@ -48,19 +48,8 @@ export function LoginForm() {
                 throw error
             }
 
-            const res = await fetch(`/api/supabase/general/onboarding-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            const { onboardingCompleted } = await res.json()
-
-            if (!onboardingCompleted) {
-                router.push('/onboarding')
-            } else {
-                router.push('/dashboard')
-            }
+            // Redirect to dashboard after successful login
+            router.push('/dashboard')
         } catch (error) {
             if (error instanceof Error) {
                 setError(error.message)

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown';
@@ -130,7 +130,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
     }
   };
 
-  const fetchAssets = async (skipCache = false) => {
+  const fetchAssets = useCallback(async (skipCache = false) => {
     try {
       // Try to load from cache first
       if (!skipCache) {
@@ -192,11 +192,11 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAssets();
-  }, []);
+  }, [fetchAssets]);
 
   // Check if all data has been deleted
   const checkIfAllDataDeleted = (

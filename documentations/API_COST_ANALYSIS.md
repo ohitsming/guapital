@@ -283,11 +283,11 @@ Based on Alchemy documentation:
 
 ### Cost Analysis by Billing Model
 
-**Monthly Subscriptions ($15/month):**
-- Fee per transaction: 2.9% of $15 + $0.30 = $0.44 + $0.30 = **$0.74**
+**Monthly Subscriptions ($9.99/month):**
+- Fee per transaction: 2.9% of $9.99 + $0.30 = $0.29 + $0.30 = **$0.59**
 - Transactions per year: 12
-- **Total annual fees:** $0.74 × 12 = **$8.88 per user per year**
-- **Effective rate:** $8.88 / $180 = **4.93%**
+- **Total annual fees:** $0.59 × 12 = **$7.08 per user per year**
+- **Effective rate:** $7.08 / $119.88 = **5.91%**
 
 **Annual Subscriptions ($99/year):**
 - Fee per transaction: 2.9% of $99 + $0.30 = $2.87 + $0.30 = **$3.17**
@@ -305,25 +305,25 @@ Based on Alchemy documentation:
 
 | Billing Type | Revenue/Year | Stripe Fee | Net Revenue | Effective Rate |
 |--------------|--------------|------------|-------------|----------------|
-| Monthly ($15/mo) | $180 | $8.88 | $171.12 | 4.93% |
+| Monthly ($9.99/mo) | $119.88 | $7.08 | $112.80 | 5.91% |
 | Annual ($99/yr) | $99 | $3.17 | $95.83 | 3.20% |
 | Founding ($79/yr) | $79 | $2.59 | $76.41 | 3.28% |
 
-**Key Insight:** Annual billing saves ~1.7% in Stripe fees compared to monthly (3.2% vs 4.93%).
+**Key Insight:** Annual billing saves ~2.7% in Stripe fees compared to monthly (3.2% vs 5.91%).
 
 ### Projected Stripe Costs (1,000 users, Year 1)
 
 **Scenario: 60% monthly, 40% annual mix**
-- 240 monthly users: 240 × $8.88 = **$2,131.20/year** ($177.60/month)
-- 160 annual users: 160 × $3.17 = **$507.20/year** ($42.27/month)
-- **Total Stripe fees:** **$2,638.40/year** ($219.87/month)
-- **Per user average:** $2.64/year ($0.22/month)
+- 600 monthly users: 600 × $7.08 = **$4,248/year** ($354/month)
+- 400 annual users: 400 × $3.17 = **$1,268/year** ($105.67/month)
+- **Total Stripe fees:** **$5,516/year** ($459.67/month)
+- **Per user average:** $5.52/year ($0.46/month)
 
 **Scenario: 40% monthly, 60% annual mix** (after conversions)
-- 160 monthly users: 160 × $8.88 = **$1,420.80/year** ($118.40/month)
-- 640 annual users: 640 × $3.17 = **$2,028.80/year** ($169.07/month)
-- **Total Stripe fees:** **$3,449.60/year** ($287.47/month)
-- **Per user average:** $3.45/year ($0.29/month)
+- 400 monthly users: 400 × $7.08 = **$2,832/year** ($236/month)
+- 600 annual users: 600 × $3.17 = **$1,902/year** ($158.50/month)
+- **Total Stripe fees:** **$4,734/year** ($394.50/month)
+- **Per user average:** $4.73/year ($0.39/month)
 
 **Optimization:** Drive annual conversions to reduce Stripe fees by 35% per user.
 
@@ -346,7 +346,7 @@ Based on Alchemy documentation:
 
 ### Phase 1: MVP Launch (1,000 paying users)
 
-**Assumptions:** 40% monthly ($15/mo), 60% annual ($99/yr) mix after 6 months of conversions
+**Assumptions:** 40% monthly ($9.99/mo), 60% annual ($99/yr) mix after 6 months of conversions
 
 | Service | Monthly Cost | Per User | Cost Type |
 |---------|-------------|----------|-----------|
@@ -359,17 +359,17 @@ Based on Alchemy documentation:
 | Alchemy | $0 | $0.00 | Free tier |
 | CoinGecko | $0 | $0.00 | Free tier |
 | **Payment Processing** |
-| Stripe fees | $287 | $0.29 | Variable |
-| **TOTAL** | **$1,326** | **$1.33** |
+| Stripe fees | $236 | $0.24 | Variable |
+| **TOTAL** | **$1,275** | **$1.28** |
 
 **Revenue at 1K users (blended):**
-- 400 monthly users: 400 × $15 = $6,000/month
+- 400 monthly users: 400 × $9.99 = $3,996/month
 - 600 annual users: 600 × $99 / 12 = $4,950/month
-- **Total revenue:** $10,950/month ($131,400/year)
-- **Total costs:** $1,326/month ($15,912/year)
-- **Cost as % of revenue:** 12.1%
-- **Net revenue per user:** $10.95 - $1.33 = **$9.62/month**
-- **Gross margin: 87.9%** ✅
+- **Total revenue:** $8,946/month ($107,352/year)
+- **Total costs:** $1,275/month ($15,300/year)
+- **Cost as % of revenue:** 14.3%
+- **Net revenue per user:** $8.95 - $1.28 = **$7.67/month**
+- **Gross margin: 85.7%** ✅
 
 **Note:** Blended model includes both monthly and annual subscribers. Annual users have higher margins due to lower Stripe fees.
 
@@ -377,7 +377,7 @@ Based on Alchemy documentation:
 
 ### Phase 2: Growth (5,000 paying users)
 
-**Assumptions:** 30% monthly ($15/mo), 70% annual ($99/yr) mix (more users converting to annual)
+**Assumptions:** 30% monthly ($9.99/mo), 70% annual ($99/yr) mix (more users converting to annual)
 
 | Service | Monthly Cost | Per User | Cost Type |
 |---------|-------------|----------|-----------|
@@ -390,23 +390,23 @@ Based on Alchemy documentation:
 | Alchemy | $0 | $0.00 | Free tier |
 | CoinGecko | $0 | $0.00 | Free tier |
 | **Payment Processing** |
-| Stripe fees | $1,290 | $0.26 | Variable |
-| **TOTAL** | **$6,166** | **$1.23** |
+| Stripe fees | $1,025 | $0.21 | Variable |
+| **TOTAL** | **$5,901** | **$1.18** |
 
 **Revenue at 5K users (blended):**
-- 1,500 monthly users: 1,500 × $15 = $22,500/month
+- 1,500 monthly users: 1,500 × $9.99 = $14,985/month
 - 3,500 annual users: 3,500 × $99 / 12 = $28,875/month
-- **Total revenue:** $51,375/month ($616,500/year)
-- **Total costs:** $6,166/month ($73,992/year)
-- **Cost as % of revenue:** 12.0%
-- **Net revenue per user:** $10.28 - $1.23 = **$9.05/month**
-- **Gross margin: 88.0%** ✅
+- **Total revenue:** $43,860/month ($526,320/year)
+- **Total costs:** $5,901/month ($70,812/year)
+- **Cost as % of revenue:** 13.5%
+- **Net revenue per user:** $8.77 - $1.18 = **$7.59/month**
+- **Gross margin: 86.5%** ✅
 
 ---
 
 ### Phase 3: Scale (25,000 paying users)
 
-**Assumptions:** 20% monthly ($15/mo), 80% annual ($99/yr) mix (mature conversion funnel)
+**Assumptions:** 20% monthly ($9.99/mo), 80% annual ($99/yr) mix (mature conversion funnel)
 
 | Service | Monthly Cost | Per User | Cost Type |
 |---------|-------------|----------|-----------|
@@ -419,17 +419,17 @@ Based on Alchemy documentation:
 | Alchemy | $212 | $0.0085 | Variable |
 | CoinGecko | $129 | $0.0052 | Variable |
 | **Payment Processing** |
-| Stripe fees | $5,946 | $0.24 | Variable |
-| **TOTAL** | **$27,132** | **$1.09** |
+| Stripe fees | $5,065 | $0.20 | Variable |
+| **TOTAL** | **$26,251** | **$1.05** |
 
 **Revenue at 25K users (blended):**
-- 5,000 monthly users: 5,000 × $15 = $75,000/month
+- 5,000 monthly users: 5,000 × $9.99 = $49,950/month
 - 20,000 annual users: 20,000 × $99 / 12 = $165,000/month
-- **Total revenue:** $240,000/month ($2,880,000/year)
-- **Total costs:** $27,132/month ($325,584/year)
-- **Cost as % of revenue:** 11.3%
-- **Net revenue per user:** $9.60 - $1.09 = **$8.51/month**
-- **Gross margin: 88.7%** ✅
+- **Total revenue:** $214,950/month ($2,579,400/year)
+- **Total costs:** $26,251/month ($315,012/year)
+- **Cost as % of revenue:** 12.2%
+- **Net revenue per user:** $8.60 - $1.05 = **$7.55/month**
+- **Gross margin: 87.8%** ✅
 
 **Key Insight:** Fixed infrastructure costs become negligible at scale. Stripe fees are optimized by high annual conversion rate (80%).
 
@@ -442,9 +442,9 @@ Based on Alchemy documentation:
 2. ✅ **Cache Plaid data** - Reduce redundant calls by storing balances locally
 3. ✅ **Batch operations** - Sync multiple accounts in single session
 4. ✅ **Smart refresh logic** - Only sync when user requests or 24hrs+ elapsed
-5. ✅ **Drive annual conversions** - Saves 1.7% in Stripe fees (3.2% vs 4.93%)
+5. ✅ **Drive annual conversions** - Saves 2.7% in Stripe fees (3.2% vs 5.91%)
    - In-app prompts after 1-3 months of monthly subscription
-   - Email campaigns showing "You've spent $45, switch to annual for $99 and save!"
+   - Email campaigns showing "You've spent $29.97, switch to annual for $99 and save!"
    - Target: 40% of monthly users convert within 6 months
 
 ### Medium-term (Phase 2-3)
@@ -474,24 +474,24 @@ Based on Alchemy documentation:
 ### Minimum Users to Cover Fixed Costs
 
 **Assumptions:**
-- Blended revenue: 40% monthly ($15/mo), 60% annual ($99/yr) = $10.95/month average
-- Blended costs: $1.33/user/month at 1K scale (infrastructure + APIs + Stripe)
+- Blended revenue: 40% monthly ($9.99/mo), 60% annual ($99/yr) = $8.95/month average
+- Blended costs: $1.28/user/month at 1K scale (infrastructure + APIs + Stripe)
 
 **Fixed Costs:** $489/month (Claude Max $200 + Supabase $25 + AWS Amplify $64 + base Stripe $200*)
-**Variable Costs:** $1.04/user (Plaid $0.75 + Stripe $0.29)
-**Net Revenue per User:** $10.95 - $1.04 = **$9.91/month**
+**Variable Costs:** $1.14/user (Plaid $0.75 + Stripe $0.39)
+**Net Revenue per User:** $8.95 - $1.14 = **$7.81/month**
 
-**Break-even:** $489 / $9.91 = **50 paying users** ✅
+**Break-even:** $489 / $7.81 = **63 paying users** ✅
 
 *Note: Stripe has no fixed costs, but we're accounting for ~$200/month in baseline transaction fees
 
 **Updated Profitability:**
-- **Break-even: 50 users** (blended monthly/annual mix)
+- **Break-even: 63 users** (blended monthly/annual mix)
 - **Profitable from Month 1** if you launch with 75+ beta users
-- **$9.62 net profit per user** after all costs at 1K scale
-- **Gross margin: 87.9%** even with Stripe fees included
+- **$7.67 net profit per user** after all costs at 1K scale
+- **Gross margin: 85.7%** even with Stripe fees included
 
-**Key Insight:** Annual subscribers are MORE profitable due to lower Stripe fees (3.2% vs 4.93%)
+**Key Insight:** Annual subscribers are MORE profitable due to lower Stripe fees (3.2% vs 5.91%)
 
 ---
 
@@ -499,19 +499,19 @@ Based on Alchemy documentation:
 
 | App | Subscription Price | Total Costs/User | Gross Margin |
 |-----|-------------------|------------------|--------------|
-| **Guapital** | $99/year ($8.25/mo) | $1.04/user | **87.4%** |
-| Monarch Money | $180/year ($15/mo) | ~$2.50/user | 83% |
-| Copilot | $180/year ($15/mo) | ~$2.00/user | 87% |
-| YNAB | $109/year ($9.08/mo) | $0.50/user* | 94%* |
+| **Guapital** | $9.99/mo or $99/yr | $1.28/user | **85.7%** |
+| Monarch Money | $14.99/mo or $99/yr | ~$2.50/user | 83% |
+| Copilot | $14.99/mo or $95/yr | ~$2.00/user | 87% |
+| YNAB | $14.99/mo or $109/yr | $0.50/user* | 94%* |
 
 *YNAB uses manual entry primarily, minimal API + infrastructure costs
 
-**Your advantage:** Better margins than Monarch, similar to Copilot, at 45% lower price point!
+**Your advantage:** Better margins than Monarch (85.7% vs 83%), competitive pricing with same annual rate ($99), and 33% cheaper monthly option!
 
-**Net revenue comparison at 1K users:**
-- **Guapital**: $7.21/user/month net = **$7,210/month**
-- Monarch: $12.50/user/month net = **$12,500/month** (but harder to acquire users at $180/year)
-- Your value prop: **Cheaper for users, still highly profitable for you** ✅
+**Net revenue comparison at 1K users (blended):**
+- **Guapital**: $7.67/user/month net = **$7,670/month**
+- Monarch: $10.00/user/month net = **$10,000/month** (but harder to acquire with $14.99/mo entry point)
+- Your value prop: **More accessible monthly pricing, still highly profitable** ✅
 
 ---
 
@@ -571,40 +571,40 @@ Based on Alchemy documentation:
 **Bottom Line:** Your total costs (infrastructure + APIs + Stripe) are **sustainable and highly profitable**.
 
 **Key Takeaways:**
-- **Total costs: 11-12% of revenue** across all scales
-- **Break-even: 50 paying users** (achievable in first month)
-- **Gross margins: 87-89%** - excellent for SaaS with blended monthly/annual pricing
-- **Cost per user drops with scale:** $1.33 → $1.09 at 25K users
+- **Total costs: 12-14% of revenue** across all scales
+- **Break-even: 63 paying users** (achievable in first month)
+- **Gross margins: 85.7-87.8%** - excellent for SaaS with blended monthly/annual pricing
+- **Cost per user drops with scale:** $1.28 → $1.05 at 25K users
 - **Fixed costs ($289/mo) become negligible** as you grow
 - Free tiers cover you up to **~9,000 users** for crypto tracking
-- **Competitive with industry leaders** at half the price
-- **Stripe fees optimized** by driving annual conversions (saves 1.7% vs monthly)
+- **Competitive with industry leaders** with 33% cheaper monthly pricing
+- **Stripe fees optimized** by driving annual conversions (saves 2.7% vs monthly)
 
 **This is a highly scalable, capital-efficient business model.** 🚀
 
 **Updated Cost Structure (at 1K users):**
 - **Infrastructure** (Claude + Supabase + AWS): $289/month (mostly fixed)
 - **APIs** (Plaid + Alchemy + CoinGecko): $750/month ($0.75/user)
-- **Payment Processing** (Stripe): $287/month ($0.29/user)
-- **Total costs**: $1,326/month = $1.33/user
-- **Revenue** (blended 40/60 monthly/annual): $10,950/month
-- **Net profit**: $9,624/month (87.9% margin)
+- **Payment Processing** (Stripe): $236/month ($0.24/user)
+- **Total costs**: $1,275/month = $1.28/user
+- **Revenue** (blended 40/60 monthly/annual): $8,946/month
+- **Net profit**: $7,671/month (85.7% margin)
 
 ### Cost Breakdown by User Type
 
 | User Type | Revenue/Year | Stripe Fee | Net After Stripe | Margin |
 |-----------|--------------|------------|------------------|--------|
-| **Monthly ($15/mo)** | $180 | $8.88 (4.93%) | $171.12 | 95.1% |
+| **Monthly ($9.99/mo)** | $119.88 | $7.08 (5.91%) | $112.80 | 94.1% |
 | **Annual ($99/yr)** | $99 | $3.17 (3.20%) | $95.83 | 96.8% |
 | **Founding ($79/yr)** | $79 | $2.59 (3.28%) | $76.41 | 96.7% |
 
 **Key Insight:** Annual subscribers are MORE profitable due to lower Stripe fees AND lower churn.
 
-Your aggressive growth pricing ($15/mo or $79-99/year) is **absolutely sustainable** even with all infrastructure, API, and payment processing costs included. The real investment will be customer acquisition (marketing), not technical infrastructure.
+Your aggressive growth pricing ($9.99/mo or $79-99/year) is **absolutely sustainable** even with all infrastructure, API, and payment processing costs included. The real investment will be customer acquisition (marketing), not technical infrastructure.
 
 **Optimization Priority:** Drive monthly → annual conversions to:
-1. Increase revenue per user ($99 vs $180 equivalent)
-2. Reduce Stripe fees (3.2% vs 4.93%)
+1. Increase revenue per user ($99 annual vs $119.88 monthly equivalent)
+2. Reduce Stripe fees (3.2% vs 5.91%)
 3. Lower churn (annual users are 5x stickier)
 
 **Recommendation:** Launch confidently. Your unit economics are excellent. Focus on growth and annual conversion optimization, not cost cutting.

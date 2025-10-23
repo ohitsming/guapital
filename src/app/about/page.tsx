@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import Link from 'next/link' 
-import { Logo } from '@/components/Logo' 
+import Link from 'next/link'
+import { Logo } from '@/components/Logo'
+import { Footer } from '@/components/Footer' 
 
 import screenshot_ipad from '@/images/screenshots/screenshot_ipad.jpeg' 
 import screenshot_meeting from '@/images/screenshots/screenshot_meeting.jpeg'
@@ -72,7 +73,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
                     Track Your Net Worth, Build Your Wealth
                   </h1>
                   <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:max-w-md sm:text-xl/8 lg:max-w-none dark:text-gray-400">
-                    The biggest challenge in building wealth isn&apos;t earning more, it&apos;s understanding where you stand. Guapital helps Gen Z and young millennials track their net worth with clarity and confidence, promoting mindful financial decisions.
+                    The biggest challenge in building wealth isn&apos;t earning more, it&apos;s understanding where you stand. Guapital helps young adults track their net worth with clarity and confidence, promoting mindful financial decisions.
                   </p>
                 </div>
                 <div className="mt-14 flex justify-end gap-8 sm:-mt-44 sm:justify-start sm:pl-20 lg:mt-0 lg:pl-0">
@@ -137,7 +138,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
             <div className="mt-6 flex flex-col gap-x-8 gap-y-20 lg:flex-row">
               <div className="lg:w-full lg:max-w-2xl lg:flex-auto">
                 <p className="text-xl/8 text-gray-600 dark:text-gray-300">
-                  For most Gen Z and young millennials, building wealth starts with understanding where they stand financially. Guapital is a modern, privacy-first financial application that helps you track your net worth with clarity and confidence. Manual entry promotes mindfulness about your financial assets and liabilities, empowering you to make informed decisions about your financial future.
+                  For most young adults, building wealth starts with understanding where they stand financially. Guapital is a modern, privacy-first financial application that helps you track your net worth with clarity and confidence. Manual entry promotes mindfulness about your financial assets and liabilities, empowering you to make informed decisions about your financial future.
                 </p>
               </div>
               {/* Removed stats section */}
@@ -176,6 +177,9 @@ export default function AboutPage() { // Renamed from Example to AboutPage
 
         {/* Removed Logo cloud, Team section, and Blog section */}
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

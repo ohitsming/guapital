@@ -8,7 +8,7 @@ import { FadeIn } from '../FadeIn';
 interface PricingSectionProps {
   showFoundingBanner?: boolean;
   remainingFoundingSlots?: number;
-  onSelectPlan?: (tier: 'free' | 'premium') => void;
+  onSelectPlan?: (tier: 'free' | 'premium', billingPeriod: 'monthly' | 'annual') => void;
 }
 
 /**
@@ -41,7 +41,7 @@ export function PricingSection({
 
   const handleSelectPlan = (tier: 'free' | 'premium') => {
     if (onSelectPlan) {
-      onSelectPlan(tier);
+      onSelectPlan(tier, billingPeriod);
     } else {
       // Default behavior: navigate to signup/upgrade
       if (tier === 'free') {
@@ -55,56 +55,53 @@ export function PricingSection({
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-12">
       {/* Header */}
-      
-      <div className="text-center mb-12">
-        <FadeIn>
-          <div className="text-center mb-20">
-            <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Simple, Honest Pricing
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.
-            </p>
-          </div>
-        </FadeIn>
-
-        {/* Billing Period Toggle */}
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={() => setBillingPeriod('monthly')}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              billingPeriod === 'monthly'
-                ? 'bg-[#004D40] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingPeriod('annual')}
-            className={`px-6 py-2 rounded-lg font-medium transition-all relative ${
-              billingPeriod === 'annual'
-                ? 'bg-[#004D40] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            Annual
-            <span className="absolute -top-2 -right-2 bg-[#FFC107] text-[#004D40] text-xs font-bold px-2 py-0.5 rounded-full">
-              Save 45%
-            </span>
-          </button>
+      <FadeIn>
+        <div className="text-center mb-12">
+          <h2 className="font-display text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+            Simple, Honest Pricing
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.
+          </p>
         </div>
-      </div>
+      </FadeIn>
 
       {/* Founding Member Banner */}
       {showFoundingBanner && isFoundingMemberEligible && (
-        <div className="mb-12">
+        <div className="mb-8">
           <FoundingMemberBanner
             remainingSlots={remainingFoundingSlots}
             showCloseButton={false}
           />
         </div>
       )}
+
+      {/* Billing Period Toggle */}
+      <div className="flex items-center justify-center gap-4 mb-12">
+        <button
+          onClick={() => setBillingPeriod('monthly')}
+          className={`px-6 py-2 rounded-lg font-medium transition-all ${
+            billingPeriod === 'monthly'
+              ? 'bg-[#004D40] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          onClick={() => setBillingPeriod('annual')}
+          className={`px-6 py-2 rounded-lg font-medium transition-all relative ${
+            billingPeriod === 'annual'
+              ? 'bg-[#004D40] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Annual
+          <span className="absolute -top-2 -right-2 bg-[#FFC107] text-[#004D40] text-xs font-bold px-2 py-0.5 rounded-full">
+            Save 17%
+          </span>
+        </button>
+      </div>
 
       {/* Pricing Cards */}
       <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -156,8 +153,8 @@ export function PricingSection({
             <div className="grid md:grid-cols-3 gap-6 mt-6">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Monthly Plan</p>
-                <p className="text-3xl font-bold text-gray-900">$15<span className="text-sm text-gray-600">/mo</span></p>
-                <p className="text-xs text-gray-500 mt-1">= $180/year</p>
+                <p className="text-3xl font-bold text-gray-900">$9.99<span className="text-sm text-gray-600">/mo</span></p>
+                <p className="text-xs text-gray-500 mt-1">= $119.88/year</p>
               </div>
               <div className="flex items-center justify-center">
                 <div className="text-4xl font-bold text-[#FFC107]">→</div>
@@ -165,11 +162,11 @@ export function PricingSection({
               <div>
                 <p className="text-sm text-gray-600 mb-1">Annual Plan</p>
                 <p className="text-3xl font-bold text-[#004D40]">$99<span className="text-sm text-gray-600">/yr</span></p>
-                <p className="text-xs font-bold text-[#FFC107] mt-1">SAVE $81 (45%)</p>
+                <p className="text-xs font-bold text-[#FFC107] mt-1">SAVE $20.88 (17%)</p>
               </div>
             </div>
             <p className="mt-6 text-sm text-gray-700">
-              That&apos;s like getting <strong>6 months free</strong> when you go annual!
+              That&apos;s like getting <strong>2 months free</strong> when you go annual!
             </p>
             <button
               onClick={() => setBillingPeriod('annual')}
@@ -204,9 +201,9 @@ export function PricingSection({
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">Price</td>
                 <td className="px-6 py-4 text-center text-sm text-gray-700">$0</td>
                 <td className="px-6 py-4 text-center text-sm font-bold text-[#004D40]">
-                  $15/mo or ${isFoundingMemberEligible ? '79' : '99'}/yr
+                  $9.99/mo or ${isFoundingMemberEligible ? '79' : '99'}/yr
                 </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">$15/mo or $109-180/yr</td>
+                <td className="px-6 py-4 text-center text-sm text-gray-700">$14.99/mo or $99-109/yr</td>
               </tr>
               <tr className="bg-gray-50">
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">Crypto Wallets</td>
@@ -243,7 +240,7 @@ export function PricingSection({
         </div>
 
         <p className="text-center text-sm text-gray-600 mt-6 italic">
-          * Competitor pricing based on Monarch Money ($180/year), YNAB ($109/year), Copilot ($95/year)
+          * Competitor pricing based on Monarch Money ($14.99/mo or $99/yr), YNAB ($14.99/mo or $109/yr), Copilot ($14.99/mo or $95/yr)
         </p>
       </div>
 
@@ -271,7 +268,7 @@ export function PricingSection({
             <p className="text-gray-700 text-sm">
               Absolutely! You can upgrade from Free anytime, or switch from monthly to annual subscription at any time.
               If founding member slots are still available when you upgrade, you&apos;ll get the $79/year rate.
-              Otherwise, you&apos;ll pay the regular $99/year or $15/month.
+              Otherwise, you&apos;ll pay the regular $99/year or $9.99/month.
             </p>
           </div>
 
@@ -280,9 +277,9 @@ export function PricingSection({
               Should I choose monthly or annual pricing?
             </h4>
             <p className="text-gray-700 text-sm">
-              <strong>Monthly ($15/month)</strong> is great for trying Guapital risk-free. Cancel anytime.
+              <strong>Monthly ($9.99/month)</strong> is great for trying Guapital risk-free. Cancel anytime.
               <br /><br />
-              <strong>Annual ($99/year)</strong> saves you $81 (45% off) - that&apos;s basically 6 months free!
+              <strong>Annual ($99/year)</strong> saves you $20.88 (17% off) - that&apos;s basically 2 months free!
               Most users choose annual after trying monthly for 1-2 months.
               <br /><br />
               <strong>Founding Member ($79/year)</strong> locks in the best price forever - only for the first 1,000 users.
@@ -291,11 +288,11 @@ export function PricingSection({
 
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h4 className="font-semibold text-gray-900 mb-2">
-              Why is Guapital cheaper than competitors?
+              Why is Guapital competitively priced?
             </h4>
             <p className="text-gray-700 text-sm">
-              We&apos;re building for rapid growth, not maximizing revenue. Our aggressive pricing strategy
-              helps us gain market share quickly. Plus, we don&apos;t sell your data (unlike some competitors).
+              We match the best annual pricing ($99/year, same as Monarch) but offer a 33% cheaper monthly option ($9.99 vs $14.99).
+              We&apos;re building for rapid growth, not maximizing revenue. Plus, we don&apos;t sell your data (unlike some competitors).
             </p>
           </div>
 
