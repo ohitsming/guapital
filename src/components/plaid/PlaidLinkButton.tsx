@@ -30,14 +30,43 @@ export default function PlaidLinkButton({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create link token');
+        const errorData = await response.json();
+        console.error('❌ Link token error:', errorData);
+
+        // Show more helpful error message based on status
+        let errorMessage = 'Failed to initialize Plaid Link. ';
+
+        if (response.status === 401) {
+          errorMessage += 'Please log in and try again.';
+        } else if (response.status === 500) {
+          errorMessage += 'Server error. Please try again later.';
+
+          // Include Plaid-specific error if available
+          if (errorData.plaidError) {
+            console.error('Plaid Error:', errorData.plaidError);
+            errorMessage += `\n\nDetails: ${errorData.plaidError}`;
+          }
+
+          // Include error code for support
+          if (errorData.plaidErrorCode) {
+            console.error('Plaid Error Code:', errorData.plaidErrorCode);
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+
+      if (!data.link_token) {
+        throw new Error('No link token received from server');
+      }
+
+      console.log('✅ Link token received');
       setLinkToken(data.link_token);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching link token:', error);
-      alert('Failed to initialize Plaid Link. Please try again.');
+      alert(error.message || 'Failed to initialize Plaid Link. Please try again.');
     } finally {
       setLoading(false);
     }

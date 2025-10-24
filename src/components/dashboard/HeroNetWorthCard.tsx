@@ -179,18 +179,28 @@ export default function HeroNetWorthCard({
 
         if (isTodayOnly) {
             // For brand new users with only today's snapshot, show it as a single point
-            return trendData.map(point => ({
-                date: point.date,
-                value: point.value,
-                displayDate: 'Today'
-            }))
+            return trendData.map(point => {
+                // Parse date without timezone conversion
+                const [year, month, day] = point.date.split('T')[0].split('-')
+                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+
+                return {
+                    date: point.date,
+                    value: point.value,
+                    displayDate: dateObj.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    })
+                }
+            })
         }
 
         // Filter data by selected period, exclude today's snapshot (we'll use live data for today)
         const filtered = trendData.filter(point => {
             const pointDate = new Date(point.date)
             const dateString = point.date.split('T')[0]
-            return pointDate >= periodStart && dateString !== today
+            const include = pointDate >= periodStart && dateString !== today
+            return include
         })
 
         // Sort by date
@@ -205,17 +215,24 @@ export default function HeroNetWorthCard({
                 date: today,
                 value: netWorth.net_worth
             })
-        }
+        } 
 
         // Format for chart
-        return sorted.map(point => ({
-            date: point.date,
-            value: point.value,
-            displayDate: new Date(point.date).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric'
-            })
-        }))
+        const formattedData = sorted.map(point => {
+            // Parse date without timezone conversion
+            const [year, month, day] = point.date.split('T')[0].split('-')
+            const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+
+            return {
+                date: point.date,
+                value: point.value,
+                displayDate: dateObj.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                })
+            }
+        })
+        return formattedData
     }, [trendData, selectedDays, netWorth])
 
     // Custom tooltip for the chart

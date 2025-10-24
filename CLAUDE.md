@@ -23,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Deployment:** AWS Amplify
 - **Financial Data:** Plaid (account aggregation), Alchemy (crypto tracking)
 - **Charting:** Recharts
+- **Security:** Supabase-based rate limiting, Sentry (error tracking & performance monitoring)
 - **Additional:** Stripe, Framer Motion, date-fns, axios
 
 ## Development Commands
@@ -293,6 +294,7 @@ npm run test             # Run Jest tests
 │       ├── supabase/
 │       │   ├── client.ts                  # Client-side Supabase
 │       │   └── server.ts                  # Server-side Supabase
+│       ├── api.ts                         # API fetch wrapper with rate limit handling
 │       ├── avatarUtils.ts                 # Avatar utilities
 │       ├── formatters.ts                  # Currency, date formatting
 │       └── timeUtils.ts                   # Time utilities
@@ -317,6 +319,7 @@ npm run test             # Run Jest tests
 - `percentile_seed_data` - Federal Reserve SCF 2022 benchmark data (49 records)
 - `percentile_snapshots` - Daily percentile calculations per user
 - `percentile_milestones` - Achievement tracking (Top 50%, 25%, 10%, etc.)
+- `rate_limit_attempts` - Rate limiting tracking (IP/user-based request counters)
 
 **Security:** RLS enabled on all tables, users can only access their own data
 
@@ -341,13 +344,54 @@ export async function GET(request: Request) {
 - Server Components/API Routes: `createClient()` from `@/utils/supabase/server`
 - Client Components: `createClient()` from `@/utils/supabase/client`
 
+### API Utilities & Rate Limit Handling
+
+**Custom Fetch Wrapper:**
+The `apiFetch()` utility automatically handles rate limit responses and displays user-friendly toast notifications.
+
+```typescript
+import { apiFetch, apiGet, apiPost } from '@/utils/api';
+
+// Example: GET request with automatic rate limit handling
+const response = await apiGet('/api/networth');
+if (response.ok) {
+  const data = await response.json();
+  // Handle data
+}
+
+// Example: POST request
+const response = await apiPost('/api/assets', {
+  type: 'vehicle',
+  name: 'Tesla Model 3',
+  value: 45000,
+});
+
+// Disable rate limit toast for specific request (silent mode)
+const response = await apiFetch('/api/some-endpoint', {
+  showRateLimitToast: false,
+});
+```
+
+**When Rate Limit is Hit:**
+- Automatically displays toast: "Rate limit exceeded. Please try again in X seconds/minutes."
+- Parses `Retry-After` and `X-RateLimit-Reset` headers for user-friendly messaging
+- Toast shown for 5 seconds with ⏱️ icon
+
+**Best Practice:**
+- Use `apiFetch()` for all client-side API calls (replaces native `fetch()`)
+- Convenience functions: `apiGet()`, `apiPost()`, `apiPut()`, `apiDelete()`
+- Server-side API routes should use native `fetch()` (middleware already handles rate limiting)
+
 ### Environment Variables
 
 Required in `.env.local`:
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` - For rate limiting and server-side operations
 - `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`
 - `ALCHEMY_API_KEY`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_SENTRY_DSN` - Sentry error tracking (production only)
+- `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` - Sentry configuration
 
 ### Styling & Design
 
@@ -368,12 +412,12 @@ Required in `.env.local`:
 
 ## Implementation Status
 
-**Phase 1 MVP Completion: ~95%**
+**Phase 1 MVP Completion: 100%** ✅
 
 | Feature | Status | Priority | Details |
 |---------|--------|----------|---------|
 | **Project Foundation** | ✅ Done | - | Database schema with RLS, TypeScript interfaces, subscription tiers |
-| **Account Aggregation (Plaid)** | ✅ Done | - | Fully integrated in unified Accounts panel |
+| **Account Aggregation (Plaid)** | ✅ Done | - | Fully integrated in unified Accounts panel (Transactions product only, Auth not required) |
 | **Manual Asset Entry** | ✅ Done | - | Complete CRUD for real estate, vehicles, collectibles, liabilities |
 | **Net Worth Dashboard** | ✅ Done | - | Hero card, asset/liability breakdowns, real-time calculation |
 | **Subscription Tiers** | ✅ Done | - | Free/Premium tiers with feature gating ($79/$99 annually) |
@@ -385,10 +429,13 @@ Required in `.env.local`:
 | **Crypto Wallet Tracking** | ✅ Done | - | Multi-chain support (Ethereum, Polygon, Base, Arbitrum, Optimism) |
 | **Pricing & Subscription** | ✅ Done | - | Founding member offer, Stripe integration |
 | **Percentile Ranking** | ✅ Done | **#1** | **THE killer feature** - Hybrid SCF + real user data, opt-in modal, percentile card, distribution charts |
-| **FIRE Calculator** | ❌ Not Started | **#2** | Years to FI, required net worth, withdrawal scenarios - Aligns with wealth-building positioning |
 
 ### Key Recent Updates (October 2025)
 
+- **Plaid Production Fix** ✅ - Removed Auth product requirement
+  - Only uses Transactions product (sufficient for net worth tracking)
+  - Compatible with Plaid Pay As You Go plan
+  - Auth product not needed (account/routing numbers not required for Guapital)
 - **Percentile Ranking** ✅ - Complete implementation with hybrid SCF data strategy
   - Backend: 3 new database tables, daily cron job, percentile calculation function
   - API: 3 endpoints (percentile, opt-in, distribution)
@@ -405,33 +452,29 @@ Required in `.env.local`:
 
 ### Next Steps
 
-**Critical Priorities (Week 1):**
-1. **FIRE Calculator** (2-3 days) - Aligns with wealth-building positioning
-   - Years to Financial Independence calculator
-   - Required net worth for FI
-   - Withdrawal rate scenarios (4% rule, etc.)
-   - Progress visualization
-
-**Secondary Priorities (Week 2):**
-2. Mobile responsiveness testing (2-3 days)
-3. End-to-end user flow testing (2-3 days)
-4. Performance optimization (1-2 days)
+**Pre-Launch Priorities (Week 1):**
+1. Mobile responsiveness testing (2-3 days)
+2. End-to-end user flow testing (2-3 days)
+3. Performance optimization (1-2 days)
 
 **Pre-Production Deployment:**
-5. Apply percentile migrations to production Supabase (30 minutes)
-6. Enable pg_cron extension (10 minutes)
-7. Create test users and verify percentile calculations (1-2 hours)
-8. Configure Stripe production products (1 hour)
-9. Social OAuth production URL configuration (1 hour)
+4. Apply percentile migrations to production Supabase (30 minutes)
+5. Enable pg_cron extension (10 minutes)
+6. Create test users and verify percentile calculations (1-2 hours)
+7. Configure Stripe production products (1 hour)
+8. Social OAuth production URL configuration (1 hour)
+
+**Moved to Phase 2:**
+- FIRE Calculator (wealth-building feature, good retention driver but not critical for launch)
+- Social sharing for percentile milestones
+- Milestone achievement badges
 
 **On Hold:**
 - Budgeting features (not core differentiator vs. Monarch - revisit post-launch)
-- Social sharing for percentile milestones (Phase 2)
-- Milestone achievement badges (Phase 2)
 
-**Estimated Time to Launch-Ready MVP:** 5-7 days
+**Estimated Time to Launch-Ready MVP:** 2-3 days (testing + deployment only)
 
-**Major Milestone Achieved:** Percentile ranking is complete! This is THE killer feature that differentiates us from Monarch Money.
+**Major Milestone Achieved:** Phase 1 MVP is COMPLETE! Percentile ranking is implemented and ready - this is THE killer feature that differentiates us from Monarch Money. We're launch-ready.
 
 ## Project Roadmap
 
@@ -441,12 +484,11 @@ Required in `.env.local`:
 
 **Core Features:**
 
-1. **Account Aggregation (Plaid)** - Traditional accounts (checking, savings, credit, loans, investments) with reliable sync
+1. **Account Aggregation (Plaid)** - Traditional accounts (checking, savings, credit, loans, investments) with reliable sync (Transactions product only)
 2. **Crypto Wallet Tracking** - Read-only balances via Alchemy (Ethereum, Polygon, Base)
 3. **Manual Asset Entry** - Real estate, vehicles, private equity, collectibles
 4. **Net Worth Dashboard** - Big number, trend charts (30/90/365 days), asset/liability breakdowns
 5. **Percentile Ranking** - "You're in the top X% of users in your age group" (viral loop for screenshots)
-6. **FIRE Calculator** - Calculate years to Financial Independence, required net worth for FI, withdrawal rate scenarios, progress visualization
 
 **Explicitly NOT Included in Phase 1:**
 - ❌ Budgeting features (conflicts with "wealth-building, not penny-pinching" positioning)
@@ -462,6 +504,7 @@ Required in `.env.local`:
 **Focus:** Expand based on user feedback, improve retention
 
 **Planned Features:**
+- **FIRE Calculator** - Years to Financial Independence, required net worth for FI, withdrawal rate scenarios, progress visualization (aligns with wealth-building positioning, strong retention driver)
 - Multi-aggregator redundancy (Yodlee backup)
 - Advanced DeFi tracking (staking, LP tokens)
 - Investment performance analytics
@@ -496,7 +539,6 @@ Required in `.env.local`:
 - Up to 2 crypto wallets (auto-sync via Alchemy)
 - 30-day history
 - Percentile ranking preview
-- FIRE calculator with basic features
 
 ### Premium Tier
 **Price:**
@@ -508,7 +550,6 @@ Required in `.env.local`:
 - Unlimited Plaid accounts, crypto wallets, manual assets
 - Full 365-day history
 - Full percentile ranking + leaderboard
-- Advanced FIRE calculator with scenarios
 - AI transaction categorization
 - Complete transaction history
 - Advanced reports and analytics
@@ -764,18 +805,19 @@ Understanding competitor economics validates our pricing strategy and reveals ma
 
 ---
 
-### The Secondary Feature: FIRE Calculator
+### Phase 2 Feature: FIRE Calculator
 
-**Why This Works:**
+**Why This Is Valuable (But Not Launch-Critical):**
 1. **Target Audience Alignment:** Young adults care about Financial Independence
 2. **Emotional Connection:** "You'll reach FI in 8.3 years" is motivating
 3. **Differentiation:** Monarch/YNAB focus on budgeting, not wealth building
 4. **Sticky Feature:** Users check progress monthly (retention driver)
 
-**Competitive Advantage:**
-- Positions Guapital as wealth-building tool, not budget tracker
-- Appeals to r/Fire, r/leanfire communities (organic growth channels)
-- Complements percentile ranking ("Top 20% + 8 years to FI" = powerful combo)
+**Strategic Decision:**
+- Moved to Phase 2 to focus on core launch features
+- Percentile ranking alone provides sufficient differentiation for MVP launch
+- Will be added post-launch based on user feedback and retention needs
+- Complements percentile ranking when implemented ("Top 20% + 8 years to FI")
 
 ---
 
@@ -784,12 +826,12 @@ Understanding competitor economics validates our pricing strategy and reveals ma
 **Minimum Viable Differentiation:**
 1. ✅ Reliable net worth tracking (table stakes)
 2. ✅ Crypto integration (nice-to-have)
-3. **⚠️ Percentile ranking (MUST HAVE for launch)**
-4. **⚠️ FIRE calculator (strongly recommended for launch)**
+3. ✅ Percentile ranking (MUST HAVE - **COMPLETE!**)
 
-**Without percentile ranking:** We're just another Monarch clone with lower prices. Not enough to drive switching.
-
-**With percentile ranking:** We're the ONLY app that gamifies wealth building. This is the viral hook.
+**Launch Decision:**
+- **Without percentile ranking:** We're just another Monarch clone with lower prices. Not enough to drive switching.
+- **With percentile ranking:** We're the ONLY app that gamifies wealth building. This is the viral hook that justifies launch.
+- **FIRE calculator:** Moved to Phase 2. Nice-to-have but not critical for differentiation.
 
 **Launch Positioning:**
 - "The net worth tracker that shows you where you stand (and celebrates your wins)"
@@ -919,6 +961,134 @@ npm run dev  # Visit http://localhost:3000
 
 **Key Design:** No backfill/synthetic data - maintains user trust
 
+## Security & Monitoring
+
+### Rate Limiting (Supabase-based)
+
+**Implementation:** Custom rate limiting using Supabase database (no external dependencies)
+
+**Architecture:**
+- Database table: `rate_limit_attempts` tracks request counts per identifier
+- Middleware: `src/middleware.ts` checks rate limits before processing API requests
+- Utility: `src/lib/ratelimit.ts` provides rate limiting logic
+- Migration: `supabase/migrations/013_create_rate_limiting.sql`
+
+**Rate Limit Categories:**
+
+| Category | Limit | Window | Use Case |
+|----------|-------|--------|----------|
+| **auth** | 5 requests | 15 minutes | Login, signup, password reset |
+| **api** | 300 requests | 1 minute | General API endpoints |
+| **expensive** | 10 requests | 1 hour | Plaid sync, crypto sync |
+
+**Why 300 req/min for API?**
+- Dashboard page load = ~7-9 API calls
+- React Strict Mode (dev) = 2x multiplier
+- Allows ~20-40 page loads per minute
+- Sufficient for active development and normal user behavior
+
+**How It Works:**
+1. Middleware intercepts all `/api/*` requests
+2. Checks if user is authenticated (via Supabase session)
+3. Determines identifier:
+   - **Authenticated users**: `user:{user_id}` (per-user limit)
+   - **Unauthenticated**: `ip:{ip_address}` (per-IP limit)
+4. Determines category based on path (`getRateLimitCategory()`)
+5. Calls `checkRateLimit()` which uses Supabase RPC function
+6. Returns 429 if limit exceeded with headers:
+   - `X-RateLimit-Limit` - Max requests allowed
+   - `X-RateLimit-Remaining` - Requests remaining
+   - `X-RateLimit-Reset` - Unix timestamp when limit resets
+   - `Retry-After` - Seconds until reset
+
+**Shared IP Handling:**
+- ✅ **Authenticated users**: Each user gets their own rate limit (solves office/NAT problem)
+- ⚠️ **Unauthenticated users**: Share rate limit by IP (login/signup pages only)
+
+**Database Function:**
+- `check_and_increment_rate_limit()` - Atomically checks and increments counter
+- `cleanup_old_rate_limits()` - Daily cleanup via pg_cron (3am UTC)
+
+**Testing:**
+```bash
+npx tsx scripts/test-rate-limit.ts
+```
+
+**Fail-Safe Behavior:** If Supabase is down, rate limiting fails open (allows requests) to prevent total service outage.
+
+---
+
+### Error Tracking & Performance Monitoring (Sentry)
+
+**Implementation:** Sentry for production error tracking and performance insights
+
+**Configuration Files:**
+- `sentry.client.config.ts` - Browser-side error tracking
+- `sentry.server.config.ts` - API route and server component tracking
+- `sentry.edge.config.ts` - Middleware and edge function tracking
+- `.sentryclirc` - Sentry CLI configuration
+
+**Features:**
+- **Error Tracking:** 100% of errors captured in production
+- **Performance Monitoring:** 10% sample rate (reduces costs)
+- **Session Replay:** 10% of sessions, 100% of error sessions
+- **Sensitive Data Filtering:** Auto-redacts auth tokens, API keys, cookies
+
+**Environment Variables:**
+```bash
+NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+SENTRY_ORG=your-org
+SENTRY_PROJECT=guapital
+SENTRY_AUTH_TOKEN=your-token
+```
+
+**Custom Tags:**
+- `app: guapital`
+- `runtime: client | server | edge`
+- `user_id` (for authenticated users)
+- `subscription_tier` (free | premium)
+
+**Privacy:**
+- All text and media masked in session replays
+- Authorization headers removed from error reports
+- Query string tokens redacted
+
+**Cost Control:**
+- Free tier: 5,000 events/month (sufficient for MVP)
+- Performance sampling: 10% (vs 100% for errors)
+- Disabled in development environment
+
+**Dashboard:** https://sentry.io/organizations/[your-org]/issues/
+
+---
+
+### Security Best Practices
+
+**Implemented:**
+- ✅ Rate limiting on all API routes (300 req/min for API, 5 req/15min for auth, 10 req/hour for expensive)
+- ✅ Row Level Security (RLS) on all database tables
+- ✅ Comprehensive security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, X-XSS-Protection)
+- ✅ Error tracking and monitoring (Sentry)
+- ✅ Fail-safe rate limiting (fails open, not closed)
+- ✅ User-based rate limiting (prefers user ID over IP to handle shared networks)
+
+**Security Headers (next.config.mjs):**
+- `X-Frame-Options: DENY` - Prevents clickjacking
+- `X-Content-Type-Options: nosniff` - Prevents MIME sniffing
+- `Strict-Transport-Security` - Forces HTTPS (31536000s = 1 year)
+- `Referrer-Policy: strict-origin-when-cross-origin` - Privacy protection
+- `X-XSS-Protection: 1; mode=block` - Legacy XSS protection
+- `Content-Security-Policy` - Comprehensive CSP with whitelisted domains (Plaid, Stripe, Supabase, Alchemy, Sentry)
+- `Permissions-Policy` - Restricts browser features (fullscreen, payment, camera for Plaid only)
+
+**Pending (See SECURITY_COMPLIANCE_GUIDE.md):**
+- ⏳ Plaid access token encryption (pgsodium or app-level)
+- ⏳ Audit logging for sensitive operations
+- ⏳ Input validation with Zod
+- ⏳ GDPR data export functionality
+
+---
+
 ## Key API Routes
 
 **Net Worth & Assets:**
@@ -997,12 +1167,22 @@ npm run dev  # Visit http://localhost:3000
 **Database & Backend:**
 - [ ] Apply core database migrations to production Supabase (001-004)
 - [ ] Apply percentile migrations to production (005-011)
+- [ ] Apply rate limiting migration to production (013)
 - [ ] Enable pg_cron extension in Supabase
 - [ ] Verify percentile seed data loaded (49 records)
-- [ ] Verify daily cron job scheduled (1am UTC)
+- [ ] Verify daily cron jobs scheduled (1am UTC: snapshots, 3am UTC: rate limit cleanup)
+
+**Security & Monitoring:**
+- [ ] Configure Sentry for production (create project, get DSN)
+- [ ] Add Sentry environment variables to production
+- [ ] Test rate limiting on all API routes (auth, api, expensive)
+- [ ] Verify rate limit headers appear in API responses
+- [ ] Trigger test error and verify it appears in Sentry dashboard
+- [ ] Verify Sentry filters sensitive data (tokens, cookies, etc.)
+- [ ] Add security headers (X-Frame-Options, HSTS) - See SECURITY_COMPLIANCE_GUIDE.md
 
 **Integrations:**
-- [ ] Configure Plaid production account
+- [ ] Configure Plaid production account (Transactions product only, Auth not required)
 - [ ] Set up Stripe products ($79 founding, $99 regular)
 - [ ] Configure Stripe webhook for subscription events
 - [ ] Verify Alchemy API key for production
@@ -1016,11 +1196,13 @@ npm run dev  # Visit http://localhost:3000
 - [ ] End-to-end user flow testing (signup → add accounts → see dashboard)
 - [ ] Mobile responsiveness testing (iOS Safari, Android Chrome)
 - [ ] Performance optimization (Lighthouse score >90)
+- [ ] Load testing with rate limits enabled
 
 **Documentation:**
 - [ ] Verify all API endpoints documented
 - [ ] Update environment variable setup guide
 - [ ] Prepare deployment runbook
+- [ ] Document Sentry alert configuration
 
 ## Strategic Context
 
@@ -1028,7 +1210,7 @@ npm run dev  # Visit http://localhost:3000
 
 **Timeline:**
 - ✅ Percentile ranking complete (3 days as planned)
-- Launch-ready MVP: 5-7 days (FIRE calculator + testing + deployment)
+- Launch-ready MVP: 2-3 days (testing + deployment)
 - First 1,000 users (ramen profitability): 6-9 months
 - 5,000 users (lifestyle business): 12-18 months
 
@@ -1039,7 +1221,7 @@ npm run dev  # Visit http://localhost:3000
 
 **Competitive Positioning:**
 - **Price:** Same annual ($99/yr) as Monarch, but 33% cheaper monthly ($9.99 vs $14.99)
-- **Differentiation:** Percentile ranking (viral hook) ✅ + FIRE calculator (wealth-building focus)
+- **Differentiation:** Percentile ranking (viral hook) ✅ - The ONLY killer feature needed for launch
 - **Moat:** Network effects (more users = more valuable percentile data)
 
 **Key Success Metrics:**
@@ -1060,7 +1242,7 @@ npm run dev  # Visit http://localhost:3000
 - Small team (1-10 people), high efficiency
 - Feature discipline: Every feature must drive viral growth or retention
 
-**Critical Success Factor:** ✅ Percentile ranking is COMPLETE! This is the viral hook that drives organic growth and differentiates us from Monarch.
+**Critical Success Factor:** ✅ MVP is COMPLETE and launch-ready! Percentile ranking is the viral hook that drives organic growth and differentiates us from Monarch. FIRE calculator moved to Phase 2 to focus on rapid launch.
 
 ## Additional Documentation
 

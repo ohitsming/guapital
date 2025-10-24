@@ -6,7 +6,7 @@
  * Manages user subscription state and provides feature access utilities
  */
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { SubscriptionTier, SubscriptionStatus, SubscriptionInfo, FeatureAccess, SubscriptionLimits } from '../interfaces/subscription'
 import { hasFeatureAccess, getTierFeatures, getFeatureLimit, canAddMore } from '../permissions'
@@ -26,12 +26,17 @@ interface SubscriptionContextValue {
 
 const SubscriptionContext = createContext<SubscriptionContextValue | undefined>(undefined)
 
-export function SubscriptionProvider({ children }: { children: ReactNode }) {
-    const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+interface SubscriptionProviderProps {
+    children: ReactNode
+    initialSubscription?: SubscriptionInfo
+}
+
+export function SubscriptionProvider({ children, initialSubscription }: SubscriptionProviderProps) {
+    const [subscription, setSubscription] = useState<SubscriptionInfo | null>(initialSubscription || null)
+    const [isLoading, setIsLoading] = useState(!initialSubscription) // Only loading if no initial data
     const [error, setError] = useState<string | null>(null)
 
-    const fetchSubscription = async () => {
+    const fetchSubscription = useCallback(async () => {
         try {
             setIsLoading(true)
             setError(null)
@@ -95,11 +100,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [])
 
     useEffect(() => {
-        fetchSubscription()
-    }, [])
+        // Only fetch if no initial subscription data was provided
+        if (!initialSubscription) {
+            fetchSubscription()
+        }
+    }, [initialSubscription, fetchSubscription])
 
     const tier: SubscriptionTier = subscription?.tier || 'free'
     const status: SubscriptionStatus = subscription?.status || 'active'

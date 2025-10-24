@@ -38,6 +38,45 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
         fetchPercentileData()
     }, [historyDays])
 
+    // Add today's net worth to trend data if it's not already there
+    // This ensures the chart always shows the most current value
+    useEffect(() => {
+        if (!netWorth || trendData.length === 0) return
+
+        const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+        const lastDataPoint = trendData[trendData.length - 1]
+        const lastDate = lastDataPoint?.date.split('T')[0]
+
+        console.log('📊 Chart data check:', {
+            today,
+            lastDate,
+            needsUpdate: lastDate !== today,
+            currentNetWorth: netWorth.net_worth
+        })
+
+        // Only add if last data point is not today
+        if (lastDataPoint && lastDate !== today) {
+            const todayDataPoint: TrendDataPoint = {
+                date: today,
+                value: netWorth.net_worth,
+            }
+
+            console.log('✅ Adding today\'s data point to chart:', todayDataPoint)
+
+            // Use functional update to prevent infinite loops
+            setTrendData(prevData => {
+                // Double-check we haven't already added today's point
+                const lastPoint = prevData[prevData.length - 1]
+                if (lastPoint && lastPoint.date.split('T')[0] === today) {
+                    console.log('⚠️ Today\'s point already exists, skipping')
+                    return prevData
+                }
+                console.log('🎯 Successfully added today\'s point')
+                return [...prevData, todayDataPoint]
+            })
+        }
+    }, [netWorth, trendData])
+
     const fetchNetWorth = async () => {
         try {
             setLoading(true)
