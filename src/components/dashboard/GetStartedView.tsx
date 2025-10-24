@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import PlaidLinkButton from '@/components/plaid/PlaidLinkButton';
 import AddAssetButton from '@/components/assets/AddAssetButton';
+import { PaymentModal } from '@/components/stripe/PaymentModal';
 import { BanknotesIcon, CubeIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useSubscription } from '@/lib/context/SubscriptionContext';
 
@@ -14,6 +14,7 @@ interface GetStartedViewProps {
 const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
   const { hasAccess } = useSubscription();
   const hasPremium = hasAccess('plaidSync');
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   return (
     <div className="max-w-4xl mx-auto py-12">
@@ -45,13 +46,13 @@ const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
             {hasPremium ? (
               <PlaidLinkButton onSuccess={onDataAdded} />
             ) : (
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#004D40] to-[#00695C] border-2 border-transparent rounded-md focus:outline-none focus:border-[#FFC107] transition-colors"
+              <button
+                onClick={() => setIsPaymentModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#004D40] to-[#00695C] border-2 border-transparent rounded-md hover:shadow-lg hover:scale-105 focus:outline-none focus:border-[#FFC107] transition-all"
               >
                 <SparklesIcon className="h-5 w-5" />
                 Upgrade to Premium
-              </Link>
+              </button>
             )}
           </div>
           <div className="mt-6 space-y-2 text-sm text-gray-500">
@@ -130,6 +131,12 @@ const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
           then manually add assets like real estate or crypto wallets.
         </p>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+      />
     </div>
   );
 };
