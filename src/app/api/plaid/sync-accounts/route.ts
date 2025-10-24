@@ -25,7 +25,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
     }
 
-    const { item_id } = await request.json();
+    const { item_id, force = false } = await request.json();
+
+    // PREMIUM FEATURE CHECK: Plaid syncing is Premium+ only
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    const tier = userSettings?.subscription_tier || 'free';
+
+    if (tier === 'free') {
+      return NextResponse.json(
+        {
+          error: 'Premium feature',
+          message: 'Plaid account syncing is only available for Premium subscribers. Upgrade to connect your bank accounts automatically.',
+        },
+        { status: 403 }
+      );
+    }
 
     // Get the plaid item from database
     const { data: plaidItem, error: itemError } = await supabase
@@ -37,6 +56,42 @@ export async function POST(request: Request) {
 
     if (itemError || !plaidItem) {
       return NextResponse.json({ error: 'Plaid item not found' }, { status: 404 });
+    }
+
+    // COST OPTIMIZATION: Check if sync is needed (24-hour cache)
+    if (!force) {
+      const { data: shouldSync } = await supabase
+        .rpc('should_sync_plaid_item', { item_id: plaidItem.id });
+
+      if (!shouldSync) {
+        // Return cached data without hitting Plaid API
+        const { data: accounts } = await supabase
+          .from('plaid_accounts')
+          .select('*')
+          .eq('plaid_item_id', plaidItem.id);
+
+        return NextResponse.json({
+          success: true,
+          cached: true,
+          accounts_synced: accounts?.length || 0,
+          last_sync_at: plaidItem.last_successful_sync_at,
+          message: 'Using cached data (synced within last 24 hours)',
+        });
+      }
+    }
+
+    // Check sync quota for Premium users (20 syncs/day)
+    const { data: hasQuota } = await supabase
+      .rpc('check_sync_quota', { p_user_id: user.id, p_tier: tier });
+
+    if (!hasQuota && !force) {
+      return NextResponse.json(
+        {
+          error: 'Daily sync quota exceeded',
+          message: 'Daily sync limit reached (7/day). Automatic syncs will continue tomorrow.',
+        },
+        { status: 429 }
+      );
     }
 
     try {
@@ -60,11 +115,12 @@ export async function POST(request: Request) {
           .eq('account_id', account.account_id);
       }
 
-      // Update last sync time
+      // Increment sync counter and update last sync time
+      await supabase.rpc('increment_sync_counter', { item_id: plaidItem.id });
+
       await supabase
         .from('plaid_items')
         .update({
-          last_sync_at: new Date().toISOString(),
           sync_status: 'active',
           error_message: null,
         })
@@ -72,8 +128,10 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
+        cached: false,
         accounts_synced: accounts.length,
         last_sync_at: new Date().toISOString(),
+        message: 'Successfully synced from Plaid',
       });
     } catch (plaidError: any) {
       // Update sync status to error

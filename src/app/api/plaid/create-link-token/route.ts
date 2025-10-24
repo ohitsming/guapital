@@ -26,6 +26,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
     }
 
+    // PREMIUM FEATURE CHECK: Plaid integration is Premium+ only
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    const tier = userSettings?.subscription_tier || 'free';
+
+    if (tier === 'free') {
+      return NextResponse.json(
+        {
+          error: 'Premium feature',
+          message: 'Plaid account linking is only available for Premium subscribers. Upgrade to connect your bank accounts automatically.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Validate environment configuration
     if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
       console.error('❌ Missing Plaid credentials');

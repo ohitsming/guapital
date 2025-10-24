@@ -38,65 +38,72 @@ const nextConfig = {
     ],
   },
   async headers() {
+    const isDevelopment = process.env.NODE_ENV === 'development'
+
+    const securityHeaders = [
+      // Permissions Policy (restrict browser features)
+      {
+        key: 'Permissions-Policy',
+        value: 'fullscreen=(self "https://cdn.plaid.com"), payment=(self "https://cdn.plaid.com"), camera=(self "https://cdn.plaid.com")',
+      },
+
+      // Prevent clickjacking attacks
+      {
+        key: 'X-Frame-Options',
+        value: 'DENY',
+      },
+
+      // Prevent MIME type sniffing
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+
+      // Referrer policy (privacy)
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+
+      // XSS Protection (legacy but still useful)
+      {
+        key: 'X-XSS-Protection',
+        value: '1; mode=block',
+      },
+
+      // Content Security Policy (comprehensive protection)
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.plaid.com https://js.stripe.com https://*.sentry.io",
+          "connect-src 'self' https://*.supabase.co https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://api.stripe.com https://*.alchemy.com https://api.coingecko.com https://*.sentry.io",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: https: blob:",
+          "font-src 'self' data:",
+          "frame-src 'self' https://cdn.plaid.com https://js.stripe.com",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "frame-ancestors 'none'",
+          // Only enforce HTTPS upgrade in production
+          ...(isDevelopment ? [] : ["upgrade-insecure-requests"]),
+        ].join('; '),
+      },
+    ]
+
+    // Only add HSTS in production
+    if (!isDevelopment) {
+      securityHeaders.push({
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains; preload',
+      })
+    }
+
     return [
       {
         source: '/:path*',
-        headers: [
-          // Permissions Policy (restrict browser features)
-          {
-            key: 'Permissions-Policy',
-            value: 'fullscreen=(self "https://cdn.plaid.com"), payment=(self "https://cdn.plaid.com"), camera=(self "https://cdn.plaid.com")',
-          },
-
-          // Prevent clickjacking attacks
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-
-          // Prevent MIME type sniffing
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-
-          // Force HTTPS (only in production)
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
-
-          // Referrer policy (privacy)
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-
-          // XSS Protection (legacy but still useful)
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-
-          // Content Security Policy (comprehensive protection)
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.plaid.com https://js.stripe.com https://*.sentry.io",
-              "connect-src 'self' https://*.supabase.co https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://api.stripe.com https://*.alchemy.com https://api.coingecko.com https://*.sentry.io",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' data:",
-              "frame-src 'self' https://cdn.plaid.com https://js.stripe.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'none'",
-              "upgrade-insecure-requests",
-            ].join('; '),
-          },
-        ],
+        headers: securityHeaders,
       },
     ]
   },

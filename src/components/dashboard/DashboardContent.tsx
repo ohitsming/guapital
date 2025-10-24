@@ -47,13 +47,6 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
         const lastDataPoint = trendData[trendData.length - 1]
         const lastDate = lastDataPoint?.date.split('T')[0]
 
-        console.log('📊 Chart data check:', {
-            today,
-            lastDate,
-            needsUpdate: lastDate !== today,
-            currentNetWorth: netWorth.net_worth
-        })
-
         // Only add if last data point is not today
         if (lastDataPoint && lastDate !== today) {
             const todayDataPoint: TrendDataPoint = {

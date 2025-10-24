@@ -26,7 +26,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
     }
 
-    const { item_id, days = 90 } = await request.json();
+    const { item_id, days = 90, force = false } = await request.json();
+
+    // COST OPTIMIZATION: Check subscription tier for transaction access
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('subscription_tier')
+      .eq('user_id', user.id)
+      .single();
+
+    const tier = userSettings?.subscription_tier || 'free';
+
+    // Free tier users can't sync transactions (Premium+ only feature)
+    if (tier === 'free') {
+      return NextResponse.json(
+        {
+          error: 'Premium feature',
+          message: 'Transaction syncing is only available for Premium subscribers. Upgrade to access this feature.',
+        },
+        { status: 403 }
+      );
+    }
 
     // Get all plaid items for the user (or specific item if provided)
     const query = supabase
@@ -46,9 +66,20 @@ export async function POST(request: Request) {
     }
 
     let totalTransactionsSynced = 0;
+    let cachedItems = 0;
 
     // Sync transactions for each item
     for (const item of plaidItems) {
+      // COST OPTIMIZATION: Check if sync is needed (24-hour cache for transactions too)
+      if (!force) {
+        const { data: shouldSync } = await supabase
+          .rpc('should_sync_plaid_item', { item_id: item.id });
+
+        if (!shouldSync) {
+          cachedItems++;
+          continue; // Skip API call, use cached data
+        }
+      }
       try {
         const startDate = format(subDays(new Date(), days), 'yyyy-MM-dd');
         const endDate = format(new Date(), 'yyyy-MM-dd');
@@ -106,6 +137,9 @@ export async function POST(request: Request) {
             totalTransactionsSynced++;
           }
         }
+
+        // Increment sync counter for successful transaction sync
+        await supabase.rpc('increment_sync_counter', { item_id: item.id });
       } catch (itemError: any) {
         console.error(`Error syncing transactions for item ${item.id}:`, itemError);
         // Continue with other items even if one fails
@@ -116,6 +150,10 @@ export async function POST(request: Request) {
       success: true,
       transactions_synced: totalTransactionsSynced,
       items_processed: plaidItems.length,
+      cached_items: cachedItems,
+      message: cachedItems > 0
+        ? `${cachedItems} item(s) used cached data (synced within last 24 hours)`
+        : 'Successfully synced from Plaid',
     });
   } catch (error: any) {
     console.error('Error syncing transactions:', error);

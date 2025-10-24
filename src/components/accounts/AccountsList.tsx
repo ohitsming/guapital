@@ -46,8 +46,22 @@ export default function AccountsList() {
                 body: JSON.stringify({}),
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                throw new Error('Failed to sync accounts')
+                // Handle quota exceeded error
+                if (response.status === 429) {
+                    alert(data.message || 'Daily sync quota exceeded. Please try again tomorrow or upgrade to Premium.')
+                    return
+                }
+                throw new Error(data.error || 'Failed to sync accounts')
+            }
+
+            // Show appropriate message based on cached vs fresh sync
+            if (data.cached) {
+                alert(`✓ Using cached data (last synced ${new Date(data.last_sync_at).toLocaleString()})`)
+            } else {
+                alert(`✓ Successfully synced ${data.accounts_synced} account(s)`)
             }
 
             await fetchAccounts()
