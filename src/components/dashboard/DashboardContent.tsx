@@ -54,8 +54,6 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                 value: netWorth.net_worth,
             }
 
-            console.log('✅ Adding today\'s data point to chart:', todayDataPoint)
-
             // Use functional update to prevent infinite loops
             setTrendData(prevData => {
                 // Double-check we haven't already added today's point
