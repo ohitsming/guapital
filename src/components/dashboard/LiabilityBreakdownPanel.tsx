@@ -67,7 +67,14 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities, l
     const getLiabilityItems = () => {
         if (!breakdown) return []
 
-        const items = []
+        const items: Array<{
+            category: keyof typeof COLORS
+            label: string
+            value: number
+            color: string
+            icon: any
+            percentage: number
+        }> = []
         const categories: Array<keyof typeof COLORS> = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt']
 
         categories.forEach(category => {

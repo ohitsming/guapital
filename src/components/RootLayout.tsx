@@ -88,9 +88,7 @@ function Header({
             !pathname.startsWith('/dashboard') && [
                 "left-8 right-8 sm:left-12 sm:right-12 lg:left-16 lg:right-16",
                 "rounded-full border border-neutral-200",
-                isSticky
-                    ? "bg-white/80 backdrop-blur-md shadow-sm"
-                    : "bg-white"
+                "bg-transparent backdrop-blur-md shadow-sm"
             ],
             pathname.startsWith('/dashboard') && "top-0 left-0 right-0 rounded-none"
         )}>
