@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { DashboardNav } from '@/components/dashboard/DashboardNav'
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 
 interface DashboardLayoutClientProps {
     user: User
@@ -22,8 +23,14 @@ export default function DashboardLayoutClient({ user, children }: DashboardLayou
                 user={user}
             />
 
+            {/* Floating Header */}
+            <DashboardHeader
+                onMenuClick={() => setIsSidebarOpen(true)}
+                user={user}
+            />
+
             {/* Main Content */}
-            <div className="lg:ml-64 pt-20 lg:pt-0">
+            <div className="pt-24 lg:pt-0 lg:ml-64 px-4 md:px-8 lg:px-12">
                 {children}
             </div>
         </div>

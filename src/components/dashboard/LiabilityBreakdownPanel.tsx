@@ -2,12 +2,33 @@
 
 import { NetWorthBreakdown } from '@/lib/interfaces/networth'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import { ArrowTrendingDownIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { ArrowTrendingDownIcon, SparklesIcon, HomeIcon, DocumentTextIcon, BriefcaseIcon, CreditCardIcon, EllipsisHorizontalCircleIcon } from '@heroicons/react/24/outline'
 
-// Brand colors
+// Brand colors for each liability category
 const COLORS = {
-    credit_card_debt: '#EF4444', // red
-    loans: '#F97316', // orange
+    mortgage: '#EF4444',        // red
+    personal_loan: '#F97316',   // orange
+    business_debt: '#EAB308',   // yellow
+    credit_debt: '#A855F7',     // purple
+    other_debt: '#6B7280',      // gray
+}
+
+// Category icons
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    mortgage: HomeIcon,
+    personal_loan: DocumentTextIcon,
+    business_debt: BriefcaseIcon,
+    credit_debt: CreditCardIcon,
+    other_debt: EllipsisHorizontalCircleIcon,
+}
+
+// Category labels
+const CATEGORY_LABELS: Record<string, string> = {
+    mortgage: 'Mortgage',
+    personal_loan: 'Personal Loans',
+    business_debt: 'Business Debt',
+    credit_debt: 'Credit Cards',
+    other_debt: 'Other Debt',
 }
 
 interface LiabilityBreakdownPanelProps {
@@ -29,12 +50,45 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities, l
     const getLiabilityChartData = () => {
         if (!breakdown) return []
         const data = []
-        if (breakdown.credit_card_debt > 0) data.push({ name: 'Credit Cards', value: breakdown.credit_card_debt, color: COLORS.credit_card_debt })
-        if (breakdown.loans > 0) data.push({ name: 'Loans', value: breakdown.loans, color: COLORS.loans })
+
+        // Add each liability category if it has a value > 0
+        if (breakdown.mortgage > 0) data.push({ name: 'Mortgage', value: breakdown.mortgage, color: COLORS.mortgage, category: 'mortgage' })
+        if (breakdown.personal_loan > 0) data.push({ name: 'Personal Loans', value: breakdown.personal_loan, color: COLORS.personal_loan, category: 'personal_loan' })
+        if (breakdown.business_debt > 0) data.push({ name: 'Business Debt', value: breakdown.business_debt, color: COLORS.business_debt, category: 'business_debt' })
+        if (breakdown.credit_debt > 0) data.push({ name: 'Credit Cards', value: breakdown.credit_debt, color: COLORS.credit_debt, category: 'credit_debt' })
+        if (breakdown.other_debt > 0) data.push({ name: 'Other Debt', value: breakdown.other_debt, color: COLORS.other_debt, category: 'other_debt' })
+
         return data
     }
 
     const liabilityChartData = getLiabilityChartData()
+
+    // Get all liability items for display
+    const getLiabilityItems = () => {
+        if (!breakdown) return []
+
+        const items = []
+        const categories: Array<keyof typeof COLORS> = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt']
+
+        categories.forEach(category => {
+            const value = breakdown[category]
+            if (value > 0) {
+                items.push({
+                    category,
+                    label: CATEGORY_LABELS[category],
+                    value,
+                    color: COLORS[category],
+                    icon: CATEGORY_ICONS[category],
+                    percentage: (value / totalLiabilities) * 100
+                })
+            }
+        })
+
+        // Sort by value descending
+        return items.sort((a, b) => b.value - a.value)
+    }
+
+    const liabilityItems = getLiabilityItems()
 
     // Skeleton loader
     if (loading || !breakdown) {
@@ -55,7 +109,7 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities, l
 
                 {/* Category skeletons */}
                 <div className="space-y-2">
-                    {[1, 2].map((i) => (
+                    {[1, 2, 3].map((i) => (
                         <div key={i}>
                             <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-1.5">
@@ -114,47 +168,44 @@ export default function LiabilityBreakdownPanel({ breakdown, totalLiabilities, l
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        {breakdown.credit_card_debt > 0 && (
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.credit_card_debt }}></div>
-                                        <span className="text-xs font-medium text-gray-700">Credit Card Debt</span>
+                    <div className="space-y-2.5">
+                        {liabilityItems.map((item) => {
+                            const Icon = item.icon
+                            return (
+                                <div key={item.category}>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+                                            <div className="flex items-center gap-1">
+                                                <Icon className="w-3.5 h-3.5 text-gray-500" />
+                                                <span className="text-xs font-medium text-gray-700">{item.label}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-500">{item.percentage.toFixed(1)}%</span>
+                                            <span className="text-xs font-bold text-gray-900">{formatCurrency(item.value)}</span>
+                                        </div>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-900">{formatCurrency(breakdown.credit_card_debt)}</span>
-                                </div>
-                                <div className="w-full bg-gray-100 rounded-full h-1.5">
-                                    <div
-                                        className="h-1.5 rounded-full transition-all duration-500"
-                                        style={{
-                                            width: `${(breakdown.credit_card_debt / totalLiabilities) * 100}%`,
-                                            backgroundColor: COLORS.credit_card_debt
-                                        }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-                        {breakdown.loans > 0 && (
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.loans }}></div>
-                                        <span className="text-xs font-medium text-gray-700">Loans & Mortgages</span>
+                                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                        <div
+                                            className="h-1.5 rounded-full transition-all duration-500"
+                                            style={{
+                                                width: `${item.percentage}%`,
+                                                backgroundColor: item.color
+                                            }}
+                                        ></div>
                                     </div>
-                                    <span className="text-xs font-bold text-gray-900">{formatCurrency(breakdown.loans)}</span>
                                 </div>
-                                <div className="w-full bg-gray-100 rounded-full h-1.5">
-                                    <div
-                                        className="h-1.5 rounded-full transition-all duration-500"
-                                        style={{
-                                            width: `${(breakdown.loans / totalLiabilities) * 100}%`,
-                                            backgroundColor: COLORS.loans
-                                        }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
+                            )
+                        })}
+                    </div>
+
+                    {/* Total liabilities summary */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-gray-600">Total Liabilities</span>
+                            <span className="text-sm font-bold text-red-600">{formatCurrency(totalLiabilities)}</span>
+                        </div>
                     </div>
                 </>
             ) : (

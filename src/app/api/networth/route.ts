@@ -16,11 +16,19 @@ export async function GET(request: Request) {
 
     // Initialize breakdown
     const breakdown: NetWorthBreakdown = {
+      // Assets
       cash: 0,
       investments: 0,
       crypto: 0,
       real_estate: 0,
       other: 0,
+      // Liabilities (detailed)
+      mortgage: 0,
+      personal_loan: 0,
+      business_debt: 0,
+      credit_debt: 0,
+      other_debt: 0,
+      // Legacy fields
       credit_card_debt: 0,
       loans: 0,
     };
@@ -50,10 +58,11 @@ export async function GET(request: Request) {
         } else if (account.account_type === 'credit') {
           // Credit cards -> liabilities (debt)
           // Note: Plaid returns credit card balances as positive numbers representing debt
-          breakdown.credit_card_debt += Math.abs(balance);
+          breakdown.credit_debt += Math.abs(balance);
         } else if (account.account_type === 'loan') {
-          // Loans -> liabilities
-          breakdown.loans += Math.abs(balance);
+          // Loans -> liabilities (defaulting to personal_loan for Plaid)
+          // In the future, could use account_subtype to differentiate
+          breakdown.personal_loan += Math.abs(balance);
         }
       }
     }
@@ -101,15 +110,31 @@ export async function GET(request: Request) {
             breakdown.other += value;
           }
         } else if (asset.entry_type === 'liability') {
-          // Liabilities
-          if (asset.category === 'credit_debt') {
-            breakdown.credit_card_debt += value;
-          } else if (['mortgage', 'personal_loan', 'business_debt', 'other_debt'].includes(asset.category)) {
-            breakdown.loans += value;
+          // Liabilities - track in detailed categories
+          switch (asset.category) {
+            case 'mortgage':
+              breakdown.mortgage += value;
+              break;
+            case 'personal_loan':
+              breakdown.personal_loan += value;
+              break;
+            case 'business_debt':
+              breakdown.business_debt += value;
+              break;
+            case 'credit_debt':
+              breakdown.credit_debt += value;
+              break;
+            case 'other_debt':
+              breakdown.other_debt += value;
+              break;
           }
         }
       }
     }
+
+    // Populate legacy fields for backward compatibility
+    breakdown.credit_card_debt = breakdown.credit_debt;
+    breakdown.loans = breakdown.mortgage + breakdown.personal_loan + breakdown.business_debt + breakdown.other_debt;
 
     // Calculate totals
     const total_assets =
@@ -120,8 +145,11 @@ export async function GET(request: Request) {
       breakdown.other;
 
     const total_liabilities =
-      breakdown.credit_card_debt +
-      breakdown.loans;
+      breakdown.mortgage +
+      breakdown.personal_loan +
+      breakdown.business_debt +
+      breakdown.credit_debt +
+      breakdown.other_debt;
 
     const net_worth = total_assets - total_liabilities;
 

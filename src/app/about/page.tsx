@@ -25,19 +25,34 @@ const navigation = [
 // Adapted from the "Our Culture" section
 const values = [
   {
-    name: 'Privacy First',
-    description:
-      'Your financial data is yours alone. We prioritize privacy and security, ensuring your information remains confidential and protected.',
-  },
-  {
     name: 'Simplicity & Clarity',
     description:
-      'We believe in making financial tracking simple and accessible. Our platform provides a clear picture of your net worth without unnecessary complexity.',
+      'We cut through the noise to give you one clear number: your net worth. No overwhelming dashboards, no feature bloat—just the insights you need to make informed financial decisions.',
   },
   {
-    name: 'Mindful Wealth Building',
+    name: 'Education & Empowerment',
     description:
-      'We promote mindfulness through manual entry of financial data, helping you stay engaged with your financial decisions and build wealth with intention.',
+      'We help you understand your finances through clear insights and percentile rankings based on Federal Reserve data. Our goal is to inform and motivate, never to overwhelm or intimidate.',
+  },
+  {
+    name: 'Privacy & Security',
+    description:
+      'Your financial data stays yours. We use bank-level encryption and will never sell your information to third parties. Our revenue comes from subscriptions, not from your data.',
+  },
+  {
+    name: 'Transparent by Design',
+    description:
+      'From our straightforward pricing to our data sources (Federal Reserve SCF benchmarks), we believe in being open about how Guapital works and what you can expect.',
+  },
+  {
+    name: 'Positive Financial Growth',
+    description:
+      'We focus on celebrating your progress and helping you build wealth with intention. No guilt, no shame—just clear tracking and encouraging insights to guide your journey.',
+  },
+  {
+    name: 'Modern & Comprehensive',
+    description:
+      'Whether you\'re tracking cryptocurrency, stock options, real estate, or traditional accounts, Guapital supports the full range of modern assets in one unified platform.',
   },
 ]
 
@@ -138,10 +153,94 @@ export default function AboutPage() { // Renamed from Example to AboutPage
             <div className="mt-6 flex flex-col gap-x-8 gap-y-20 lg:flex-row">
               <div className="lg:w-full lg:max-w-2xl lg:flex-auto">
                 <p className="text-xl/8 text-gray-600 dark:text-gray-300">
-                  For most young adults, building wealth starts with understanding where they stand financially. Guapital is a modern, privacy-first financial application that helps you track your net worth with clarity and confidence. Manual entry promotes mindfulness about your financial assets and liabilities, empowering you to make informed decisions about your financial future.
+                  We believe everyone deserves access to quality wealth management tools, not just those with significant assets. For young adults starting their financial journey, the first step is understanding where you stand—but many existing apps are either too expensive, too complex, or compromise your privacy.
+                </p>
+                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                  That&apos;s why we created Guapital—an <strong>affordable, privacy-first platform</strong> that helps you track your complete financial picture. Whether it&apos;s traditional investments, cryptocurrency, or real-world assets like your home or car, everything lives in one beautiful, easy-to-use dashboard. We offer transparent pricing at $9.99/month (or $99/year) with unlimited accounts and features.
+                </p>
+                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                  Beyond tracking, we&apos;re passionate about <strong>financial education that empowers</strong>. Our percentile rankings help you understand how you&apos;re doing compared to your peers—not to create pressure, but to celebrate your progress and set informed goals. We believe financial growth should feel motivating and transparent, not stressful or confusing.
+                </p>
+                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                  Whether you&apos;re just starting to build wealth or already managing a diverse portfolio, Guapital gives you the clarity and tools you need to make confident financial decisions. Welcome to wealth building made simple.
                 </p>
               </div>
-              {/* Removed stats section */}
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works section */}
+        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:mx-0">
+            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+              How It Works
+            </h2>
+            <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+              Get started with Guapital in three simple steps. No complicated setup, no financial jargon—just clear, actionable insights.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Connect Your Accounts
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                Link your bank accounts, investment accounts, and crypto wallets securely via Plaid and Alchemy. Or add assets manually—real estate, vehicles, collectibles, anything you own.
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                See Your Complete Picture
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                Your dashboard shows your total net worth, asset breakdown, and historical trends in one beautiful view. Track everything from checking accounts to cryptocurrency to real estate—all in one place.
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Track Your Progress
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                See how your net worth grows over time and compare yourself to peers in your age group with percentile rankings. Celebrate your wins and set informed financial goals.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Who It's For section */}
+        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:mx-0">
+            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+              Who Guapital Is For
+            </h2>
+            <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+              Guapital is designed for young adults who are actively building wealth and want clear visibility into their financial progress.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Tech-Savvy Professionals
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                Software engineers, consultants, and entrepreneurs earning $75K-$200K who hold a mix of traditional investments, cryptocurrency, and emerging assets. You&apos;re comfortable with technology and want tools that work reliably.
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Wealth Builders
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                With net worth between $50K-$500K, you&apos;re past surviving paycheck to paycheck. You&apos;re focused on building wealth intentionally, not penny-pinching budgets. You want to celebrate your progress and set informed goals.
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Privacy-Conscious Users
+              </h3>
+              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+                You care about data privacy and are willing to pay for quality tools that respect your financial information. You want transparency about how your data is used and stored, with bank-level security you can trust.
+              </p>
             </div>
           </div>
         </div>
@@ -162,7 +261,7 @@ export default function AboutPage() { // Renamed from Example to AboutPage
               Our Values
             </h2>
             <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
-              We are a team obsessed with empowering individuals to take control of their financial future. Our culture is built on three core principles.
+              We&apos;re building Guapital on a foundation of affordability, transparency, and education. These aren&apos;t just marketing buzzwords—they&apos;re the principles that guide every decision we make.
             </p>
           </div>
           <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 text-base/7 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
@@ -178,8 +277,6 @@ export default function AboutPage() { // Renamed from Example to AboutPage
         {/* Removed Logo cloud, Team section, and Blog section */}
       </main>
 
-      {/* Footer */}
-      <Footer />
     </div>
   )
 }

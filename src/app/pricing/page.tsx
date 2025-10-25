@@ -3,8 +3,7 @@
 import { PricingSection } from '@/components/pricing';
 import { Footer } from '@/components/Footer';
 import { useState, useEffect } from 'react';
-import { useNotification } from '@/hooks/useNotification';
-import { NotificationContainer } from '@/components/ui/Notification';
+import { useToast } from '@/components/toast/ToastProvider';
 
 /**
  * Pricing Page
@@ -19,7 +18,7 @@ import { NotificationContainer } from '@/components/ui/Notification';
  */
 export default function PricingPage() {
   const [remainingSlots, setRemainingSlots] = useState<number | undefined>(undefined);
-  const { notifications, showNotification, removeNotification } = useNotification();
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Fetch remaining founding member slots from API
@@ -74,7 +73,7 @@ export default function PricingPage() {
           return;
         }
 
-        showNotification(error.error || 'Failed to create checkout session', 'error');
+        showToast(error.error || 'Failed to create checkout session', 'error');
         return;
       }
 
@@ -86,18 +85,12 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      showNotification('Something went wrong. Please try again.', 'error');
+      showToast('Something went wrong. Please try again.', 'error');
     }
   };
 
   return (
     <div className="min-h-screen">
-      {/* Notification Container */}
-      <NotificationContainer
-        notifications={notifications}
-        onRemove={removeNotification}
-      />
-
       {/* Main Content */}
       <main className="py-12">
         <PricingSection
@@ -107,8 +100,6 @@ export default function PricingPage() {
         />
       </main>
 
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

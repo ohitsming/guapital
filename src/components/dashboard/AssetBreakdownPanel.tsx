@@ -220,6 +220,14 @@ export default function AssetBreakdownPanel({ breakdown, totalAssets, loading = 
                     </div>
                 )}
             </div>
+
+            {/* Total assets summary */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-600">Total Assets</span>
+                    <span className="text-sm font-bold text-[#004D40]">{formatCurrency(totalAssets)}</span>
+                </div>
+            </div>
         </div>
     )
 }

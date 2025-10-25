@@ -158,19 +158,12 @@ export default function PercentileOptInModal({ isOpen, onClose, onOptIn }: Perce
                             </div>
 
                             <div className="space-y-2 ml-0">
-                                <div className="flex items-start gap-3 bg-white rounded-lg p-2.5 border border-slate-200">
-                                    <UserGroupIcon className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="text-xs font-semibold text-slate-900">Real Guapital Users</p>
-                                        <p className="text-xs text-slate-600">People in your age group</p>
-                                    </div>
-                                </div>
-
+                                {/* Only show Federal Reserve data - hiding Real Guapital Users until we enable user comparisons */}
                                 <div className="flex items-start gap-3 bg-white rounded-lg p-2.5 border border-slate-200">
                                     <BuildingLibraryIcon className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <p className="text-xs font-semibold text-slate-900">Federal Reserve Data</p>
-                                        <p className="text-xs text-slate-600">6,000+ households (SCF 2022)</p>
+                                        <p className="text-xs text-slate-600">6,000+ households surveyed nationally (SCF 2022)</p>
                                     </div>
                                 </div>
                             </div>
@@ -179,9 +172,9 @@ export default function PercentileOptInModal({ isOpen, onClose, onOptIn }: Perce
                                 <p className="text-xs text-slate-600 leading-relaxed">
                                     <span className="inline-flex items-center gap-1">
                                         <span className="w-1.5 h-1.5 bg-teal-500 rounded-full"></span>
-                                        <span className="font-medium text-slate-700">We blend both sources</span>
+                                        <span className="font-medium text-slate-700">Based on Federal Reserve data</span>
                                     </span>
-                                    {' '}to ensure accuracy. As your age bracket grows, we transition to 100% real user data.
+                                    {' '}to ensure consistent, reliable rankings across all users.
                                 </p>
                             </div>
                         </div>

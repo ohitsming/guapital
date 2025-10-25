@@ -46,9 +46,9 @@ const ASSET_CATEGORIES: CategoryConfig[] = [
   },
   {
     value: 'cash',
-    label: 'Cash',
+    label: 'Cash & Bank Accounts',
     icon: BanknotesIcon,
-    description: 'Physical cash, safe holdings',
+    description: 'Cash, checking, savings accounts',
   },
   {
     value: 'investment',

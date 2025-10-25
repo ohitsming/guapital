@@ -172,53 +172,40 @@ export default function PercentileLearnMoreModal({
                                     </div>
 
                                     <div className="space-y-2">
+                                        {/* Only show Federal Reserve data - hiding Real Guapital Users until we enable user comparisons */}
                                         <div className="flex items-start gap-3 bg-white rounded-lg p-2.5 border border-slate-200">
-                                            <UserGroupIcon className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" />
+                                            <BuildingLibraryIcon className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                                             <div>
-                                                <p className="text-xs font-semibold text-slate-900">Real Guapital Users</p>
-                                                <p className="text-xs text-slate-600">
-                                                    <strong className="text-teal-700">{totalUsers.toLocaleString()}</strong> user{totalUsers !== 1 ? 's' : ''} in ages {ageBracket}
-                                                </p>
+                                                <p className="text-xs font-semibold text-slate-900">Federal Reserve Data</p>
+                                                <p className="text-xs text-slate-600">SCF 2022 — 6,000+ households surveyed nationally</p>
                                             </div>
                                         </div>
-
-                                        {usesSeedData && (
-                                            <div className="flex items-start gap-3 bg-white rounded-lg p-2.5 border border-slate-200">
-                                                <BuildingLibraryIcon className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                                                <div>
-                                                    <p className="text-xs font-semibold text-slate-900">Federal Reserve Data</p>
-                                                    <p className="text-xs text-slate-600">SCF 2022 — 6,000+ households</p>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 
-                                {/* Why blend data */}
-                                {usesSeedData && (
-                                    <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
-                                        <div className="flex items-start gap-2">
-                                            <BuildingLibraryIcon className="h-4 w-4 text-teal-600 flex-shrink-0 mt-0.5" />
-                                            <div>
-                                                <h4 className="font-semibold text-teal-900 mb-1.5 text-xs">Why Blend Data?</h4>
-                                                <ul className="space-y-1 text-xs text-teal-800">
-                                                    <li className="flex items-start gap-1.5">
-                                                        <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
-                                                        <span>Need 1,000+ users per age bracket for 100% accuracy</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-1.5">
-                                                        <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
-                                                        <span>Federal Reserve SCF = gold standard (6,000+ households)</span>
-                                                    </li>
-                                                    <li className="flex items-start gap-1.5">
-                                                        <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
-                                                        <span>Auto-transition to 100% real data as community grows</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                {/* Why use Federal Reserve data */}
+                                <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                        <BuildingLibraryIcon className="h-4 w-4 text-teal-600 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <h4 className="font-semibold text-teal-900 mb-1.5 text-xs">Why Federal Reserve Data?</h4>
+                                            <ul className="space-y-1 text-xs text-teal-800">
+                                                <li className="flex items-start gap-1.5">
+                                                    <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
+                                                    <span>Gold standard: Survey of Consumer Finances (SCF) 2022</span>
+                                                </li>
+                                                <li className="flex items-start gap-1.5">
+                                                    <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
+                                                    <span>6,000+ households surveyed nationally</span>
+                                                </li>
+                                                <li className="flex items-start gap-1.5">
+                                                    <span className="text-teal-600 mt-0.5 flex-shrink-0">✓</span>
+                                                    <span>Consistent, reliable benchmarks across all age groups</span>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </div>
-                                )}
+                                </div>
 
                                 {!usesSeedData && totalUsers >= 1000 && (
                                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">

@@ -784,7 +784,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
       {showSeeMoreButton && limitDisplay && (totalAssetsCount > limitDisplay || totalLiabilitiesCount > limitDisplay) && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <Link
-            href="/account"
+            href="/dashboard/accounts"
             className="block w-full text-center py-3 px-4 bg-[#004D40] hover:bg-[#00695C] text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
           >
             See All Accounts ({totalEntriesCount})

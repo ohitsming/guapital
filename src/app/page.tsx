@@ -59,7 +59,7 @@ export default function LandingPage() {
     }, [])
 
     return (
-        <main className="">
+        <main className="pt-8">
             {/* HERO SECTION */}
             <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden">
                 {/* Animated background gradient */}
@@ -90,7 +90,7 @@ export default function LandingPage() {
                     className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-[#004D40]/20 rounded-full blur-3xl"
                 />
 
-                <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+                <div className="relative z-10 max-w-7xl mx-auto px-6">
                     <div className="text-center">
                         {/* Founding member badge */}
                         {!isLoading && remainingSlots !== null && remainingSlots > 0 && (
@@ -233,7 +233,7 @@ export default function LandingPage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-600 dark:text-gray-400">Net Worth</p>
-                                            <p className="text-xl font-bold text-gray-900 dark:text-white">$247,582</p>
+                                            <p className="text-xl font-bold text-gray-900 dark:text-white">$1,902,900</p>
                                         </div>
                                     </div>
                                 </div>
@@ -423,8 +423,8 @@ export default function LandingPage() {
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-xs mb-2">
-                                                <span className="text-[#FFC107] font-semibold">You (Top 18%)</span>
-                                                <span className="text-[#FFC107] font-semibold">$247,582</span>
+                                                <span className="text-[#FFC107] font-semibold">You (Top 13%)</span>
+                                                <span className="text-[#FFC107] font-semibold">$1,902,900</span>
                                             </div>
                                             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                                                 <div className="h-full w-[82%] bg-[#FFC107]" />
@@ -562,8 +562,6 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* FOOTER */}
-            <Footer />
         </main>
     )
 }

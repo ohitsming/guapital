@@ -1,13 +1,21 @@
 // Net worth and financial snapshot type definitions
 
 export interface NetWorthBreakdown {
+  // Assets
   cash: number;
   investments: number;
   crypto: number;
   real_estate: number;
   other: number;
-  credit_card_debt: number;
-  loans: number;
+  // Liabilities (detailed breakdown)
+  mortgage: number;
+  personal_loan: number;
+  business_debt: number;
+  credit_debt: number;
+  other_debt: number;
+  // Legacy fields for backward compatibility
+  credit_card_debt: number; // Same as credit_debt
+  loans: number; // Sum of mortgage + personal_loan + business_debt + other_debt
 }
 
 export interface NetWorthSnapshot {

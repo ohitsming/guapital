@@ -12,15 +12,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { motion, MotionConfig, useReducedMotion } from 'framer-motion'
-import { BanknotesIcon } from '@heroicons/react/24/solid'
-import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/solid'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
-import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
 import { GridPattern } from '@/components/GridPattern'
-import { Logo, Logomark } from '@/components/Logo'
+import { Logo } from '@/components/Logo'
 
 const RootLayoutContext = createContext<{
     logoHovered: boolean
@@ -51,22 +48,25 @@ function Header({
     expanded,
     onToggle,
     toggleRef,
-    invert = false,
+    isSticky = false,
+    setExpanded,
+    menuRef,
 }: {
     panelId: string
     expanded: boolean
     onToggle: () => void
     toggleRef: React.RefObject<HTMLButtonElement>
-    invert?: boolean
+    isSticky?: boolean
+    setExpanded: (value: boolean) => void
+    menuRef?: React.RefObject<HTMLDivElement>
 }) {
     let pathname = usePathname()
-    let { logoHovered, setLogoHovered } = useContext(RootLayoutContext)!
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const supabase = createClient();
 
     useEffect(() => {
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
             setUser(session?.user || null);
             setLoading(false);
         });
@@ -83,48 +83,66 @@ function Header({
     };
 
     return (
-        <Container className={pathname.startsWith('/dashboard') ? 'max-w-none' : ''}>
+        <div className={clsx(
+            "fixed top-4 z-50 transition-all duration-200",
+            !pathname.startsWith('/dashboard') && [
+                "left-8 right-8 sm:left-12 sm:right-12 lg:left-16 lg:right-16",
+                "rounded-full border border-neutral-200",
+                isSticky
+                    ? "bg-white/80 backdrop-blur-md shadow-sm"
+                    : "bg-white"
+            ],
+            pathname.startsWith('/dashboard') && "top-0 left-0 right-0 rounded-none"
+        )}>
             <div className={clsx(
-                "flex items-center justify-between",
-                pathname.startsWith('/dashboard') && "ml-64"
+                "mx-auto px-6",
+                pathname.startsWith('/dashboard') ? 'max-w-none' : 'max-w-7xl'
             )}>
-                <Link
-                    href="/"
-                    aria-label="Home"
-                    onMouseEnter={() => setLogoHovered(true)}
-                    onMouseLeave={() => setLogoHovered(false)}
-                >
-                    <Logo
-                        className={clsx(
-                            "hidden sm:block h-12"
-                        )}
-                        invert={invert}
-                        filled={logoHovered}
-                    />
-                </Link>
-                <div className="flex items-center gap-x-6">
-                    <div className="hidden sm:flex sm:gap-x-6 sm:items-center">
+                <div className={clsx(
+                    "flex items-center justify-between h-14",
+                    pathname.startsWith('/dashboard') && "ml-64"
+                )}>
+                    {/* Logo on the left */}
+                    <Link
+                        href="/"
+                        aria-label="Home"
+                        className="flex items-center"
+                    >
+                        <Logo className="h-12" />
+                        {/* <span className="text-xl font-semibold text-neutral-950">
+                            Guapital
+                        </span> */}
+                    </Link>
+
+                    {/* Center navigation */}
+                    <nav className="hidden lg:flex lg:items-center lg:gap-x-1 absolute left-1/2 -translate-x-1/2">
                         {!pathname.startsWith('/dashboard') && (
                             <>
-                                <Link href="/about" className={clsx('inline-block rounded-lg py-1 px-2 text-sm', invert ? 'text-white hover:bg-white/10' : 'text-neutral-950 hover:bg-neutral-100')}>
+                                <Link
+                                    href="/about"
+                                    className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-950 transition-colors"
+                                >
                                     About
                                 </Link>
-                                <Link href="/pricing" className={clsx('inline-block rounded-lg py-1 px-2 text-sm', invert ? 'text-white hover:bg-white/10' : 'text-neutral-950 hover:bg-neutral-100')}>
+                                <Link
+                                    href="/pricing"
+                                    className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-950 transition-colors"
+                                >
                                     Pricing
                                 </Link>
                             </>
                         )}
+                    </nav>
 
-                        {/* Desktop Auth Section */}
+                    {/* Right side auth buttons */}
+                    <div className="flex items-center gap-x-3">
                         {loading ? (
-                            <div className="h-8 w-8 animate-pulse rounded-full bg-neutral-200" />
+                            <div className="h-9 w-20 animate-pulse rounded-lg bg-neutral-200" />
                         ) : user ? (
                             <Menu as="div" className="relative">
-                                <MenuButton className={clsx(
-                                    'flex items-center gap-x-1 rounded-full p-1 text-sm font-semibold transition',
-                                    invert ? 'text-white hover:bg-white/10' : 'text-neutral-950 hover:bg-neutral-100'
-                                )}>
-                                    <UserCircleIcon className="h-8 w-8" />
+                                <MenuButton className="flex items-center gap-x-2 px-3 py-1.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 transition-colors">
+                                    <UserCircleIcon className="h-5 w-5" />
+                                    <span>Account</span>
                                     <ChevronDownIcon className="h-4 w-4" />
                                 </MenuButton>
                                 <MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
@@ -186,57 +204,116 @@ function Header({
                                 </MenuItems>
                             </Menu>
                         ) : (
-                            <Link
-                                href="/login"
-                                className={clsx(
-                                    'inline-block rounded-lg px-3 py-1.5 text-sm font-semibold transition',
-                                    invert
-                                        ? 'bg-white text-neutral-950 hover:bg-neutral-100'
-                                        : 'bg-neutral-950 text-white hover:bg-neutral-800'
-                                )}
-                            >
-                                Log in
-                            </Link>
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="hidden sm:block px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-950 transition-colors"
+                                >
+                                    Sign in
+                                </Link>
+                                <Link
+                                    href="/signup"
+                                    className="hidden sm:block px-4 py-2 text-sm font-medium text-white bg-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors"
+                                >
+                                    Get Started
+                                </Link>
+                            </>
                         )}
-                    </div>
-
-                    <div className="sm:hidden">
+                        {/* Mobile menu button */}
                         <button
                             ref={toggleRef}
                             type="button"
                             onClick={onToggle}
                             aria-expanded={expanded ? 'true' : 'false'}
                             aria-controls={panelId}
-                            className={clsx(
-                                'group -m-2.5 rounded-lg p-2.5 transition',
-                                invert ? 'hover:bg-white/10' : 'hover:bg-neutral-950/10',
-                            )}
+                            className="lg:hidden p-2 -m-2 text-neutral-600 hover:text-neutral-950 transition-colors"
                             aria-label="Toggle navigation"
                         >
                             {expanded ? (
-                                <XMarkIcon
-                                    className={clsx(
-                                        'h-6 w-6',
-                                        invert
-                                            ? 'text-white group-hover:text-neutral-200'
-                                            : 'text-neutral-950 group-hover:text-neutral-700',
-                                    )}
-                                />
+                                <XMarkIcon className="h-5 w-5" />
                             ) : (
-                                <Bars3Icon
-                                    className={clsx(
-                                        'h-6 w-6',
-                                        invert
-                                            ? 'text-white group-hover:text-neutral-200'
-                                            : 'text-neutral-950 group-hover:text-neutral-700',
-                                    )}
-                                />
+                                <Bars3Icon className="h-5 w-5" />
                             )}
                         </button>
                     </div>
                 </div>
             </div>
-        </Container>
+
+            {/* Mobile menu dropdown */}
+            {expanded && !pathname.startsWith('/dashboard') && (
+                <div ref={menuRef} className="lg:hidden fixed top-20 left-8 right-8 sm:left-12 sm:right-12 z-40 bg-white border border-neutral-200 rounded-2xl shadow-lg overflow-hidden">
+                    <nav className="px-4 py-6 space-y-1">
+                        <Link
+                            href="/about"
+                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                            onClick={() => setExpanded(false)}
+                        >
+                            About
+                        </Link>
+                        <Link
+                            href="/pricing"
+                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                            onClick={() => setExpanded(false)}
+                        >
+                            Pricing
+                        </Link>
+
+                        {/* Auth section */}
+                        {user ? (
+                            <div className="pt-4 mt-4 border-t border-neutral-200 space-y-1">
+                                <Link
+                                    href="/dashboard"
+                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/profile"
+                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Profile
+                                </Link>
+                                <Link
+                                    href="/settings"
+                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Settings
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        handleSignOut();
+                                        setExpanded(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                                >
+                                    Sign out
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="pt-4 mt-4 border-t border-neutral-200 space-y-2">
+                                <Link
+                                    href="/login"
+                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors text-center"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Sign in
+                                </Link>
+                                <Link
+                                    href="/signup"
+                                    className="block px-4 py-2.5 text-sm font-medium text-white bg-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors text-center"
+                                    onClick={() => setExpanded(false)}
+                                >
+                                    Get Started
+                                </Link>
+                            </div>
+                        )}
+                    </nav>
+                </div>
+            )}
+        </div>
     )
 }
 
@@ -275,7 +352,7 @@ function Navigation() {
 
     useEffect(() => {
         const { data: authListener } = supabase.auth.onAuthStateChange(
-            (event, session) => {
+            (_, session) => {
                 setUser(session?.user || null)
                 setLoading(false)
             },
@@ -310,10 +387,17 @@ function Navigation() {
                     </button>
                 ) : (
                     PRE_LAUNCH_MODE ? null : (
-                        <NavigationItem href="/login">Sign In</NavigationItem>
+                        <NavigationItem href="/login">Log In</NavigationItem>
                     )
                 )}
             </NavigationRow>
+            {!loading && !user && !PRE_LAUNCH_MODE && (
+                <NavigationRow>
+                    <NavigationItem href="/signup">
+                        <span className="font-semibold text-amber-400">Get Started →</span>
+                    </NavigationItem>
+                </NavigationRow>
+            )}
         </nav>
     )
 }
@@ -321,12 +405,22 @@ function Navigation() {
 function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pathname: string }) {
     let panelId = useId()
     let [expanded, setExpanded] = useState(false)
-    let [isTransitioning, setIsTransitioning] = useState(false)
+    let [isSticky, setIsSticky] = useState(false)
     let openRef = useRef<React.ElementRef<'button'>>(null)
-    let closeRef = useRef<React.ElementRef<'button'>>(null)
-    let navRef = useRef<React.ElementRef<'div'>>(null)
+    let menuRef = useRef<HTMLDivElement>(null)
     let shouldReduceMotion = useReducedMotion()
     let isDashboard = pathname.startsWith('/dashboard')
+
+    useEffect(() => {
+        if (!isDashboard) {
+            const handleScroll = () => {
+                setIsSticky(window.scrollY > 104);
+            };
+
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+        }
+    }, [isDashboard])
 
     useEffect(() => {
         function onClick(event: MouseEvent) {
@@ -334,7 +428,6 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
                 event.target instanceof HTMLElement &&
                 event.target.closest('a')?.href === window.location.href
             ) {
-                setIsTransitioning(false)
                 setExpanded(false)
             }
         }
@@ -346,16 +439,36 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
         }
     }, [])
 
+    // Close mobile menu when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                expanded &&
+                menuRef.current &&
+                !menuRef.current.contains(event.target as Node) &&
+                openRef.current &&
+                !openRef.current.contains(event.target as Node)
+            ) {
+                setExpanded(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [expanded])
+
     return (
         <MotionConfig
-            transition={
-                shouldReduceMotion || !isTransitioning ? { duration: 0 } : undefined
-            }
+            transition={shouldReduceMotion ? { duration: 0 } : undefined}
         >
             {!isDashboard && (
                 <header>
+                    {/* Spacer for floating header - top margin + header height */}
+                    <div className="h-24" />
                     <div
-                        className="absolute top-2 right-0 left-0 z-40 pt-14"
+                        className="top-0 right-0 left-0 z-40"
                         aria-hidden={expanded ? 'true' : undefined}
                         // @ts-ignore (https://github.com/facebook/react/issues/17157)
                         inert={expanded ? '' : undefined}
@@ -364,62 +477,25 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
                             panelId={panelId}
                             toggleRef={openRef}
                             expanded={expanded}
+                            isSticky={isSticky}
+                            setExpanded={setExpanded}
+                            menuRef={menuRef}
                             onToggle={() => {
-                                setIsTransitioning(true)
                                 setExpanded((expanded) => !expanded)
-                                window.setTimeout(() =>
-                                    closeRef.current?.focus({ preventScroll: true }),
-                                )
                             }}
                         />
                     </div>
-
-                    <motion.div
-                        layout
-                        id={panelId}
-                        style={{ height: expanded ? 'auto' : '0.5rem' }}
-                        className="relative z-50 overflow-hidden bg-neutral-950 pt-2"
-                        aria-hidden={expanded ? undefined : 'true'}
-                        // @ts-ignore (https://github.com/facebook/react/issues/17157)
-                        inert={expanded ? undefined : ''}
-                    >
-                        <motion.div layout className="bg-neutral-800">
-                            <div ref={navRef} className="bg-neutral-950 pt-14 pb-16">
-                                <Header
-                                    invert
-                                    panelId={panelId}
-                                    toggleRef={closeRef}
-                                    expanded={expanded}
-                                    onToggle={() => {
-                                        setIsTransitioning(true)
-                                        setExpanded((expanded) => !expanded)
-                                        window.setTimeout(() =>
-                                            openRef.current?.focus({ preventScroll: true }),
-                                        )
-                                    }}
-                                />
-                            </div>
-                            <Navigation />
-                            <div className="relative bg-neutral-950 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-neutral-800">
-                                <Container>
-                                    <div className="grid grid-cols-1 gap-y-10 pt-10 pb-16 sm:grid-cols-2 sm:pt-16">
-                                        {/* Omitted for brevity */}
-                                    </div>
-                                </Container>
-                            </div>
-                        </motion.div>
-                    </motion.div>
                 </header>
             )}
 
             <motion.div
                 layout
                 style={!isDashboard ? { borderTopLeftRadius: 40, borderTopRightRadius: 40 } : {}}
-                className={!isDashboard ? "relative flex flex-auto overflow-hidden bg-white pt-14" : "relative flex flex-auto overflow-hidden bg-white"}
+                className={!isDashboard ? "relative flex flex-auto overflow-hidden bg-white" : "relative flex flex-auto overflow-hidden bg-white"}
             >
                 <motion.div
                     layout
-                    className={!isDashboard ? "relative isolate flex w-full flex-col pt-9" : "relative isolate flex w-full flex-col"}
+                    className="relative isolate flex w-full flex-col"
                 >
                     {!isDashboard && (
                         <GridPattern
@@ -431,7 +507,7 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
 
                     <main className="w-full flex-auto">{children}</main>
 
-                    {/* {!isDashboard && <Footer />} */}
+                    {!isDashboard && <Footer />}
                 </motion.div>
             </motion.div>
         </MotionConfig>

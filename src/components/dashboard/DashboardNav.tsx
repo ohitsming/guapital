@@ -96,17 +96,6 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
 
     return (
         <>
-            {/* Floating Hamburger Button - Mobile Only */}
-            {!isOpen && onOpen && (
-                <button
-                    onClick={onOpen}
-                    className="lg:hidden fixed top-4 left-4 z-40 p-3 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                    aria-label="Open menu"
-                >
-                    <Bars3Icon className="h-6 w-6 text-gray-700" />
-                </button>
-            )}
-
             {/* Overlay for mobile */}
             {isOpen && (
                 <div

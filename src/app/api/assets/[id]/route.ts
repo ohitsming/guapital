@@ -98,7 +98,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     if (body.category !== undefined) {
       // Get valid categories based on the asset's entry_type
       const assetCategories = ['real_estate', 'vehicle', 'private_equity', 'collectibles', 'cash', 'investment', 'private_stock', 'bonds', 'p2p_lending', 'other'];
-      const liabilityCategories = ['personal_loan', 'business_debt', 'credit_debt', 'other_debt'];
+      const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt'];
       const validCategories = currentAsset.entry_type === 'asset' ? assetCategories : liabilityCategories;
 
       if (!validCategories.includes(body.category)) {

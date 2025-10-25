@@ -105,18 +105,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         }
     }, [toastQueue, toast]);
 
-    useEffect(() => {
-        if (toast) {
-            const words = toast.message.split(' ').length;
-            const timeout = Math.max(3000, words * 100); // 100ms per word, 3s minimum
-
-            const timer = setTimeout(() => {
-                setToast(null);
-            }, timeout);
-
-            return () => clearTimeout(timer);
-        }
-    }, [toast]);
+    // Toast now only closes manually (removed auto-dismiss)
 
     const closeToast = () => {
         setToast(null);
