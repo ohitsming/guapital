@@ -57,7 +57,7 @@ export function PricingSection({
       {/* Header */}
       <FadeIn>
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 px-4">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 px-4">
             Simple, Honest Pricing
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4">
