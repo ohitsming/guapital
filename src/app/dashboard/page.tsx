@@ -78,7 +78,7 @@ export default function Dashboard() {
     // Only show when hasAnyData is explicitly false (not null)
     if (hasAnyData === false) {
         return (
-            <div className="px-4 lg:px-8 py-4 lg:py-8">
+            <div className="px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
                 <GetStartedView onDataAdded={checkForData} />
             </div>
         )

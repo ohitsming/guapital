@@ -16,7 +16,6 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 import { Container } from '@/components/Container'
 import { Footer } from '@/components/Footer'
-import { GridPattern } from '@/components/GridPattern'
 import { Logo } from '@/components/Logo'
 
 const RootLayoutContext = createContext<{
@@ -42,6 +41,7 @@ import { User } from '@supabase/supabase-js'
 import { PRE_LAUNCH_MODE } from '@/lib/featureFlags'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, UserCircleIcon } from '@heroicons/react/20/solid'
+import { SparklesIcon } from '@heroicons/react/24/solid'
 
 function Header({
     panelId,
@@ -63,7 +63,33 @@ function Header({
     let pathname = usePathname()
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isPremium, setIsPremium] = useState(false);
     const supabase = createClient();
+
+    // Fetch user tier from Supabase for all pages
+    useEffect(() => {
+        if (!user) {
+            setIsPremium(false);
+            return;
+        }
+
+        const fetchUserTier = async () => {
+            try {
+                const { data } = await supabase
+                    .from('user_profiles')
+                    .select('tier')
+                    .eq('user_id', user.id)
+                    .single();
+
+                setIsPremium(data?.tier === 'premium');
+            } catch (error) {
+                console.error('Error fetching user tier:', error);
+                setIsPremium(false);
+            }
+        };
+
+        fetchUserTier();
+    }, [user, supabase]);
 
     useEffect(() => {
         const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
@@ -97,20 +123,28 @@ function Header({
                 pathname.startsWith('/dashboard') ? 'max-w-none' : 'max-w-7xl'
             )}>
                 <div className={clsx(
-                    "flex items-center justify-between h-14",
-                    pathname.startsWith('/dashboard') && "ml-64"
+                    "flex items-center justify-between",
+                    pathname.startsWith('/dashboard') ? "h-16 ml-64" : "h-14"
                 )}>
                     {/* Logo on the left */}
-                    <Link
-                        href="/"
-                        aria-label="Home"
-                        className="flex items-center"
-                    >
-                        <Logo className="h-12" />
-                        {/* <span className="text-xl font-semibold text-neutral-950">
-                            Guapital
-                        </span> */}
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/"
+                            aria-label="Home"
+                            className="flex items-center"
+                        >
+                            <Logo className="h-10" />
+                            {/* <span className="text-xl font-semibold text-neutral-950">
+                                Guapital
+                            </span> */}
+                        </Link>
+                        {isPremium && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-[#FFC107] to-[#FFD54F] rounded-full shadow-md">
+                                <SparklesIcon className="h-3 w-3 text-[#004D40]" />
+                                <span className="text-xs font-bold text-[#004D40] tracking-wide">PREMIUM</span>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Center navigation */}
                     <nav className="hidden lg:flex lg:items-center lg:gap-x-1 absolute left-1/2 -translate-x-1/2">
@@ -206,12 +240,14 @@ function Header({
                                 <Link
                                     href="/login"
                                     className="hidden sm:block px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-950 transition-colors"
+                                    id="header-login-button"
                                 >
                                     Sign in
                                 </Link>
                                 <Link
                                     href="/signup"
                                     className="hidden sm:block px-4 py-2 text-sm font-medium text-white bg-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors"
+                                    id="header-signup-button"
                                 >
                                     Get Started
                                 </Link>
@@ -236,81 +272,100 @@ function Header({
                     </div>
                 </div>
             </div>
+        </div>
+    )
+}
 
-            {/* Mobile menu dropdown */}
-            {expanded && !pathname.startsWith('/dashboard') && (
-                <div ref={menuRef} className="lg:hidden fixed top-20 left-8 right-8 sm:left-12 sm:right-12 z-40 bg-white border border-neutral-200 rounded-2xl shadow-lg overflow-hidden">
-                    <nav className="px-4 py-6 space-y-1">
+function MobileMenu({
+    expanded,
+    pathname,
+    user,
+    menuRef,
+    setExpanded,
+    handleSignOut,
+}: {
+    expanded: boolean
+    pathname: string
+    user: User | null
+    menuRef: React.RefObject<HTMLDivElement>
+    setExpanded: (value: boolean) => void
+    handleSignOut: () => void
+}) {
+    if (!expanded || pathname.startsWith('/dashboard')) {
+        return null
+    }
+
+    return (
+        <div ref={menuRef} className="lg:hidden fixed top-20 left-8 right-8 sm:left-12 sm:right-12 z-50 bg-white border border-neutral-200 rounded-2xl shadow-lg overflow-hidden">
+            <nav className="px-4 py-6 space-y-1">
+                <Link
+                    href="/about"
+                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                    onClick={() => setExpanded(false)}
+                >
+                    About
+                </Link>
+                <Link
+                    href="/pricing"
+                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                    onClick={() => setExpanded(false)}
+                >
+                    Pricing
+                </Link>
+
+                {/* Auth section */}
+                {user ? (
+                    <div className="pt-4 mt-4 border-t border-neutral-200 space-y-1">
                         <Link
-                            href="/about"
+                            href="/dashboard"
                             className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
                             onClick={() => setExpanded(false)}
                         >
-                            About
+                            Dashboard
                         </Link>
                         <Link
-                            href="/pricing"
+                            href="/profile"
                             className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
                             onClick={() => setExpanded(false)}
                         >
-                            Pricing
+                            Profile
                         </Link>
-
-                        {/* Auth section */}
-                        {user ? (
-                            <div className="pt-4 mt-4 border-t border-neutral-200 space-y-1">
-                                <Link
-                                    href="/dashboard"
-                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                                    onClick={() => setExpanded(false)}
-                                >
-                                    Dashboard
-                                </Link>
-                                <Link
-                                    href="/profile"
-                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                                    onClick={() => setExpanded(false)}
-                                >
-                                    Profile
-                                </Link>
-                                <Link
-                                    href="/settings"
-                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                                    onClick={() => setExpanded(false)}
-                                >
-                                    Settings
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        handleSignOut();
-                                        setExpanded(false);
-                                    }}
-                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                                >
-                                    Sign out
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="pt-4 mt-4 border-t border-neutral-200 space-y-2">
-                                <Link
-                                    href="/login"
-                                    className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors text-center"
-                                    onClick={() => setExpanded(false)}
-                                >
-                                    Sign in
-                                </Link>
-                                <Link
-                                    href="/signup"
-                                    className="block px-4 py-2.5 text-sm font-medium text-white bg-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors text-center"
-                                    onClick={() => setExpanded(false)}
-                                >
-                                    Get Started
-                                </Link>
-                            </div>
-                        )}
-                    </nav>
-                </div>
-            )}
+                        <Link
+                            href="/settings"
+                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                            onClick={() => setExpanded(false)}
+                        >
+                            Settings
+                        </Link>
+                        <button
+                            onClick={() => {
+                                handleSignOut();
+                                setExpanded(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
+                        >
+                            Sign out
+                        </button>
+                    </div>
+                ) : (
+                    <div className="pt-4 mt-4 border-t border-neutral-200 space-y-2 sm:hidden">
+                        <Link
+                            href="/login"
+                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors text-center"
+                            onClick={() => setExpanded(false)}
+                        >
+                            Sign in
+                        </Link>
+                        <Link
+                            href="/signup"
+                            className="block px-4 py-2.5 text-sm font-medium text-white bg-neutral-950 rounded-lg hover:bg-neutral-800 transition-colors text-center"
+                            onClick={() => setExpanded(false)}
+                        >
+                            Get Started
+                        </Link>
+                    </div>
+                )}
+            </nav>
         </div>
     )
 }
@@ -457,6 +512,27 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
         }
     }, [expanded])
 
+    const [user, setUser] = useState<User | null>(null)
+    const supabase = createClient()
+
+    useEffect(() => {
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (_, session) => {
+                setUser(session?.user || null)
+            },
+        )
+
+        return () => {
+            authListener.subscription.unsubscribe()
+        }
+    }, [supabase.auth])
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut()
+        setUser(null)
+        window.location.href = '/'
+    }
+
     return (
         <MotionConfig
             transition={shouldReduceMotion ? { duration: 0 } : undefined}
@@ -483,31 +559,21 @@ function RootLayoutInner({ children, pathname }: { children: React.ReactNode, pa
                             }}
                         />
                     </div>
+                    {/* Mobile menu outside inert wrapper */}
+                    <MobileMenu
+                        expanded={expanded}
+                        pathname={pathname}
+                        user={user}
+                        menuRef={menuRef}
+                        setExpanded={setExpanded}
+                        handleSignOut={handleSignOut}
+                    />
                 </header>
             )}
 
-            <motion.div
-                layout
-                style={!isDashboard ? { borderTopLeftRadius: 40, borderTopRightRadius: 40 } : {}}
-                className={!isDashboard ? "relative flex flex-auto overflow-hidden bg-white" : "relative flex flex-auto overflow-hidden bg-white"}
-            >
-                <motion.div
-                    layout
-                    className="relative isolate flex w-full flex-col"
-                >
-                    {!isDashboard && (
-                        <GridPattern
-                            className="absolute inset-x-0 -top-14 -z-10 h-[1000px] w-full mask-[linear-gradient(to_bottom,white_80%,transparent)] fill-neutral-100 stroke-neutral-950/6"
-                            yOffset={-26}
-                            interactive
-                        />
-                    )}
+            <main className="w-full flex-auto">{children}</main>
 
-                    <main className="w-full flex-auto">{children}</main>
-
-                    {!isDashboard && <Footer />}
-                </motion.div>
-            </motion.div>
+            {!isDashboard && <Footer />}
         </MotionConfig>
     )
 }

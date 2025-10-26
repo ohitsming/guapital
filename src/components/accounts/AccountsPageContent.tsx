@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon, FunnelIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown'
 import EditAssetModal from '@/components/assets/EditAssetModal'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -11,6 +11,15 @@ import type { ManualAsset } from '@/lib/interfaces/asset'
 import type { PlaidAccount } from '@/lib/interfaces/plaid'
 import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto'
 import { formatCurrency } from '@/utils/formatters'
+
+type SortOption = 'recent' | 'value-high' | 'value-low' | 'name';
+
+const SORT_LABELS: Record<SortOption, string> = {
+  recent: 'Most Recent',
+  'value-high': 'Highest Value',
+  'value-low': 'Lowest Value',
+  name: 'Name (A-Z)',
+};
 
 const CATEGORY_LABELS: Record<string, string> = {
   // Asset categories
@@ -75,6 +84,8 @@ export function AccountsPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'asset' | 'liability'>('all')
   const [filterSource, setFilterSource] = useState<'all' | 'plaid' | 'manual' | 'crypto'>('all')
+  const [sortBy, setSortBy] = useState<SortOption>('recent')
+  const [showSortMenu, setShowSortMenu] = useState(false)
 
   const { hasAccess } = useSubscription()
 
@@ -357,6 +368,24 @@ export function AccountsPageContent() {
     })
   }
 
+  // Sort function
+  const sortEntries = (entries: UnifiedEntry[]): UnifiedEntry[] => {
+    const sorted = [...entries]
+
+    switch (sortBy) {
+      case 'recent':
+        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      case 'value-high':
+        return sorted.sort((a, b) => b.value - a.value)
+      case 'value-low':
+        return sorted.sort((a, b) => a.value - b.value)
+      case 'name':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name))
+      default:
+        return sorted
+    }
+  }
+
   // Combine and filter entries
   const plaidEntries = transformPlaidToUnified()
   const manualEntries = transformManualToUnified()
@@ -381,8 +410,8 @@ export function AccountsPageContent() {
     )
   }
 
-  // Sort by value (descending)
-  allEntries.sort((a, b) => b.value - a.value)
+  // Sort entries using the selected sort method
+  allEntries = sortEntries(allEntries)
 
   // Calculate totals
   const totalAssets = allEntries
@@ -395,55 +424,55 @@ export function AccountsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8 animate-pulse">
+      <div className="p-3 sm:p-6 lg:p-8 animate-pulse">
         {/* Header Skeleton */}
-        <div className="mb-6 lg:mb-8">
-          <div className="h-8 w-48 bg-gray-200 rounded mb-2"></div>
-          <div className="h-5 w-96 bg-gray-200 rounded"></div>
+        <div className="mb-3 sm:mb-6 lg:mb-8">
+          <div className="h-6 sm:h-8 w-32 sm:w-48 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+          <div className="h-4 sm:h-5 w-48 sm:w-96 bg-gray-200 rounded"></div>
         </div>
 
         {/* Stats Cards Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 mb-3 sm:mb-6 lg:mb-8">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
-              <div className="h-4 w-24 bg-gray-200 rounded mb-3"></div>
-              <div className="h-8 w-32 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 w-20 bg-gray-200 rounded"></div>
+            <div key={i} className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+              <div className="h-3 sm:h-4 w-20 sm:w-24 bg-gray-200 rounded mb-2 sm:mb-3"></div>
+              <div className="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+              <div className="h-3 w-16 sm:w-20 bg-gray-200 rounded"></div>
             </div>
           ))}
         </div>
 
         {/* Actions and Filters Skeleton */}
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div className="h-10 w-full md:w-96 bg-gray-200 rounded-lg"></div>
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200 mb-3 sm:mb-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
             <div className="flex gap-2">
-              <div className="h-10 w-48 bg-gray-200 rounded-lg"></div>
-              <div className="h-10 w-48 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 flex-1 sm:w-40 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 flex-1 sm:w-40 bg-gray-200 rounded-lg"></div>
               <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
-              <div className="h-10 w-40 bg-gray-200 rounded-lg"></div>
             </div>
+            <div className="h-10 w-full sm:w-auto bg-gray-200 rounded-lg"></div>
           </div>
         </div>
 
         {/* Accounts List Skeleton */}
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
+        <div className="bg-white rounded-xl p-3 sm:p-6 shadow-md border-2 border-gray-200">
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-white border-2 border-gray-100 rounded-xl">
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white border-2 border-gray-100 rounded-xl gap-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="h-5 w-40 bg-gray-200 rounded"></div>
-                    <div className="h-6 w-24 bg-gray-200 rounded-lg"></div>
-                    <div className="h-5 w-16 bg-gray-200 rounded"></div>
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 flex-wrap">
+                    <div className="h-4 sm:h-5 w-32 sm:w-40 bg-gray-200 rounded"></div>
+                    <div className="h-5 sm:h-6 w-20 sm:w-24 bg-gray-200 rounded-lg"></div>
+                    <div className="h-4 sm:h-5 w-12 sm:w-16 bg-gray-200 rounded"></div>
                   </div>
-                  <div className="h-8 w-32 bg-gray-200 rounded mb-3"></div>
-                  <div className="h-5 w-48 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                  <div className="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 rounded mb-2 sm:mb-3"></div>
+                  <div className="h-4 sm:h-5 w-36 sm:w-48 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+                  <div className="h-3 sm:h-4 w-28 sm:w-36 bg-gray-200 rounded"></div>
                 </div>
-                <div className="flex items-center gap-2 ml-4">
-                  <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
-                  <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+                <div className="flex items-center gap-2 self-end sm:self-center sm:ml-4">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded-lg"></div>
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded-lg"></div>
                 </div>
               </div>
             ))}
@@ -455,13 +484,13 @@ export function AccountsPageContent() {
 
   if (error) {
     return (
-      <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-800 font-medium">Error loading accounts</p>
-          <p className="text-red-600 text-sm mt-2">{error}</p>
+      <div className="p-3 sm:p-6 lg:p-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 text-center">
+          <p className="text-red-800 font-medium text-sm sm:text-base">Error loading accounts</p>
+          <p className="text-red-600 text-xs sm:text-sm mt-2">{error}</p>
           <button
             onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            className="mt-3 sm:mt-4 px-4 py-2 bg-red-600 text-white text-sm sm:text-base rounded-lg hover:bg-red-700"
           >
             Try Again
           </button>
@@ -471,36 +500,36 @@ export function AccountsPageContent() {
   }
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-3 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-6 lg:mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Accounts</h1>
+      <div className="mb-3 sm:mb-6 lg:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Accounts</h1>
           {isRefreshing && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
-              <span>Updating...</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
+              <span className="hidden sm:inline">Updating...</span>
             </div>
           )}
         </div>
-        <p className="text-gray-600">Manage your connected accounts and manual assets</p>
+        <p className="text-sm sm:text-base text-gray-600">Manage your connected accounts and manual assets</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
-          <p className="text-sm font-medium text-gray-600 mb-1">Total Assets</p>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalAssets)}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 lg:gap-6 mb-3 sm:mb-6 lg:mb-8">
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total Assets</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(totalAssets)}</p>
           <p className="text-xs text-gray-500 mt-1">{allEntries.filter((e) => e.type === 'asset').length} accounts</p>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
-          <p className="text-sm font-medium text-gray-600 mb-1">Total Liabilities</p>
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(totalLiabilities)}</p>
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total Liabilities</p>
+          <p className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(totalLiabilities)}</p>
           <p className="text-xs text-gray-500 mt-1">{allEntries.filter((e) => e.type === 'liability').length} accounts</p>
         </div>
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
-          <p className="text-sm font-medium text-gray-600 mb-1">Net Worth</p>
-          <p className={`text-2xl font-bold ${netWorth >= 0 ? 'text-[#004D40]' : 'text-red-600'}`}>
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Net Worth</p>
+          <p className={`text-xl sm:text-2xl font-bold ${netWorth >= 0 ? 'text-[#004D40]' : 'text-red-600'}`}>
             {formatCurrency(netWorth)}
           </p>
           <p className="text-xs text-gray-500 mt-1">{allEntries.length} total accounts</p>
@@ -508,78 +537,169 @@ export function AccountsPageContent() {
       </div>
 
       {/* Actions and Filters */}
-      <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200 mb-3 sm:mb-6">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative w-full">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search accounts..."
+              placeholder="Search by name, category, or notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              className="w-full pl-10 pr-10 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-[#004D40] text-base transition-all hover:border-gray-300"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                title="Clear search"
+              >
+                <XMarkIcon className="h-4 w-4 text-gray-500" />
+              </button>
+            )}
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
-            <Dropdown
-              value={filterType}
-              onChange={(value) => setFilterType(value as any)}
-              options={[
-                { value: 'all', label: 'All Types' },
-                { value: 'asset', label: 'Assets Only' },
-                { value: 'liability', label: 'Liabilities Only' },
-              ]}
-              className="w-48"
-            />
+          {/* Active Filters Indicator */}
+          {(filterType !== 'all' || filterSource !== 'all' || searchQuery) && (
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+              <FunnelIcon className="h-4 w-4" />
+              <span className="font-medium">
+                Showing {allEntries.length} of {[...plaidEntries, ...manualEntries, ...cryptoEntries].length} accounts
+              </span>
+              <button
+                onClick={() => {
+                  setFilterType('all')
+                  setFilterSource('all')
+                  setSearchQuery('')
+                }}
+                className="ml-auto text-[#004D40] hover:text-[#00695C] font-medium transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
 
-            <Dropdown
-              value={filterSource}
-              onChange={(value) => setFilterSource(value as any)}
-              options={[
-                { value: 'all', label: 'All Sources' },
-                { value: 'plaid', label: 'Plaid Only' },
-                { value: 'crypto', label: 'Crypto Only' },
-                { value: 'manual', label: 'Manual Only' },
-              ]}
-              className="w-48"
-            />
+          {/* Filters and Actions Row */}
+          <div className="flex flex-col gap-2 sm:gap-3">
+            {/* Filters Row */}
+            <div className="flex gap-2 flex-wrap">
+              <Dropdown
+                value={filterType}
+                onChange={(value) => setFilterType(value as any)}
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'asset', label: 'Assets' },
+                  { value: 'liability', label: 'Liabilities' },
+                ]}
+                className="flex-1 min-w-[120px] sm:flex-initial"
+              />
 
-            <button
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-              title="Refresh"
-            >
-              <ArrowPathIcon className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
+              <Dropdown
+                value={filterSource}
+                onChange={(value) => setFilterSource(value as any)}
+                options={[
+                  { value: 'all', label: 'All Sources' },
+                  { value: 'plaid', label: 'Plaid' },
+                  { value: 'crypto', label: 'Crypto' },
+                  { value: 'manual', label: 'Manual' },
+                ]}
+                className="flex-1 min-w-[120px] sm:flex-initial"
+              />
+
+              {/* Sort Button */}
+              <div className="relative flex-1 min-w-[160px] sm:flex-initial">
+                <button
+                  onClick={() => setShowSortMenu(!showSortMenu)}
+                  className="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                  title="Sort accounts"
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <ArrowsUpDownIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 shrink-0" />
+                    <span className="truncate text-sm">{SORT_LABELS[sortBy]}</span>
+                  </div>
+                  <svg className="h-4 w-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Sort Dropdown Menu */}
+                {showSortMenu && (
+                  <>
+                    {/* Backdrop to close menu */}
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowSortMenu(false)}
+                    />
+                    {/* Menu */}
+                    <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border-2 border-gray-200 py-2 z-20">
+                      <div className="px-3 py-2 border-b border-gray-200">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sort By</p>
+                      </div>
+                      {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([value, label]) => (
+                        <button
+                          key={value}
+                          onClick={() => {
+                            setSortBy(value)
+                            setShowSortMenu(false)
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between group ${
+                            sortBy === value
+                              ? 'bg-[#004D40] text-white font-semibold'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span>{label}</span>
+                          {sortBy === value && (
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="flex-shrink-0 px-3 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all flex items-center justify-center"
+                title="Refresh"
+              >
+                <ArrowPathIcon className={`h-5 w-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+
+              <div className="flex-1 min-w-[140px]">
+                <AddAccountDropdown
+                  onAccountAdded={handleEditSuccess}
+                  onSyncStart={handleSyncStart}
+                  onSyncComplete={handleSyncComplete}
+                />
+              </div>
+            </div>
           </div>
-
-          {/* Action Buttons */}
-          <AddAccountDropdown
-            onAccountAdded={handleEditSuccess}
-            onSyncStart={handleSyncStart}
-            onSyncComplete={handleSyncComplete}
-          />
         </div>
       </div>
 
       {/* Accounts List */}
       {isSyncing ? (
-        <div className="bg-white rounded-xl p-12 shadow-md border-2 border-gray-200 flex items-center justify-center">
+        <div className="bg-white rounded-xl p-8 sm:p-12 shadow-md border-2 border-gray-200 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-              <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
             </div>
-            <p className="text-lg font-semibold text-gray-900 mb-1">Syncing your accounts...</p>
-            <p className="text-sm text-gray-600">This may take a few seconds</p>
+            <p className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Syncing your accounts...</p>
+            <p className="text-xs sm:text-sm text-gray-600">This may take a few seconds</p>
           </div>
         </div>
       ) : allEntries.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 shadow-md border-2 border-gray-200 text-center">
-          <p className="text-gray-600 mb-4">
+        <div className="bg-white rounded-xl p-8 sm:p-12 shadow-md border-2 border-gray-200 text-center">
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
             {searchQuery || filterType !== 'all' || filterSource !== 'all'
               ? 'No accounts match your filters'
               : 'No accounts yet'}
@@ -595,22 +715,22 @@ export function AccountsPageContent() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">
+        <div className="bg-white rounded-xl p-3 sm:p-6 shadow-md border-2 border-gray-200">
           <div className="space-y-3">
             {allEntries.map((entry) => (
               <div key={entry.id}>
                 <div
-                  className={`flex items-center justify-between p-4 bg-white border-2 rounded-xl hover:shadow-md transition-all ${
+                  className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white border-2 rounded-xl hover:shadow-md transition-all gap-3 ${
                     entry.type === 'asset'
                       ? 'border-green-100 hover:border-green-200'
                       : 'border-red-100 hover:border-red-200'
                   }`}
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="text-base font-semibold text-gray-900">{entry.name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">{entry.name}</h3>
                       <span
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border ${
+                        className={`px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-semibold rounded-lg border whitespace-nowrap ${
                           entry.type === 'asset'
                             ? 'text-green-700 bg-green-50 border-green-200'
                             : 'text-red-700 bg-red-50 border-red-200'
@@ -619,7 +739,7 @@ export function AccountsPageContent() {
                         {CATEGORY_LABELS[entry.category] || entry.category}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        className={`px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
                           entry.source === 'plaid'
                             ? 'bg-emerald-100 text-emerald-700'
                             : entry.source === 'crypto'
@@ -651,28 +771,28 @@ export function AccountsPageContent() {
                       )}
                     </div>
                     <p
-                      className={`text-2xl font-bold mt-2 ${
+                      className={`text-xl sm:text-2xl font-bold mt-1 sm:mt-2 ${
                         entry.type === 'asset' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
                       {formatCurrency(entry.value)}
                     </p>
                     {entry.notes && (
-                      <p className="text-sm text-gray-600 mt-2 bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1.5 sm:mt-2 bg-gray-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg inline-block break-all">
                         {entry.notes}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">Last updated: {formatDate(entry.updatedAt)}</p>
+                    <p className="text-xs text-gray-500 mt-1.5 sm:mt-2">Last updated: {formatDate(entry.updatedAt)}</p>
                   </div>
 
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 sm:ml-4 self-end sm:self-center">
                     {entry.source === 'manual' && entry.manualAsset && (
                       <button
                         onClick={() => setEditingAsset(entry.manualAsset!)}
-                        className="p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
+                        className="p-2 sm:p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
                         title="Edit asset"
                       >
-                        <PencilIcon className="h-5 w-5" />
+                        <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
                     )}
                     <button
@@ -686,13 +806,13 @@ export function AccountsPageContent() {
                         }
                       }}
                       disabled={deletingId === entry.id}
-                      className="p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                      className="p-2 sm:p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                       title={entry.source === 'manual' ? 'Delete asset' : entry.source === 'crypto' ? 'Remove wallet' : 'Remove account'}
                     >
                       {deletingId === entry.id ? (
-                        <div className="h-5 w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
+                        <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
                       ) : (
-                        <TrashIcon className="h-5 w-5" />
+                        <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </button>
                   </div>
@@ -700,22 +820,22 @@ export function AccountsPageContent() {
 
                 {/* Expandable Crypto Holdings */}
                 {entry.isExpanded && entry.cryptoWallet && entry.cryptoWallet.crypto_holdings && entry.cryptoWallet.crypto_holdings.length > 0 && (
-                  <div className="mt-2 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Holdings</h4>
+                  <div className="mt-2 p-3 sm:p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Holdings</h4>
                     <div className="space-y-2">
                       {entry.cryptoWallet.crypto_holdings
                         .sort((a, b) => b.usd_value - a.usd_value)
                         .map((holding) => (
                           <div
                             key={holding.id}
-                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                            className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-gray-200 gap-2"
                           >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-gray-900">{holding.token_symbol}</p>
-                                <p className="text-sm text-gray-600">{holding.token_name}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <p className="text-sm sm:text-base font-semibold text-gray-900">{holding.token_symbol}</p>
+                                <p className="text-xs sm:text-sm text-gray-600 truncate">{holding.token_name}</p>
                               </div>
-                              <p className="text-sm text-gray-500 mt-1">
+                              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
                                 {holding.balance.toLocaleString(undefined, {
                                   minimumFractionDigits: 0,
                                   maximumFractionDigits: 6,
@@ -723,8 +843,8 @@ export function AccountsPageContent() {
                                 {holding.token_symbol}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="font-bold text-gray-900">{formatCurrency(holding.usd_value)}</p>
+                            <div className="text-right shrink-0">
+                              <p className="text-sm sm:text-base font-bold text-gray-900">{formatCurrency(holding.usd_value)}</p>
                               {holding.usd_price && (
                                 <p className="text-xs text-gray-500">
                                   @ {formatCurrency(holding.usd_price)}

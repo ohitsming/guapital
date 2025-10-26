@@ -81,61 +81,61 @@ export default function AboutPage() { // Renamed from Example to AboutPage
           <div className="overflow-hidden relative"> {/* Added relative for absolute positioning of overlay */}
             {/* Overlay for opacity reduction */}
             <div className="" />
-            <div className="mx-auto max-w-7xl px-6 pb-32 pt-36 sm:pt-60 lg:px-8 lg:pt-32">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-20 sm:pb-32 pt-8 sm:pt-36 md:pt-60 lg:px-8 lg:pt-32">
               <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
                 <div className="relative w-full lg:max-w-xl lg:shrink-0 xl:max-w-2xl">
-                  <h1 className="text-pretty text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl dark:text-white">
+                  <h1 className="text-pretty text-3xl sm:text-4xl md:text-5xl lg:text-[4rem] font-semibold tracking-tight text-gray-900 dark:text-white leading-tight">
                     Track Your Net Worth, Build Your Wealth
                   </h1>
-                  <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:max-w-md sm:text-xl/8 lg:max-w-none dark:text-gray-400">
+                  <p className="mt-6 sm:mt-8 text-pretty text-sm sm:text-base md:text-lg font-medium text-gray-500 sm:max-w-md lg:max-w-none dark:text-gray-400 leading-relaxed">
                     The biggest challenge in building wealth isn&apos;t earning more, it&apos;s understanding where you stand. Guapital helps young adults track their net worth with clarity and confidence, promoting mindful financial decisions.
                   </p>
                 </div>
-                <div className="mt-14 flex justify-end gap-8 sm:-mt-44 sm:justify-start sm:pl-20 lg:mt-0 lg:pl-0">
-                  <div className="ml-auto w-44 flex-none space-y-8 pt-32 sm:ml-0 sm:pt-80 lg:order-last lg:pt-36 xl:order-none xl:pt-80">
+                <div className="mt-10 sm:mt-14 flex justify-end gap-3 sm:gap-8 sm:-mt-44 sm:justify-start sm:pl-20 lg:mt-0 lg:pl-0">
+                  <div className="ml-auto w-32 sm:w-44 flex-none space-y-4 sm:space-y-8 pt-20 sm:pt-32 md:ml-0 md:pt-80 lg:order-last lg:pt-36 xl:order-none xl:pt-80">
                     <div className="relative">
                       <Image
                         alt=""
                         src={screenshot_meeting}
-                        className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
+                        className="aspect-[2/3] w-full rounded-lg sm:rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
                       />
-                      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+                      <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
                     </div>
                   </div>
-                  <div className="mr-auto w-44 flex-none space-y-8 sm:mr-0 sm:pt-52 lg:pt-36">
+                  <div className="mr-auto w-32 sm:w-44 flex-none space-y-4 sm:space-y-8 pt-10 sm:mr-0 sm:pt-52 lg:pt-36">
                     <div className="relative">
                       <Image
                         alt=""
                         src={screenshot_work2}
-                        className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
+                        className="aspect-[2/3] w-full rounded-lg sm:rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
                       />
-                      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+                      <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
                     </div>
                     <div className="relative">
                       <Image
                         alt=""
                         src={screenshot_talking}
-                        className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
+                        className="aspect-[2/3] w-full rounded-lg sm:rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
                       />
-                      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+                      <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
                     </div>
                   </div>
-                  <div className="w-44 flex-none space-y-8 pt-32 sm:pt-0">
+                  <div className="w-32 sm:w-44 flex-none space-y-4 sm:space-y-8 pt-16 sm:pt-32 md:pt-0">
                     <div className="relative">
                       <Image
                         alt=""
                         src={screenshot_work}
-                        className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
+                        className="aspect-[2/3] w-full rounded-lg sm:rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
                       />
-                      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+                      <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
                     </div>
                     <div className="relative">
                       <Image
                         alt=""
                         src={screenshot_ipad}
-                        className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
+                        className="aspect-[2/3] w-full rounded-lg sm:rounded-xl bg-gray-900/5 object-cover shadow-lg dark:bg-gray-700/5"
                       />
-                      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
+                      <div className="pointer-events-none absolute inset-0 rounded-lg sm:rounded-xl ring-1 ring-inset ring-gray-900/10 dark:ring-white/10" />
                     </div>
                   </div>
                 </div>
@@ -145,23 +145,23 @@ export default function AboutPage() { // Renamed from Example to AboutPage
         </div>
 
         {/* Content section */}
-        <div className="mx-auto -mt-12 max-w-7xl px-6 sm:mt-0 lg:px-8 xl:-mt-8">
+        <div className="mx-auto -mt-8 sm:-mt-12 max-w-7xl px-4 sm:px-6 sm:mt-0 lg:px-8 xl:-mt-8">
           <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
-            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            <h2 className="text-pretty text-2xl sm:text-3xl md:text-4xl lg:text-[2.875rem] font-semibold tracking-tight text-gray-900 dark:text-white">
               Our Mission
             </h2>
             <div className="mt-6 flex flex-col gap-x-8 gap-y-20 lg:flex-row">
               <div className="lg:w-full lg:max-w-2xl lg:flex-auto">
-                <p className="text-xl/8 text-gray-600 dark:text-gray-300">
+                <p className="text-sm sm:text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300">
                   We believe everyone deserves access to quality wealth management tools, not just those with significant assets. For young adults starting their financial journey, the first step is understanding where you stand—but many existing apps are either too expensive, too complex, or compromise your privacy.
                 </p>
-                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                <p className="mt-6 sm:mt-8 text-sm sm:text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300">
                   That&apos;s why we created Guapital—an <strong>affordable, privacy-first platform</strong> that helps you track your complete financial picture. Whether it&apos;s traditional investments, cryptocurrency, or real-world assets like your home or car, everything lives in one beautiful, easy-to-use dashboard. We offer transparent pricing at $9.99/month (or $99/year) with unlimited accounts and features.
                 </p>
-                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                <p className="mt-6 sm:mt-8 text-sm sm:text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300">
                   Beyond tracking, we&apos;re passionate about <strong>financial education that empowers</strong>. Our percentile rankings help you understand how you&apos;re doing compared to your peers—not to create pressure, but to celebrate your progress and set informed goals. We believe financial growth should feel motivating and transparent, not stressful or confusing.
                 </p>
-                <p className="mt-8 text-xl/8 text-gray-600 dark:text-gray-300">
+                <p className="mt-6 sm:mt-8 text-sm sm:text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300">
                   Whether you&apos;re just starting to build wealth or already managing a diverse portfolio, Guapital gives you the clarity and tools you need to make confident financial decisions. Welcome to wealth building made simple.
                 </p>
               </div>
@@ -170,37 +170,37 @@ export default function AboutPage() { // Renamed from Example to AboutPage
         </div>
 
         {/* How It Works section */}
-        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
+        <div className="mx-auto mt-20 sm:mt-32 md:mt-40 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:mx-0">
-            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            <h2 className="text-pretty text-2xl sm:text-3xl md:text-4xl lg:text-[2.875rem] font-semibold tracking-tight text-gray-900 dark:text-white">
               How It Works
             </h2>
-            <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-base leading-relaxed text-gray-700 dark:text-gray-300">
               Get started with Guapital in three simple steps. No complicated setup, no financial jargon—just clear, actionable insights.
             </p>
           </div>
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+          <div className="mx-auto mt-10 sm:mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Connect Your Accounts
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 Link your bank accounts, investment accounts, and crypto wallets securely via Plaid and Alchemy. Or add assets manually—real estate, vehicles, collectibles, anything you own.
               </p>
             </div>
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 See Your Complete Picture
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 Your dashboard shows your total net worth, asset breakdown, and historical trends in one beautiful view. Track everything from checking accounts to cryptocurrency to real estate—all in one place.
               </p>
             </div>
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Track Your Progress
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 See how your net worth grows over time and compare yourself to peers in your age group with percentile rankings. Celebrate your wins and set informed financial goals.
               </p>
             </div>
@@ -208,37 +208,37 @@ export default function AboutPage() { // Renamed from Example to AboutPage
         </div>
 
         {/* Who It's For section */}
-        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
+        <div className="mx-auto mt-20 sm:mt-32 md:mt-40 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:mx-0">
-            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            <h2 className="text-pretty text-2xl sm:text-3xl md:text-4xl lg:text-[2.875rem] font-semibold tracking-tight text-gray-900 dark:text-white">
               Who Guapital Is For
             </h2>
-            <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-base leading-relaxed text-gray-700 dark:text-gray-300">
               Guapital is designed for young adults who are actively building wealth and want clear visibility into their financial progress.
             </p>
           </div>
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+          <div className="mx-auto mt-10 sm:mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Tech-Savvy Professionals
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 Software engineers, consultants, and entrepreneurs earning $75K-$200K who hold a mix of traditional investments, cryptocurrency, and emerging assets. You&apos;re comfortable with technology and want tools that work reliably.
               </p>
             </div>
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Wealth Builders
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 With net worth between $50K-$500K, you&apos;re past surviving paycheck to paycheck. You&apos;re focused on building wealth intentionally, not penny-pinching budgets. You want to celebrate your progress and set informed goals.
               </p>
             </div>
             <div className="flex flex-col">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Privacy-Conscious Users
               </h3>
-              <p className="mt-4 text-base/7 text-gray-600 dark:text-gray-400">
+              <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 You care about data privacy and are willing to pay for quality tools that respect your financial information. You want transparency about how your data is used and stored, with bank-level security you can trust.
               </p>
             </div>
@@ -246,29 +246,29 @@ export default function AboutPage() { // Renamed from Example to AboutPage
         </div>
 
         {/* Image section */}
-        <div className="mt-32 sm:mt-40 xl:mx-auto xl:max-w-7xl xl:px-8">
+        <div className="mt-20 sm:mt-32 md:mt-40 xl:mx-auto xl:max-w-7xl xl:px-8">
           <Image
             alt=""
             src={screenshot_friends}
-            className="aspect-[5/2] w-full object-cover outline outline-1 -outline-offset-1 outline-black/5 xl:rounded-3xl dark:outline-white/10"
+            className="aspect-[5/2] w-full object-cover outline outline-1 -outline-offset-1 outline-black/5 sm:rounded-2xl xl:rounded-3xl dark:outline-white/10"
           />
         </div>
 
         {/* Feature section (Our values) */}
-        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-40 lg:px-8">
+        <div className="mx-auto mt-20 sm:mt-32 md:mt-40 max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
           <div className="mx-auto max-w-2xl lg:mx-0">
-            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+            <h2 className="text-pretty text-2xl sm:text-3xl md:text-4xl lg:text-[2.875rem] font-semibold tracking-tight text-gray-900 dark:text-white">
               Our Values
             </h2>
-            <p className="mt-6 text-lg/8 text-gray-700 dark:text-gray-300">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-base leading-relaxed text-gray-700 dark:text-gray-300">
               We&apos;re building Guapital on a foundation of affordability, transparency, and education. These aren&apos;t just marketing buzzwords—they&apos;re the principles that guide every decision we make.
             </p>
           </div>
-          <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 text-base/7 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+          <dl className="mx-auto mt-10 sm:mt-16 grid max-w-2xl grid-cols-1 gap-x-6 gap-y-10 sm:gap-x-8 sm:gap-y-16 text-sm sm:text-base leading-relaxed sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {values.map((value) => (
               <div key={value.name}>
-                <dt className="font-semibold text-gray-900 dark:text-white">{value.name}</dt>
-                <dd className="mt-1 text-gray-600 dark:text-gray-400">{value.description}</dd>
+                <dt className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white">{value.name}</dt>
+                <dd className="mt-2 sm:mt-3 text-sm leading-relaxed text-gray-600 dark:text-gray-400">{value.description}</dd>
               </div>
             ))}
           </dl>

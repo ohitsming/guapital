@@ -13,6 +13,7 @@ import ManualAssetsPanel from '@/components/dashboard/ManualAssetsPanel'
 import MonthlyCashFlowPanel from '@/components/dashboard/MonthlyCashFlowPanel'
 import RecentTransactionsPanel from '@/components/dashboard/RecentTransactionsPanel'
 import PercentileOptInModal from '@/components/percentile/PercentileOptInModal'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 interface DashboardContentProps {
     onAllDataDeleted?: () => void
@@ -28,6 +29,10 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     const [error, setError] = useState<string | null>(null)
 
     const { hasAccess, getLimit, isLoading: subscriptionLoading } = useSubscription()
+
+    // Responsive limit: 3 on mobile, 5 on desktop
+    const isDesktop = useMediaQuery('(min-width: 1024px)')
+    const accountLimit = isDesktop ? 5 : 3
 
     // Get history limit based on subscription tier
     const historyDays = hasAccess('history365Days') ? 365 : 30
@@ -153,7 +158,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     }
 
     return (
-        <div className="px-4 lg:px-6 py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
+        <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-6 lg:py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
             {/* Hero Net Worth Card - Always shown with skeleton during loading */}
             <HeroNetWorthCard
                 netWorth={netWorth}
@@ -169,21 +174,21 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
 
             {/* Error State */}
             {!loading && error && (
-                <div className="mb-4 bg-red-50 rounded-xl p-6 shadow-md border border-red-200">
-                    <p className="text-red-900 font-semibold">Unable to load net worth data</p>
-                    <p className="text-red-700 text-sm mt-1">{error}</p>
+                <div className="mb-3 sm:mb-4 bg-red-50 rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border border-red-200">
+                    <p className="text-red-900 font-semibold text-sm sm:text-base">Unable to load net worth data</p>
+                    <p className="text-red-700 text-xs sm:text-sm mt-1">{error}</p>
                 </div>
             )}
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
                 {/* Left Column - 2/3 width */}
-                <div className="lg:col-span-2 space-y-4">
-                    {/* Accounts (Plaid + Manual Assets) - All tiers, showing top 3 assets and top 3 liabilities */}
+                <div className="lg:col-span-2 space-y-2 sm:space-y-3 lg:space-y-4">
+                    {/* Accounts (Plaid + Manual Assets) - All tiers, showing top 3-5 assets and top 3-5 liabilities (responsive) */}
                     <ManualAssetsPanel
                         onUpdate={handleNetWorthUpdate}
                         onAllDataDeleted={onAllDataDeleted}
-                        limitDisplay={3}
+                        limitDisplay={accountLimit}
                         showSeeMoreButton={true}
                         hideCount={true}
                     />
@@ -195,7 +200,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                 </div>
 
                 {/* Right Column - 1/3 width */}
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                     {/* Asset Breakdown - Always shown with skeleton during loading or when assets exist */}
                     {(loading || (netWorth && netWorth.total_assets > 0)) && (
                         <AssetBreakdownPanel

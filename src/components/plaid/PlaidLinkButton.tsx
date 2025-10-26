@@ -98,14 +98,32 @@ export default function PlaidLinkButton({
         const data = await response.json();
         console.log('Account connected successfully:', data);
 
-        // Sync transactions immediately after connection
-        await fetch('/api/plaid/sync-transactions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ days: 90 }),
-        });
+        // Sync transactions immediately after connection (Premium+ only)
+        try {
+          const syncResponse = await fetch('/api/plaid/sync-transactions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ days: 90 }),
+          });
+
+          const syncData = await syncResponse.json();
+
+          if (!syncResponse.ok) {
+            // Log but don't block - this is a Premium feature
+            if (syncResponse.status === 403) {
+              console.log('Transaction sync skipped: Premium+ feature');
+            } else {
+              console.error('Transaction sync failed:', syncData.error || syncData.message);
+            }
+          } else {
+            console.log(`✅ Synced ${syncData.transactions_synced || 0} transactions`);
+          }
+        } catch (syncError) {
+          // Don't block account connection if transaction sync fails
+          console.error('Transaction sync error:', syncError);
+        }
 
         if (onSuccess) {
           onSuccess();
@@ -155,9 +173,15 @@ export default function PlaidLinkButton({
     <button
       onClick={handleClick}
       disabled={loading || (!ready && linkToken !== null)}
-      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#004D40] border border-transparent rounded-md hover:bg-[#00695C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#004D40] border border-transparent rounded-md hover:bg-[#00695C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
-      {loading ? 'Loading...' : children}
+      {loading && (
+        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      )}
+      {loading ? 'Connecting...' : children}
     </button>
   );
 }

@@ -196,12 +196,61 @@ export function ReportsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
+      <div className="p-3 sm:p-6 lg:p-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-3 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div>
+            <div className="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+            <div className="h-4 sm:h-5 w-48 sm:w-64 bg-gray-200 rounded"></div>
           </div>
-          <p className="text-lg font-semibold text-gray-900">Loading reports...</p>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="h-10 w-32 sm:w-48 bg-gray-200 rounded-lg"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+
+        {/* Key Metrics Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+              <div className="h-3 sm:h-4 w-24 sm:w-32 bg-gray-200 rounded mb-2 sm:mb-3"></div>
+              <div className="h-6 sm:h-8 w-20 sm:w-28 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+              {i === 2 && <div className="h-3 sm:h-4 w-16 sm:w-20 bg-gray-200 rounded"></div>}
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+          {/* Net Worth Trend Chart Skeleton */}
+          <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200 lg:col-span-2">
+            <div className="h-5 sm:h-6 w-32 sm:w-40 bg-gray-200 rounded mb-4 sm:mb-6"></div>
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gray-100 rounded-lg"></div>
+          </div>
+
+          {/* Assets vs Liabilities Chart Skeleton */}
+          <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+            <div className="h-5 sm:h-6 w-36 sm:w-48 bg-gray-200 rounded mb-4 sm:mb-6"></div>
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gray-100 rounded-lg"></div>
+          </div>
+
+          {/* Asset Breakdown Chart Skeleton */}
+          <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+            <div className="h-5 sm:h-6 w-40 sm:w-56 bg-gray-200 rounded mb-4 sm:mb-6"></div>
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gray-100 rounded-lg"></div>
+          </div>
+
+          {/* Liability Breakdown Chart Skeleton */}
+          <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+            <div className="h-5 sm:h-6 w-32 sm:w-44 bg-gray-200 rounded mb-4 sm:mb-6"></div>
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gray-100 rounded-lg"></div>
+          </div>
+
+          {/* Daily Growth Chart Skeleton */}
+          <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+            <div className="h-5 sm:h-6 w-36 sm:w-52 bg-gray-200 rounded mb-4 sm:mb-6"></div>
+            <div className="h-[200px] sm:h-[250px] lg:h-[300px] bg-gray-100 rounded-lg"></div>
+          </div>
         </div>
       </div>
     )

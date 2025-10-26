@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown';
 import EditAssetModal from './EditAssetModal';
 import { useSubscription } from '@/lib/context/SubscriptionContext';
@@ -10,6 +10,15 @@ import type { ManualAsset } from '@/lib/interfaces/asset';
 import type { PlaidAccount } from '@/lib/interfaces/plaid';
 import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto';
 import { formatCurrency } from '@/utils/formatters';
+
+type SortOption = 'recent' | 'value-high' | 'value-low' | 'name';
+
+const SORT_LABELS: Record<SortOption, string> = {
+  recent: 'Most Recent',
+  'value-high': 'Highest Value',
+  'value-low': 'Lowest Value',
+  name: 'Name (A-Z)',
+};
 
 const CATEGORY_LABELS: Record<string, string> = {
   // Asset categories
@@ -89,6 +98,8 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedWallets, setExpandedWallets] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<SortOption>('value-high');
+  const [showSortMenu, setShowSortMenu] = useState(false);
 
   const { hasAccess } = useSubscription();
 
@@ -421,6 +432,24 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
     });
   };
 
+  // Sort function
+  const sortEntries = (entries: UnifiedEntry[]): UnifiedEntry[] => {
+    const sorted = [...entries];
+
+    switch (sortBy) {
+      case 'recent':
+        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      case 'value-high':
+        return sorted.sort((a, b) => b.value - a.value);
+      case 'value-low':
+        return sorted.sort((a, b) => a.value - b.value);
+      case 'name':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      default:
+        return sorted;
+    }
+  };
+
   // Show skeleton while loading
   if (isLoading) {
     return (
@@ -490,20 +519,19 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
   const totalLiabilitiesCount = liabilityEntries.length;
   const totalEntriesCount = totalAssetsCount + totalLiabilitiesCount;
 
-  // Sort by value (highest to lowest) and limit if specified
-  if (limitDisplay && limitDisplay > 0) {
-    assetEntries = assetEntries
-      .sort((a, b) => b.value - a.value)
-      .slice(0, limitDisplay);
+  // Sort entries using the selected sort method
+  assetEntries = sortEntries(assetEntries);
+  liabilityEntries = sortEntries(liabilityEntries);
 
-    liabilityEntries = liabilityEntries
-      .sort((a, b) => b.value - a.value)
-      .slice(0, limitDisplay);
+  // Limit if specified
+  if (limitDisplay && limitDisplay > 0) {
+    assetEntries = assetEntries.slice(0, limitDisplay);
+    liabilityEntries = liabilityEntries.slice(0, limitDisplay);
   }
 
   // Render the full section when entries exist
   return (
-    <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 relative">
+    <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border-2 border-gray-200 relative">
       {/* Syncing Overlay */}
       {isSyncing && (
         <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl z-50 flex items-center justify-center">
@@ -517,41 +545,97 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
+      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Accounts</h2>
           {isRefreshing && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
-              <span>Updating...</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-gray-300 border-t-[#004D40] rounded-full animate-spin"></div>
+              <span className="hidden sm:inline">Updating...</span>
             </div>
           )}
         </div>
-        <AddAccountDropdown
-          onAccountAdded={handleEditSuccess}
-          onSyncStart={handleSyncStart}
-          onSyncComplete={handleSyncComplete}
-        />
+
+        <div className="flex items-center gap-2">
+          {/* Sort Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+              title="Sort accounts"
+            >
+              <ArrowsUpDownIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+              <span className="hidden sm:inline">{SORT_LABELS[sortBy]}</span>
+              <svg className="hidden sm:block h-4 w-4 text-gray-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Sort Dropdown Menu */}
+            {showSortMenu && (
+              <>
+                {/* Backdrop to close menu */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowSortMenu(false)}
+                />
+                {/* Menu */}
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border-2 border-gray-200 py-2 z-20">
+                  <div className="px-3 py-2 border-b border-gray-200">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sort By</p>
+                  </div>
+                  {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([value, label]) => (
+                    <button
+                      key={value}
+                      onClick={() => {
+                        setSortBy(value);
+                        setShowSortMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between group ${
+                        sortBy === value
+                          ? 'bg-[#004D40] text-white font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{label}</span>
+                      {sortBy === value && (
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <AddAccountDropdown
+            onAccountAdded={handleEditSuccess}
+            onSyncStart={handleSyncStart}
+            onSyncComplete={handleSyncComplete}
+          />
+        </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Assets Section */}
         {assetEntries.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
               {hideCount ? 'Assets' : `Assets (${assetEntries.length})`}
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {assetEntries.map((entry) => (
                 <div key={entry.id}>
-                  <div className="flex items-center justify-between p-4 bg-white border-2 border-green-100 rounded-xl hover:shadow-md hover:border-green-200 transition-all">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h3 className="text-base font-semibold text-gray-900">{entry.name}</h3>
-                        <span className="px-2.5 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white border-2 border-green-100 rounded-xl hover:shadow-md hover:border-green-200 transition-all gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">{entry.name}</h3>
+                        <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-semibold text-green-700 bg-green-50 rounded-lg border border-green-200 whitespace-nowrap">
                           {CATEGORY_LABELS[entry.category] || entry.category}
                         </span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        <span className={`px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
                           entry.source === 'plaid'
                             ? 'bg-emerald-100 text-emerald-700'
                             : entry.source === 'crypto'
@@ -581,35 +665,35 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
                           </button>
                         )}
                       </div>
-                      <p className="text-2xl font-bold text-green-600 mt-2">
+                      <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1 sm:mt-2">
                         {formatCurrency(entry.value)}
                       </p>
                       {entry.notes && (
-                        <p className="text-sm text-gray-600 mt-2 bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1.5 sm:mt-2 bg-gray-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg inline-block break-all">
                           {entry.notes}
                         </p>
                       )}
                       {/* Show frozen warning for Plaid accounts without Premium access */}
                       {entry.source === 'plaid' && !hasAccess('plaidSync') ? (
-                        <p className="text-xs text-orange-600 font-medium mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
+                        <p className="text-xs text-orange-600 font-medium mt-1.5 sm:mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
                           Last synced: {formatDate(entry.updatedAt)}
                         </p>
                       ) : (
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs text-gray-500 mt-1.5 sm:mt-2">
                           Last updated: {formatDate(entry.updatedAt)}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 sm:ml-4 self-end sm:self-center">
                       {/* Edit button only for manual entries */}
                       {entry.source === 'manual' && entry.manualAsset && (
                         <button
                           onClick={() => setEditingAsset(entry.manualAsset!)}
-                          className="p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
+                          className="p-2 sm:p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
                           title="Edit asset"
                         >
-                          <PencilIcon className="h-5 w-5" />
+                          <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       )}
                       {/* Delete button for all entries */}
@@ -624,13 +708,13 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
                           }
                         }}
                         disabled={deletingId === entry.id}
-                        className="p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                        className="p-2 sm:p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                         title={entry.source === 'manual' ? 'Delete asset' : entry.source === 'crypto' ? 'Remove wallet' : 'Remove account'}
                       >
                         {deletingId === entry.id ? (
-                          <div className="h-5 w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
+                          <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
                         ) : (
-                          <TrashIcon className="h-5 w-5" />
+                          <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         )}
                       </button>
                     </div>
@@ -683,22 +767,22 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
         {/* Liabilities Section */}
         {liabilityEntries.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
               {hideCount ? 'Liabilities' : `Liabilities (${liabilityEntries.length})`}
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {liabilityEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-4 bg-white border-2 border-red-100 rounded-xl hover:shadow-md hover:border-red-200 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white border-2 border-red-100 rounded-xl hover:shadow-md hover:border-red-200 transition-all gap-3"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="text-base font-semibold text-gray-900">{entry.name}</h3>
-                      <span className="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">{entry.name}</h3>
+                      <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-semibold text-red-700 bg-red-50 rounded-lg border border-red-200 whitespace-nowrap">
                         {CATEGORY_LABELS[entry.category] || entry.category}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      <span className={`px-1.5 sm:px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
                         entry.source === 'plaid'
                           ? 'bg-emerald-100 text-emerald-700'
                           : entry.source === 'crypto'
@@ -728,48 +812,48 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
                         </button>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-red-600 mt-2">
+                    <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1 sm:mt-2">
                       {formatCurrency(entry.value)}
                     </p>
                     {entry.notes && (
-                      <p className="text-sm text-gray-600 mt-2 bg-gray-50 px-3 py-1.5 rounded-lg inline-block">
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1.5 sm:mt-2 bg-gray-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg inline-block break-all">
                         {entry.notes}
                       </p>
                     )}
                     {/* Show frozen warning for Plaid accounts without Premium access */}
                     {entry.source === 'plaid' && !hasAccess('plaidSync') ? (
-                      <p className="text-xs text-orange-600 font-medium mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
+                      <p className="text-xs text-orange-600 font-medium mt-1.5 sm:mt-2 bg-orange-50 px-2 py-1 rounded inline-block">
                         ⚠️ Last synced: {formatDate(entry.updatedAt)}
                       </p>
                     ) : (
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-1.5 sm:mt-2">
                         Last updated: {formatDate(entry.updatedAt)}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 sm:ml-4 self-end sm:self-center">
                     {/* Edit button only for manual entries */}
                     {entry.source === 'manual' && entry.manualAsset && (
                       <button
                         onClick={() => setEditingAsset(entry.manualAsset!)}
-                        className="p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
+                        className="p-2 sm:p-2.5 text-gray-600 hover:text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-all"
                         title="Edit liability"
                       >
-                        <PencilIcon className="h-5 w-5" />
+                        <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
                     )}
                     {/* Delete button for all entries */}
                     <button
                       onClick={() => entry.source === 'manual' ? handleDeleteManualAsset(entry.id) : handleDeletePlaidAccount(entry.id)}
                       disabled={deletingId === entry.id}
-                      className="p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                      className="p-2 sm:p-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                       title={entry.source === 'manual' ? 'Delete liability' : 'Remove account'}
                     >
                       {deletingId === entry.id ? (
-                        <div className="h-5 w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
+                        <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-red-600 rounded-full animate-spin"></div>
                       ) : (
-                        <TrashIcon className="h-5 w-5" />
+                        <TrashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </button>
                   </div>
@@ -782,12 +866,15 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       {/* See More Button */}
       {showSeeMoreButton && limitDisplay && (totalAssetsCount > limitDisplay || totalLiabilitiesCount > limitDisplay) && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200">
           <Link
             href="/dashboard/accounts"
-            className="block w-full text-center py-3 px-4 bg-[#004D40] hover:bg-[#00695C] text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
+            className="block w-full text-center py-2.5 sm:py-3 px-3 sm:px-4 bg-[#004D40] hover:bg-[#00695C] text-white font-semibold text-sm sm:text-base rounded-lg transition-all shadow-sm hover:shadow-md group"
           >
-            See All Accounts ({totalEntriesCount})
+            <span>View All {totalEntriesCount} Accounts</span>
+            <svg className="inline-block ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
       )}

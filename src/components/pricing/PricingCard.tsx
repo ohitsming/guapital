@@ -108,39 +108,39 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
   return (
     <div
       className={`
-        relative rounded-2xl p-8 shadow-xl transition-all duration-300
-        ${highlighted ? 'border-4 border-[#FFC107] bg-gradient-to-br from-white to-[#FFC107]/5 scale-105' : 'border-2 border-gray-200 bg-white'}
+        relative rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-xl transition-all duration-300
+        ${highlighted ? 'border-3 sm:border-4 border-[#FFC107] bg-gradient-to-br from-white to-[#FFC107]/5 sm:scale-105' : 'border-2 border-gray-200 bg-white'}
         ${isPremium ? 'hover:shadow-2xl' : ''}
       `}
     >
       {/* Badge */}
       {cardData.badge && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+        <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2">
           <div
             className={`
-            px-4 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5
+            px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-1.5
             ${isFoundingMember ? 'bg-[#FFC107] text-[#004D40]' : 'bg-[#004D40] text-white'}
           `}
           >
-            {isFoundingMember && <SparklesIcon className="h-4 w-4" />}
+            {isFoundingMember && <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4" />}
             {cardData.badge}
           </div>
         </div>
       )}
 
       {/* Header */}
-      <div className="text-center mb-6 pt-2">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{cardData.name}</h3>
-        <p className="text-gray-600 text-sm mb-4">{cardData.description}</p>
+      <div className="text-center mb-5 sm:mb-6 pt-2">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{cardData.name}</h3>
+        <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-2">{cardData.description}</p>
 
-        <div className="flex items-baseline justify-center gap-2">
-          <span className="text-5xl font-bold text-[#004D40]">{cardData.price}</span>
-          <span className="text-gray-600 text-sm">/ {cardData.period}</span>
+        <div className="flex items-baseline justify-center gap-1 sm:gap-2">
+          <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#004D40]">{cardData.price}</span>
+          <span className="text-gray-600 text-xs sm:text-sm">/ {cardData.period}</span>
         </div>
 
         {/* Savings display */}
         {cardData.savings && (
-          <p className="mt-2 text-sm font-bold text-[#FFC107]">
+          <p className="mt-2 text-xs sm:text-sm font-bold text-[#FFC107]">
             {cardData.savings}
           </p>
         )}
@@ -164,7 +164,7 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
       <button
         onClick={onSelectPlan}
         className={`
-          w-full py-3 px-6 rounded-lg font-semibold text-base transition-all duration-200 mb-6
+          w-full py-3 sm:py-3.5 px-6 rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 mb-5 sm:mb-6 min-h-[48px]
           ${cardData.buttonStyle}
         `}
       >
@@ -172,13 +172,13 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
       </button>
 
       {/* Features List */}
-      <div className="space-y-3">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What&apos;s Included:</p>
+      <div className="space-y-2.5 sm:space-y-3">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 sm:mb-3">What&apos;s Included:</p>
         {cardData.features.map((feature, index) => (
-          <div key={index} className="flex items-start gap-3">
+          <div key={index} className="flex items-start gap-2 sm:gap-3">
             <div
               className={`
-              flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5
+              flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center mt-0.5
               ${
                 feature.included
                   ? (feature as PricingFeature).highlight
@@ -189,14 +189,14 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
             `}
             >
               {feature.included ? (
-                <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />
+                <CheckIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 stroke-[3]" />
               ) : (
                 <span className="text-xs">−</span>
               )}
             </div>
             <span
               className={`
-              text-sm
+              text-xs sm:text-sm leading-tight
               ${feature.included ? ((feature as PricingFeature).highlight ? 'text-gray-900 font-semibold' : 'text-gray-700') : 'text-gray-400'}
             `}
             >
@@ -208,8 +208,8 @@ export function PricingCard({ tier, billingPeriod = 'annual', isFoundingMember =
 
       {/* Unlimited crypto callout for Premium and Founding */}
       {(isPremium || isFounding) && (
-        <div className="mt-6 p-4 bg-[#004D40]/5 rounded-lg border border-[#004D40]/20">
-          <p className="text-xs text-[#004D40] font-semibold text-center">
+        <div className="mt-5 sm:mt-6 p-3 sm:p-4 bg-[#004D40]/5 rounded-lg border border-[#004D40]/20">
+          <p className="text-xs sm:text-sm text-[#004D40] font-semibold text-center leading-tight">
             {isFounding ? '💎 Founding Member Price Locked In Forever' : 'Only app with UNLIMITED crypto wallets at this price'}
           </p>
         </div>

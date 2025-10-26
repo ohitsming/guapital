@@ -20,6 +20,7 @@ export interface SubscriptionInfo {
     stripeSubscriptionId?: string
     isFoundingMember?: boolean      // First 1,000 users lock in $79/year forever
     foundingMemberPrice?: number    // Locked-in price for founding members
+    cancelAtPeriodEnd?: boolean     // True if subscription is scheduled to cancel at end of period
 }
 
 export interface FeatureAccess {

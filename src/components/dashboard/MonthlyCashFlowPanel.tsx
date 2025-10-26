@@ -58,6 +58,11 @@ export default function MonthlyCashFlowPanel() {
         }).format(amount)
     }
 
+    // Hide panel completely if no transactions (after loading completes)
+    if (!loading && !error && cashFlow && cashFlow.transactionCount === 0) {
+        return null
+    }
+
     return (
         <div className="bg-gradient-to-br from-[#004D40] to-[#00695C] rounded-xl p-4 shadow-md text-white">
             <h2 className="text-base font-bold mb-3">This Month</h2>

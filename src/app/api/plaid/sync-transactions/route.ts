@@ -29,23 +29,30 @@ export async function POST(request: Request) {
     const { item_id, days = 90, force = false } = await request.json();
 
     // COST OPTIMIZATION: Check subscription tier for transaction access
-    const { data: userSettings } = await supabase
-      .from('user_settings')
-      .select('subscription_tier')
-      .eq('user_id', user.id)
-      .single();
+    // DEVELOPMENT MODE: Skip tier check to enable all features
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
-    const tier = userSettings?.subscription_tier || 'free';
+    if (!isDevelopment) {
+      const { data: userSettings } = await supabase
+        .from('user_settings')
+        .select('subscription_tier')
+        .eq('user_id', user.id)
+        .single();
 
-    // Free tier users can't sync transactions (Premium+ only feature)
-    if (tier === 'free') {
-      return NextResponse.json(
-        {
-          error: 'Premium feature',
-          message: 'Transaction syncing is only available for Premium subscribers. Upgrade to access this feature.',
-        },
-        { status: 403 }
-      );
+      const tier = userSettings?.subscription_tier || 'free';
+
+      // Free tier users can't sync transactions (Premium+ only feature)
+      if (tier === 'free') {
+        return NextResponse.json(
+          {
+            error: 'Premium feature',
+            message: 'Transaction syncing is only available for Premium subscribers. Upgrade to access this feature.',
+          },
+          { status: 403 }
+        );
+      }
+    } else {
+      console.log('🔧 Development mode: Skipping subscription tier check for transaction sync');
     }
 
     // Get all plaid items for the user (or specific item if provided)

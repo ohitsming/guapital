@@ -265,7 +265,7 @@ export default function HeroNetWorthCard({
 
         return (
             <div className="relative">
-                <ResponsiveContainer width="100%" height={370}>
+                <ResponsiveContainer width="100%" height={250} className="sm:!h-[300px] lg:!h-[370px]">
                     <AreaChart data={ghostData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <defs>
                             <linearGradient id="ghostGradient" x1="0" y1="0" x2="0" y2="1">
@@ -299,9 +299,9 @@ export default function HeroNetWorthCard({
                     className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 bg-white/5 backdrop-blur-[2px] rounded-lg"
                     aria-label="Preview of net worth trend chart"
                 >
-                    <ChartBarIcon className="w-10 h-10 text-[#FFC107] mb-2" />
-                    <p className="text-white/90 text-sm font-medium">Start Building Your History</p>
-                    <p className="text-white/60 text-xs mt-1">
+                    <ChartBarIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#FFC107] mb-2" />
+                    <p className="text-white/90 text-xs sm:text-sm font-medium">Start Building Your History</p>
+                    <p className="text-white/60 text-xs mt-1 hidden sm:block">
                         Your net worth trend will appear here as you track over time
                     </p>
                 </div>
@@ -329,24 +329,24 @@ export default function HeroNetWorthCard({
             </div>
 
             {/* Chart skeleton */}
-            <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
-                <div className="h-[370px] bg-white/10 rounded flex items-center justify-center">
+            <div className="mb-3 bg-white/5 rounded-lg p-2 sm:p-3 backdrop-blur-sm border border-white/10">
+                <div className="h-[250px] sm:h-[300px] lg:h-[370px] bg-white/10 rounded flex items-center justify-center">
                     <div className="text-center">
-                        <div className="w-12 h-12 border-4 border-white/20 border-t-[#FFC107] rounded-full animate-spin mx-auto mb-3"></div>
-                        <p className="text-white/60 text-sm">Calculating your net worth...</p>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-white/20 border-t-[#FFC107] rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-white/60 text-xs sm:text-sm">Calculating your net worth...</p>
                     </div>
                 </div>
             </div>
 
             {/* Quick stats skeleton */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 border border-white/20">
                     <div className="h-3 w-12 bg-white/20 rounded mb-2"></div>
-                    <div className="h-6 w-24 bg-white/20 rounded"></div>
+                    <div className="h-5 sm:h-6 w-20 sm:w-24 bg-white/20 rounded"></div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 border border-white/20">
                     <div className="h-3 w-16 bg-white/20 rounded mb-2"></div>
-                    <div className="h-6 w-24 bg-white/20 rounded"></div>
+                    <div className="h-5 sm:h-6 w-20 sm:w-24 bg-white/20 rounded"></div>
                 </div>
             </div>
         </div>
@@ -355,7 +355,7 @@ export default function HeroNetWorthCard({
     // If loading, show skeleton
     if (loading || !netWorth) {
         return (
-            <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-5 shadow-lg">
+            <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-4 sm:p-5 shadow-lg">
                 {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-24 -mt-24"></div>
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
@@ -368,14 +368,14 @@ export default function HeroNetWorthCard({
     }
 
     return (
-        <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-5 shadow-lg">
+        <div className="mb-4 relative overflow-hidden rounded-xl bg-gradient-to-br from-[#004D40] via-[#00695C] to-[#00796B] p-4 sm:p-5 shadow-lg">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-24 -mt-24"></div>
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 -mb-16"></div>
 
             <div className="relative z-10">
                 {/* Header Row */}
-                <div className="flex items-start justify-between mb-2 gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-2 gap-4">
                     {/* Left: Title & Buttons */}
                     <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
@@ -384,44 +384,41 @@ export default function HeroNetWorthCard({
                                 <h2 className="text-sm font-medium text-white/80">Your Total Net Worth</h2>
                             </div>
 
-                            {/* Buttons for mobile/tablet */}
-                            <div className="flex lg:hidden items-center gap-2">
-                                {/* Percentile Opt-In Button */}
+                            {/* Mobile Percentile Opt-In Button */}
+                            <div className="lg:hidden">
                                 {showPercentileButton && onShowPercentileOptIn && (
                                     <button
                                         type="button"
                                         onClick={onShowPercentileOptIn}
-                                        className="inline-flex items-center gap-1.5 text-xs border border-amber-400/40 bg-amber-500/20 text-amber-100 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-amber-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400/50 shadow-sm"
+                                        className="inline-flex items-center gap-1.5 text-xs border border-amber-400/40 bg-amber-500/20 text-amber-100 rounded-md px-2.5 py-1.5 backdrop-blur-sm hover:bg-amber-500/30 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400/50 shadow-sm"
                                         title="See how your net worth compares to peers your age"
                                     >
                                         <TrophyIcon className="w-4 h-4" />
-                                        <span className="font-medium">See Your Rank</span>
+                                        <span className="font-medium hidden sm:inline">See Rank</span>
                                     </button>
                                 )}
-
-                                {/* Mobile Dropdown - Hidden, using main dropdown below */}
                             </div>
                         </div>
                         <div className="mb-3">
-                            <p className="text-4xl font-bold text-white mb-2">
+                            <p className="text-3xl sm:text-4xl font-bold text-white mb-2">
                                 {formatCurrency(netWorth.net_worth)}
                             </p>
 
                             {/* Progress Indicator */}
                             {progress ? (
                                 <div className="flex flex-col gap-1.5">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                        <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full border ${
                                             progress.change >= 0
                                                 ? 'bg-emerald-500/20 border-emerald-400/30'
                                                 : 'bg-red-500/20 border-red-400/30'
                                         }`}>
                                             {progress.change >= 0 ? (
-                                                <ArrowTrendingUpIcon className="w-4 h-4 text-emerald-300" />
+                                                <ArrowTrendingUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300" />
                                             ) : (
-                                                <ArrowTrendingDownIcon className="w-4 h-4 text-red-300" />
+                                                <ArrowTrendingDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-300" />
                                             )}
-                                            <span className={`font-semibold text-sm ${
+                                            <span className={`font-semibold text-xs sm:text-sm ${
                                                 progress.change >= 0 ? 'text-emerald-300' : 'text-red-300'
                                             }`}>
                                                 {progress.change >= 0 ? '+' : ''}{formatCurrency(progress.change)}
@@ -432,10 +429,10 @@ export default function HeroNetWorthCard({
                                                 ({progress.change >= 0 ? '+' : ''}{progress.percentChange.toFixed(1)}%)
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             {netWorth.net_worth >= 0 && (
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/20">
-                                                    <SparklesIcon className="w-4 h-4 text-[#FFC107]" />
+                                                <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 bg-white/10 rounded-full border border-white/20">
+                                                    <SparklesIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFC107]" />
                                                     <span className="text-white/90 font-medium text-xs">Building Wealth</span>
                                                 </div>
                                             )}
@@ -444,10 +441,11 @@ export default function HeroNetWorthCard({
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsOpen(!isOpen)}
-                                                    className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+                                                    className="inline-flex items-center gap-1.5 text-xs border border-white/20 bg-white/10 text-white/90 rounded-md px-2.5 sm:px-3 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
                                                 >
-                                                    <span>{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
-                                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                                    <span className="hidden sm:inline">{dayOptions.find(opt => opt.value === selectedDays)?.label || `Last ${selectedDays} days`}</span>
+                                                    <span className="sm:hidden">{selectedDays}d</span>
+                                                    <ChevronDownIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                                                 </button>
 
                                                 {isOpen && (
@@ -496,30 +494,30 @@ export default function HeroNetWorthCard({
                         </div>
                     </div>
 
-                    {/* Right: Percentile Ranking Card or Opt-In Button - Top Right Corner */}
+                    {/* Right: Percentile Ranking Card or Opt-In Button */}
                     {percentileData && percentileData.opted_in && typeof percentileData.current_percentile === 'number' ? (
                         // Show percentile rank when opted in
-                        <div className="hidden lg:block w-64 flex-shrink-0 h-full relative">
-                            <div className="p-4 h-full flex flex-col justify-center items-center">
+                        <div className="w-full lg:w-64 lg:flex-shrink-0 relative">
+                            <div className="p-3 sm:p-4 flex flex-col justify-center items-center">
                                 {/* Header - Centered */}
-                                <div className="flex flex-col items-center mb-4 gap-2">
+                                <div className="flex flex-col items-center mb-3 sm:mb-4 gap-2">
                                     <div className="flex items-center gap-2">
-                                        <TrophyIcon className="w-5 h-5 text-amber-400" />
-                                        <h3 className="text-white/90 font-semibold text-sm">Your Wealth Rank</h3>
+                                        <TrophyIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                                        <h3 className="text-white/90 font-semibold text-xs sm:text-sm">Your Wealth Rank</h3>
                                         <button
                                             onClick={() => setIsLearnMoreOpen(true)}
                                             className="text-white/60 hover:text-white/90 transition-colors"
                                             title="Learn more"
                                         >
-                                            <InformationCircleIcon className="w-4 h-4" />
+                                            <InformationCircleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* TOP X% Badge - Centered */}
                                 <div className="flex flex-col items-center">
-                                    <div className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-br from-amber-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-lg backdrop-blur-sm shadow-lg">
-                                        <span className="text-amber-100 text-3xl font-bold">
+                                    <div className="inline-flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-br from-amber-500/30 to-amber-600/30 border-2 border-amber-400/50 rounded-lg backdrop-blur-sm shadow-lg">
+                                        <span className="text-amber-100 text-2xl sm:text-3xl font-bold">
                                             TOP {(() => {
                                                 const topPercentile = 100 - percentileData.current_percentile;
                                                 if (topPercentile < 1) {
@@ -531,14 +529,14 @@ export default function HeroNetWorthCard({
                                             })()}%
                                         </span>
                                     </div>
-                                    <p className="text-white/60 text-xs mt-3">Ages {percentileData.age_bracket}</p>
+                                    <p className="text-white/60 text-xs mt-2 sm:mt-3">Ages {percentileData.age_bracket}</p>
                                 </div>
                             </div>
 
                             {/* Loading Overlay */}
                             {percentileLoading && (
                                 <div className="absolute inset-0 bg-[#004D40]/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                                    <div className="w-8 h-8 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin"></div>
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 border-3 border-amber-400/30 border-t-amber-400 rounded-full animate-spin"></div>
                                 </div>
                             )}
                         </div>
@@ -559,9 +557,9 @@ export default function HeroNetWorthCard({
                 </div>
 
                         {/* Net Worth Trend Chart */}
-                        <div className="mb-3 bg-white/5 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                        <div className="mb-3 bg-white/5 rounded-lg p-2 sm:p-3 backdrop-blur-sm border border-white/10">
                     {chartData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={370}>
+                        <ResponsiveContainer width="100%" height={250} className="sm:!h-[300px] lg:!h-[370px]">
                             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                                 <defs>
                                     <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
@@ -596,14 +594,14 @@ export default function HeroNetWorthCard({
                         </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 border border-white/20">
                         <p className="text-white/70 text-xs mb-0.5">Assets</p>
-                        <p className="text-lg font-bold text-white">{formatCurrency(netWorth.total_assets)}</p>
+                        <p className="text-base sm:text-lg font-bold text-white">{formatCurrency(netWorth.total_assets)}</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 border border-white/20">
                         <p className="text-white/70 text-xs mb-0.5">Liabilities</p>
-                        <p className="text-lg font-bold text-white">{formatCurrency(netWorth.total_liabilities)}</p>
+                        <p className="text-base sm:text-lg font-bold text-white">{formatCurrency(netWorth.total_liabilities)}</p>
                     </div>
                 </div>
             </div>

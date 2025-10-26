@@ -211,12 +211,61 @@ export function TransactionsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-4 lg:p-8 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
-            <div className="w-16 h-16 border-4 border-[#004D40]/20 border-t-[#004D40] rounded-full animate-spin"></div>
+      <div className="p-3 sm:p-6 lg:p-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-3 sm:mb-6 lg:mb-8">
+          <div className="h-6 sm:h-8 w-32 sm:w-48 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+          <div className="h-4 sm:h-5 w-48 sm:w-96 bg-gray-200 rounded"></div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+              <div className="h-3 sm:h-4 w-20 sm:w-24 bg-gray-200 rounded mb-2 sm:mb-3"></div>
+              <div className="h-6 sm:h-8 w-24 sm:w-32 bg-gray-200 rounded mb-1 sm:mb-2"></div>
+              <div className="h-3 w-20 sm:w-28 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters Panel Skeleton */}
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200 mb-4 sm:mb-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
+              <div className="h-10 flex-1 max-w-md bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-20 sm:w-24 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <div className="h-10 w-32 sm:w-48 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-32 sm:w-48 bg-gray-200 rounded-lg"></div>
+              <div className="h-10 w-28 sm:w-32 bg-gray-200 rounded-lg"></div>
+            </div>
           </div>
-          <p className="text-lg font-semibold text-gray-900">Loading transactions...</p>
+        </div>
+
+        {/* Transactions List Skeleton */}
+        <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 shadow-md border-2 border-gray-200">
+          <div className="space-y-2">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center justify-between p-3 sm:p-4 border-2 border-gray-100 rounded-xl">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                    <div className="h-4 sm:h-5 w-28 sm:w-40 bg-gray-200 rounded"></div>
+                    <div className="h-4 sm:h-5 w-12 sm:w-16 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <div className="h-3 sm:h-4 w-16 sm:w-24 bg-gray-200 rounded"></div>
+                    <div className="h-3 sm:h-4 w-20 sm:w-32 bg-gray-200 rounded"></div>
+                    <div className="h-3 sm:h-4 w-16 sm:w-28 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="ml-3 sm:ml-4 shrink-0">
+                  <div className="h-6 sm:h-7 w-16 sm:w-24 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -333,15 +382,35 @@ export function TransactionsPageContent() {
       {/* Transactions List */}
       {filteredTransactions.length === 0 ? (
         <div className="bg-white rounded-xl p-12 shadow-md border-2 border-gray-200 text-center">
-          <p className="text-gray-600 mb-4">
-            {searchQuery || categoryFilter !== 'all' ? 'No transactions match your filters' : 'No transactions yet'}
-          </p>
-          <button
-            onClick={handleRefresh}
-            className="px-6 py-3 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors"
-          >
-            Sync Transactions
-          </button>
+          <div className="max-w-md mx-auto">
+            {searchQuery || categoryFilter !== 'all' ? (
+              <>
+                <p className="text-gray-600 mb-4">No transactions match your filters</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery('')
+                    setCategoryFilter('all')
+                  }}
+                  className="px-6 py-3 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-gray-900 mb-2">No Transactions Yet</p>
+                <p className="text-gray-600 mb-6">
+                  Connect a bank account via Plaid to automatically sync your transactions.
+                </p>
+                <button
+                  onClick={handleRefresh}
+                  className="px-6 py-3 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors"
+                >
+                  Sync Transactions
+                </button>
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200">

@@ -129,6 +129,11 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
         return amount > 0 ? 'text-red-600' : 'text-green-600'
     }
 
+    // Hide panel completely if no transactions (after loading completes)
+    if (!loading && !error && transactions.length === 0) {
+        return null
+    }
+
     return (
         <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
             <div className="flex items-center justify-between mb-3">
@@ -163,13 +168,6 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
                 <div className="bg-red-50 rounded-lg p-4">
                     <p className="text-sm text-red-800">{error}</p>
                 </div>
-            ) : transactions.length === 0 ? (
-                <EmptyState
-                    icon={<ReceiptPercentIcon className="w-8 h-8 text-[#004D40]/40" />}
-                    title="No transactions yet"
-                    description="Your recent transaction history will appear here once you connect and sync your accounts."
-                    className="min-h-[120px]"
-                />
             ) : (
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                     {transactions.map((txn) => (

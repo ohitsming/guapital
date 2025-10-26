@@ -59,7 +59,7 @@ export function SubscriptionProvider({ children, initialSubscription }: Subscrip
             // Fetch subscription from user_settings (both dev and production)
             const { data, error: fetchError } = await supabase
                 .from('user_settings')
-                .select('subscription_tier, subscription_status, subscription_start_date, subscription_end_date, stripe_customer_id, stripe_subscription_id')
+                .select('subscription_tier, subscription_status, subscription_start_date, subscription_end_date, stripe_customer_id, stripe_subscription_id, cancel_at_period_end')
                 .eq('user_id', user.id)
                 .single()
 
@@ -81,6 +81,7 @@ export function SubscriptionProvider({ children, initialSubscription }: Subscrip
                     endDate: data.subscription_end_date ? new Date(data.subscription_end_date) : undefined,
                     stripeCustomerId: data.stripe_customer_id || undefined,
                     stripeSubscriptionId: data.stripe_subscription_id || undefined,
+                    cancelAtPeriodEnd: data.cancel_at_period_end || false,
                 })
             } else {
                 // No settings found - default to free

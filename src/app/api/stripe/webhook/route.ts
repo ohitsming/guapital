@@ -136,15 +136,31 @@ export async function POST(request: Request) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as any;
+
+        // Get current_period_end from items (Stripe's structure)
+        const currentPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
+        const currentPeriodStart = subscription.items?.data?.[0]?.current_period_start;
+
         const tier = subscription.status === 'active' ? 'premium' : 'free';
 
-        // Update subscription tier, status, and renewal dates
+        // Validate required fields
+        if (!currentPeriodEnd || !currentPeriodStart) {
+          console.error('Missing period dates in subscription update');
+          return NextResponse.json(
+            { error: 'Invalid subscription data' },
+            { status: 400 }
+          );
+        }
+
+        // Update subscription tier, status, and period dates
         const { error } = await supabase
           .from('user_settings')
           .update({
             subscription_tier: tier,
             subscription_status: subscription.status,
-            subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+            subscription_start_date: new Date(currentPeriodStart * 1000).toISOString(),
+            subscription_end_date: new Date(currentPeriodEnd * 1000).toISOString(),
+            cancel_at_period_end: subscription.cancel_at_period_end || false,
           })
           .eq('stripe_subscription_id', subscription.id);
 
@@ -154,8 +170,6 @@ export async function POST(request: Request) {
             { error: 'Failed to update subscription status' },
             { status: 500 }
           );
-        } else {
-          console.log(`Subscription ${subscription.id} updated to ${tier} (renews: ${new Date(subscription.current_period_end * 1000).toISOString()})`);
         }
         break;
       }
@@ -165,7 +179,11 @@ export async function POST(request: Request) {
 
         const { error } = await supabase
           .from('user_settings')
-          .update({ subscription_tier: 'free' })
+          .update({
+            subscription_tier: 'free',
+            subscription_status: 'canceled',
+            cancel_at_period_end: false, 
+          })
           .eq('stripe_subscription_id', subscription.id);
 
         if (error) {
@@ -175,7 +193,7 @@ export async function POST(request: Request) {
             { status: 500 }
           );
         } else {
-          console.log(`Subscription ${subscription.id} cancelled`);
+          console.log(`Subscription ${subscription.id} cancelled and downgraded to free tier`);
         }
         break;
       }

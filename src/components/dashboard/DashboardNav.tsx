@@ -15,7 +15,8 @@ import {
     ArrowRightOnRectangleIcon,
     ChevronUpIcon,
     ChevronDownIcon,
-    Bars3Icon
+    Bars3Icon,
+    BanknotesIcon
 } from '@heroicons/react/24/outline'
 import { SparklesIcon } from '@heroicons/react/24/solid'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
@@ -232,10 +233,18 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                         {/* Dropdown Menu */}
                         <div
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                                isAccountDropdownOpen ? 'max-h-44 opacity-100 mt-2' : 'max-h-0 opacity-0'
+                                isAccountDropdownOpen ? 'max-h-56 opacity-100 mt-2' : 'max-h-0 opacity-0'
                             }`}
                         >
                             <div className="space-y-1">
+                                <Link
+                                    href="/dashboard/billing"
+                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <BanknotesIcon className="h-5 w-5" />
+                                    Billing
+                                </Link>
                                 <Link
                                     href="/dashboard/settings"
                                     onClick={() => setIsAccountDropdownOpen(false)}

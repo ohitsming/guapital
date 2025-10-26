@@ -7,6 +7,7 @@ import clsx from 'clsx'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, UserCircleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/20/solid'
 import { HomeIcon, WalletIcon, CreditCardIcon, ChartBarIcon, LockClosedIcon } from '@heroicons/react/24/outline'
+import { SparklesIcon } from '@heroicons/react/24/solid'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
 import { Logo } from '@/components/Logo'
@@ -35,8 +36,9 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
     const pathname = usePathname()
     const [isSticky, setIsSticky] = useState(false)
     const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const { hasAccess, isLoading } = useSubscription()
+    const { hasAccess, isLoading, tier } = useSubscription()
     const supabase = createClient()
+    const isPremium = tier === 'premium'
 
     useEffect(() => {
         const handleScroll = () => {
@@ -80,8 +82,14 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
                                 )}
                             </button>
                             <Link href="/dashboard" aria-label="Dashboard">
-                                <Logo className="h-8" />
+                                <Logo className="h-10" />
                             </Link>
+                            {isPremium && (
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-[#FFC107] to-[#FFD54F] rounded-full shadow-md">
+                                    <SparklesIcon className="h-3 w-3 text-[#004D40]" />
+                                    <span className="text-xs font-bold text-[#004D40] tracking-wide">PREMIUM</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Right side - User menu */}
@@ -100,6 +108,19 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
                                             </p>
                                             <p className="text-xs text-neutral-500 mt-0.5">Account</p>
                                         </div>
+                                        <MenuItem>
+                                            {({ focus }) => (
+                                                <Link
+                                                    href="/dashboard/billing"
+                                                    className={clsx(
+                                                        focus ? 'bg-neutral-100' : '',
+                                                        'block px-4 py-2 text-sm text-neutral-700'
+                                                    )}
+                                                >
+                                                    Billing
+                                                </Link>
+                                            )}
+                                        </MenuItem>
                                         <MenuItem>
                                             {({ focus }) => (
                                                 <Link

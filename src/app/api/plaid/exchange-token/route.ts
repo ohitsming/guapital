@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 import { PlaidItem } from '@/lib/interfaces/plaid';
+import { subDays, format } from 'date-fns';
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
@@ -179,6 +180,77 @@ export async function POST(request: Request) {
         { error: 'Failed to store accounts', details: accountsError.message },
         { status: 500 }
       );
+    }
+
+    // ✅ IMPORTANT: Sync transactions immediately after linking account
+    try {
+      console.log('🔄 Syncing initial transactions for new Plaid item...');
+
+      const startDate = format(subDays(new Date(), 365), 'yyyy-MM-dd'); // 1 year history
+      const endDate = format(new Date(), 'yyyy-MM-dd');
+
+      const transactionsResponse = await plaidClient.transactionsGet({
+        access_token: accessToken,
+        start_date: startDate,
+        end_date: endDate,
+        options: {
+          count: 500,
+          offset: 0,
+        },
+      });
+
+      const transactions = transactionsResponse.data.transactions;
+
+      // Get account mapping (we just inserted them above)
+      const { data: dbAccounts } = await supabase
+        .from('plaid_accounts')
+        .select('id, account_id')
+        .eq('plaid_item_id', plaidItem.id);
+
+      if (dbAccounts) {
+        const accountMap = new Map(dbAccounts.map((a) => [a.account_id, a.id]));
+
+        // Prepare transactions for insertion
+        const transactionsToInsert = transactions.map((txn) => ({
+          user_id: user.id,
+          plaid_account_id: accountMap.get(txn.account_id),
+          transaction_id: txn.transaction_id,
+          transaction_date: txn.date,
+          authorized_date: txn.authorized_date || null,
+          merchant_name: txn.merchant_name || txn.name,
+          category: txn.category || [],
+          amount: txn.amount,
+          currency: txn.iso_currency_code || 'USD',
+          pending: txn.pending,
+          is_hidden: false,
+        }));
+
+        // Insert transactions in batches (Supabase limit: 1000 rows)
+        const batchSize = 500;
+        let totalInserted = 0;
+
+        for (let i = 0; i < transactionsToInsert.length; i += batchSize) {
+          const batch = transactionsToInsert.slice(i, i + batchSize);
+          const { error: txnError } = await supabase
+            .from('plaid_transactions')
+            .upsert(batch, {
+              onConflict: 'transaction_id',
+              ignoreDuplicates: false,
+            });
+
+          if (!txnError) {
+            totalInserted += batch.length;
+          } else {
+            console.error('Error inserting transaction batch:', txnError);
+          }
+        }
+
+        console.log(`✅ Initial transaction sync complete: ${totalInserted} transactions synced`);
+      }
+    } catch (syncError) {
+      // Don't fail the whole request if transaction sync fails
+      // User can manually sync later from the UI
+      console.error('⚠️ Warning: Initial transaction sync failed (non-critical):', syncError);
     }
 
     return NextResponse.json({
