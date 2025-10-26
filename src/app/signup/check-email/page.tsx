@@ -25,7 +25,7 @@ export default function CheckEmail() {
                         Check Your Email
                     </h2>
                     <p className="mt-4 text-center text-base text-gray-600">
-                        We've sent you a confirmation email to verify your account.
+                        We&apos;ve sent you a confirmation email to verify your account.
                     </p>
                 </div>
 
@@ -48,7 +48,7 @@ export default function CheckEmail() {
                                 <ol className="list-decimal list-inside space-y-3 text-sm text-gray-600">
                                     <li>Check your email inbox (and spam folder)</li>
                                     <li>Click the confirmation link in the email</li>
-                                    <li>You'll be redirected to complete your profile</li>
+                                    <li>You&apos;ll be redirected to complete your profile</li>
                                     <li>Start tracking your net worth!</li>
                                 </ol>
                             </div>
@@ -56,13 +56,13 @@ export default function CheckEmail() {
                             {/* Helpful Info */}
                             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                 <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                                    Didn't receive an email?
+                                    Didn&apos;t receive an email?
                                 </h4>
                                 <ul className="text-sm text-gray-600 space-y-2">
                                     <li>• Check your spam or junk folder</li>
                                     <li>• Make sure you entered the correct email address</li>
                                     <li>• Wait a few minutes - emails can take time to arrive</li>
-                                    <li>• Contact support if you still don't see it</li>
+                                    <li>• Contact support if you still don&apos;t see it</li>
                                 </ul>
                             </div>
 
