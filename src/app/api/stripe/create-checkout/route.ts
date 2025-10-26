@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { createClient } from '@/utils/supabase/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
+  apiVersion: '2025-09-30.clover' as any,
 });
 
 // POST /api/stripe/create-checkout - Create a Stripe checkout session
@@ -36,7 +36,9 @@ export async function POST(request: Request) {
     }
 
     // Get the base URL from the request or environment variable
-    const baseUrl = process.env.NEXT_PUBLIC_ENV_URL ||
+    // Prefer APP_URL (server-only) over NEXT_PUBLIC_ENV_URL (client-exposed)
+    const baseUrl = process.env.APP_URL ||
+                    process.env.NEXT_PUBLIC_ENV_URL ||
                     `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('host') || 'localhost:3000'}`;
 
     const { priceType } = await request.json();

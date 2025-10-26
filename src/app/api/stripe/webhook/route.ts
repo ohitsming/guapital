@@ -19,7 +19,7 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-08-27.basil',
+  apiVersion: '2025-09-30.clover' as any,
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -257,13 +257,24 @@ export async function POST(request: Request) {
         try {
           subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
 
+          logger.info('Raw subscription object from Stripe', {
+            requestId,
+            subscriptionId,
+            subscriptionKeys: Object.keys(subscription),
+            current_period_start: subscription.current_period_start,
+            current_period_end: subscription.current_period_end,
+            status: subscription.status,
+            fullObject: JSON.stringify(subscription).substring(0, 1000)
+          });
+
           // Validate subscription has required timestamps
           if (!subscription.current_period_start || !subscription.current_period_end) {
             logger.error('Subscription missing period dates', {
               requestId,
               subscriptionId,
               hasStart: !!subscription.current_period_start,
-              hasEnd: !!subscription.current_period_end
+              hasEnd: !!subscription.current_period_end,
+              fullSubscription: JSON.stringify(subscription)
             });
             return NextResponse.json(
               { error: 'Invalid subscription data from Stripe' },
@@ -356,9 +367,18 @@ export async function POST(request: Request) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as any;
 
-        // Get current_period dates directly from subscription object
-        const currentPeriodEnd = subscription.current_period_end;
-        const currentPeriodStart = subscription.current_period_start;
+        // Get current_period dates - try root level first, then from items
+        let currentPeriodEnd = subscription.current_period_end;
+        let currentPeriodStart = subscription.current_period_start;
+
+        // If not at root level, get from first subscription item (API version 2025-09-30.clover+)
+        if (!currentPeriodEnd || !currentPeriodStart) {
+          const firstItem = subscription.items?.data?.[0];
+          if (firstItem) {
+            currentPeriodEnd = firstItem.current_period_end;
+            currentPeriodStart = firstItem.current_period_start;
+          }
+        }
 
         const tier = subscription.status === 'active' ? 'premium' : 'free';
 
@@ -368,7 +388,8 @@ export async function POST(request: Request) {
           status: subscription.status,
           tier,
           currentPeriodStart: currentPeriodStart ? new Date(currentPeriodStart * 1000).toISOString() : null,
-          currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null
+          currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
+          fromItems: !subscription.current_period_end
         });
 
         // Validate required fields
@@ -378,6 +399,7 @@ export async function POST(request: Request) {
             subscriptionId: subscription.id,
             hasCurrentPeriodEnd: !!currentPeriodEnd,
             hasCurrentPeriodStart: !!currentPeriodStart,
+            hasItems: !!subscription.items?.data?.length,
             subscriptionObject: JSON.stringify(subscription).substring(0, 500)
           });
           return NextResponse.json(

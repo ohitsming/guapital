@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-08-27.basil',
+    apiVersion: '2025-09-30.clover' as any,
 })
 
 export async function POST(request: Request) {
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         // Create Stripe customer portal session
         const session = await stripe.billingPortal.sessions.create({
             customer: settings.stripe_customer_id,
-            return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/settings?tab=billing`,
+            return_url: `${process.env.APP_URL || process.env.NEXT_PUBLIC_ENV_URL || 'http://localhost:3000'}/dashboard/settings?tab=billing`,
         })
 
         console.log('Portal session created successfully:', session.url)
