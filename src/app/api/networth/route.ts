@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import type { NetWorthCalculation, NetWorthBreakdown } from '@/lib/interfaces/networth';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // GET /api/networth - Calculate current net worth from all sources
 export async function GET(request: Request) {
   try {

@@ -253,28 +253,58 @@ export async function POST(request: Request) {
           subscriptionId
         });
 
-        let subscription;
-        try {
-          subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
+        let subscription: Stripe.Subscription;
+        let currentPeriodStart: number;
+        let currentPeriodEnd: number;
 
-          logger.info('Raw subscription object from Stripe', {
+        try {
+          subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+          logger.info('Retrieved subscription from Stripe', {
             requestId,
             subscriptionId,
-            subscriptionKeys: Object.keys(subscription),
-            current_period_start: subscription.current_period_start,
-            current_period_end: subscription.current_period_end,
             status: subscription.status,
-            fullObject: JSON.stringify(subscription).substring(0, 1000)
+            hasItems: !!subscription.items,
+            itemsCount: subscription.items?.data?.length || 0,
+            hasRootStart: !!(subscription as any).current_period_start,
+            hasRootEnd: !!(subscription as any).current_period_end
           });
 
-          // Validate subscription has required timestamps
-          if (!subscription.current_period_start || !subscription.current_period_end) {
+          // Try to get period dates from multiple locations (API version compatibility)
+          // Newer API versions: dates at root level
+          // Older API versions: dates in subscription items
+
+          currentPeriodStart = (subscription as any).current_period_start;
+          currentPeriodEnd = (subscription as any).current_period_end;
+
+          // If not at root, try to get from first subscription item
+          if (!currentPeriodStart || !currentPeriodEnd) {
+            const firstItem = subscription.items?.data?.[0];
+
+            if (firstItem) {
+              currentPeriodStart = currentPeriodStart || (firstItem as any).current_period_start;
+              currentPeriodEnd = currentPeriodEnd || (firstItem as any).current_period_end;
+
+              logger.info('Period dates found in subscription item', {
+                requestId,
+                subscriptionId,
+                itemId: firstItem.id,
+                hasItemStart: !!(firstItem as any).current_period_start,
+                hasItemEnd: !!(firstItem as any).current_period_end
+              });
+            }
+          }
+
+          // Validate period dates exist
+          if (!currentPeriodStart || !currentPeriodEnd) {
             logger.error('Subscription missing period dates', {
               requestId,
               subscriptionId,
-              hasStart: !!subscription.current_period_start,
-              hasEnd: !!subscription.current_period_end,
-              fullSubscription: JSON.stringify(subscription)
+              hasRootStart: !!(subscription as any).current_period_start,
+              hasRootEnd: !!(subscription as any).current_period_end,
+              hasItems: !!subscription.items?.data?.length,
+              subscriptionKeys: Object.keys(subscription).slice(0, 20),
+              rawSubscription: JSON.stringify(subscription).substring(0, 500)
             });
             return NextResponse.json(
               { error: 'Invalid subscription data from Stripe' },
@@ -286,8 +316,8 @@ export async function POST(request: Request) {
             requestId,
             subscriptionId,
             status: subscription.status,
-            currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
+            currentPeriodStart: new Date(currentPeriodStart * 1000).toISOString(),
+            currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString()
           });
         } catch (stripeError: any) {
           logger.error('Error fetching subscription from Stripe', {
@@ -302,6 +332,7 @@ export async function POST(request: Request) {
           );
         }
 
+        // Period dates already extracted above (currentPeriodStart, currentPeriodEnd)
         // Update user to premium tier with subscription dates
         const updateData = {
           subscription_tier: 'premium',
@@ -309,8 +340,8 @@ export async function POST(request: Request) {
           stripe_customer_id: session.customer as string,
           stripe_subscription_id: subscriptionId,
           stripe_price_id: priceId,
-          subscription_start_date: new Date(subscription.current_period_start * 1000).toISOString(),
-          subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+          subscription_start_date: new Date(currentPeriodStart * 1000).toISOString(),
+          subscription_end_date: new Date(currentPeriodEnd * 1000).toISOString(),
         };
 
         logger.info('Updating user_settings to premium', {
@@ -357,8 +388,8 @@ export async function POST(request: Request) {
           userId: session.metadata.user_id,
           priceId,
           subscriptionId,
-          startDate: new Date(subscription.current_period_start * 1000).toISOString(),
-          endDate: new Date(subscription.current_period_end * 1000).toISOString(),
+          startDate: new Date(currentPeriodStart * 1000).toISOString(),
+          endDate: new Date(currentPeriodEnd * 1000).toISOString(),
           updatedData
         });
         break;

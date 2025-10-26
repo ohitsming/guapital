@@ -192,32 +192,6 @@ function Header({
                                                 </Link>
                                             )}
                                         </MenuItem>
-                                        <MenuItem>
-                                            {({ focus }) => (
-                                                <Link
-                                                    href="/profile"
-                                                    className={clsx(
-                                                        focus ? 'bg-neutral-100' : '',
-                                                        'block px-4 py-2 text-sm text-neutral-700'
-                                                    )}
-                                                >
-                                                    Profile
-                                                </Link>
-                                            )}
-                                        </MenuItem>
-                                        <MenuItem>
-                                            {({ focus }) => (
-                                                <Link
-                                                    href="/settings"
-                                                    className={clsx(
-                                                        focus ? 'bg-neutral-100' : '',
-                                                        'block px-4 py-2 text-sm text-neutral-700'
-                                                    )}
-                                                >
-                                                    Settings
-                                                </Link>
-                                            )}
-                                        </MenuItem>
                                         <div className="border-t border-neutral-100" />
                                         <MenuItem>
                                             {({ focus }) => (
@@ -322,20 +296,6 @@ function MobileMenu({
                             onClick={() => setExpanded(false)}
                         >
                             Dashboard
-                        </Link>
-                        <Link
-                            href="/profile"
-                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                            onClick={() => setExpanded(false)}
-                        >
-                            Profile
-                        </Link>
-                        <Link
-                            href="/settings"
-                            className="block px-4 py-2.5 text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 rounded-lg transition-colors"
-                            onClick={() => setExpanded(false)}
-                        >
-                            Settings
                         </Link>
                         <button
                             onClick={() => {

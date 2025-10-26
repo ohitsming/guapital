@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import type { TrendDataPoint } from '@/lib/interfaces/subscription';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // GET /api/networth/history?days=30 - Get historical net worth snapshots
 // Returns both simple trend data (for Dashboard) and full snapshots (for Reports page)
 export async function GET(request: Request) {
