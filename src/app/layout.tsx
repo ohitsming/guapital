@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google'
 import '@/styles/tailwind.css'
 import { RootLayout } from '@/components/RootLayout'
@@ -50,14 +50,18 @@ export const metadata: Metadata = {
     creator: '@guapital',
     images: [`${URL}/twitter-image.jpg`],
   },
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#ffffff',
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#ffffff',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
