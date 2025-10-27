@@ -1,18 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
-
-const configuration = new Configuration({
-  basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-    },
-  },
-});
-
-const plaidClient = new PlaidApi(configuration);
+import { getPlaidClient } from '@/lib/plaid/client';
 
 export async function POST(request: Request) {
   try {
@@ -26,6 +14,16 @@ export async function POST(request: Request) {
     }
 
     const { item_id, force = false } = await request.json();
+
+    // INPUT VALIDATION
+    if (item_id !== undefined) {
+      if (typeof item_id !== 'number' || !Number.isInteger(item_id) || item_id <= 0) {
+        return NextResponse.json(
+          { error: 'Invalid item_id: must be a positive integer' },
+          { status: 400 }
+        );
+      }
+    }
 
     // PREMIUM FEATURE CHECK: Plaid syncing is Premium+ only
     // DEVELOPMENT MODE: Skip check in development to enable all features
@@ -102,6 +100,9 @@ export async function POST(request: Request) {
     }
 
     try {
+      // Get Plaid client instance
+      const plaidClient = getPlaidClient();
+
       // Sync accounts
       const accountsResponse = await plaidClient.accountsGet({
         access_token: plaidItem.access_token,

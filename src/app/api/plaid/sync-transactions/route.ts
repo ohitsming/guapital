@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 import { subDays, format } from 'date-fns';
-
-const configuration = new Configuration({
-  basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-    },
-  },
-});
-
-const plaidClient = new PlaidApi(configuration);
+import { getPlaidClient } from '@/lib/plaid/client';
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +15,25 @@ export async function POST(request: Request) {
     }
 
     const { item_id, days = 90, force = false } = await request.json();
+
+    // INPUT VALIDATION
+    if (item_id !== undefined) {
+      if (typeof item_id !== 'number' || !Number.isInteger(item_id) || item_id <= 0) {
+        return NextResponse.json(
+          { error: 'Invalid item_id: must be a positive integer' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (days !== undefined) {
+      if (typeof days !== 'number' || !Number.isInteger(days) || days <= 0 || days > 730) {
+        return NextResponse.json(
+          { error: 'Invalid days parameter: must be between 1 and 730' },
+          { status: 400 }
+        );
+      }
+    }
 
     // COST OPTIMIZATION: Check subscription tier for transaction access
     // DEVELOPMENT MODE: Skip tier check to enable all features
@@ -90,6 +97,9 @@ export async function POST(request: Request) {
       try {
         const startDate = format(subDays(new Date(), days), 'yyyy-MM-dd');
         const endDate = format(new Date(), 'yyyy-MM-dd');
+
+        // Get Plaid client instance
+        const plaidClient = getPlaidClient();
 
         // Get transactions
         const transactionsResponse = await plaidClient.transactionsGet({

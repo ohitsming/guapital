@@ -1,19 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } from 'plaid';
-
-// Initialize Plaid client
-const configuration = new Configuration({
-  basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-    },
-  },
-});
-
-const plaidClient = new PlaidApi(configuration);
+import { Products, CountryCode } from 'plaid';
+import { getPlaidClient } from '@/lib/plaid/client';
 
 export async function POST(request: Request) {
   try {
@@ -84,6 +72,7 @@ export async function POST(request: Request) {
     console.log('🔍 Plaid environment:', process.env.PLAID_ENV);
 
     // Create a link token for the user
+    const plaidClient = getPlaidClient();
     const response = await plaidClient.linkTokenCreate(linkTokenConfig);
 
     console.log('✅ Link token created successfully');

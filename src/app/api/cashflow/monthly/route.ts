@@ -61,6 +61,11 @@ export async function GET(request: Request) {
     let totalIncome = 0;
 
     transactions.forEach((txn) => {
+      // Handle null/undefined amounts gracefully
+      if (txn.amount == null) {
+        return; // Skip this transaction
+      }
+
       const amount = parseFloat(txn.amount.toString());
 
       if (amount > 0) {

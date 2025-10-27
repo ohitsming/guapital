@@ -1,20 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
 import { PlaidItem } from '@/lib/interfaces/plaid';
 import { subDays, format } from 'date-fns';
-
-const configuration = new Configuration({
-  basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-    },
-  },
-});
-
-const plaidClient = new PlaidApi(configuration);
+import { getPlaidClient } from '@/lib/plaid/client';
 
 export async function POST(request: Request) {
   try {
@@ -56,6 +44,9 @@ export async function POST(request: Request) {
     if (!public_token) {
       return NextResponse.json({ error: 'Missing public_token' }, { status: 400 });
     }
+
+    // Get Plaid client instance
+    const plaidClient = getPlaidClient();
 
     // Exchange public token for access token
     const exchangeResponse = await plaidClient.itemPublicTokenExchange({
