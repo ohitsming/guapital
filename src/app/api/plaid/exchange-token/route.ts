@@ -28,22 +28,27 @@ export async function POST(request: Request) {
     }
 
     // PREMIUM FEATURE CHECK: Plaid integration is Premium+ only
-    const { data: userSettings } = await supabase
-      .from('user_settings')
-      .select('subscription_tier')
-      .eq('user_id', user.id)
-      .single();
+    // DEVELOPMENT MODE: Skip check in development to enable all features
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
-    const tier = userSettings?.subscription_tier || 'free';
+    if (!isDevelopment) {
+      const { data: userSettings } = await supabase
+        .from('user_settings')
+        .select('subscription_tier')
+        .eq('user_id', user.id)
+        .single();
 
-    if (tier === 'free') {
-      return NextResponse.json(
-        {
-          error: 'Premium feature',
-          message: 'Plaid account linking is only available for Premium subscribers.',
-        },
-        { status: 403 }
-      );
+      const tier = userSettings?.subscription_tier || 'free';
+
+      if (tier === 'free') {
+        return NextResponse.json(
+          {
+            error: 'Premium feature',
+            message: 'Plaid account linking is only available for Premium subscribers.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const { public_token, metadata } = await request.json();

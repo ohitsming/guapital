@@ -98,7 +98,7 @@ export function PricingSection({
         >
           Annual
           <span className="absolute -top-2 -right-2 bg-[#FFC107] text-[#004D40] text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-            Save 17%
+            Save 36%
           </span>
         </button>
       </div>
@@ -153,8 +153,8 @@ export function PricingSection({
             <div className="grid md:grid-cols-3 gap-4 sm:gap-6 mt-6">
               <div>
                 <p className="text-xs sm:text-sm text-gray-600 mb-1">Monthly Plan</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">$9.99<span className="text-xs sm:text-sm text-gray-600">/mo</span></p>
-                <p className="text-xs text-gray-500 mt-1">= $119.88/year</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">$12.99<span className="text-xs sm:text-sm text-gray-600">/mo</span></p>
+                <p className="text-xs text-gray-500 mt-1">= $155.88/year</p>
               </div>
               <div className="flex items-center justify-center">
                 <div className="text-3xl sm:text-4xl font-bold text-[#FFC107]">→</div>
@@ -162,11 +162,11 @@ export function PricingSection({
               <div>
                 <p className="text-xs sm:text-sm text-gray-600 mb-1">Annual Plan</p>
                 <p className="text-2xl sm:text-3xl font-bold text-[#004D40]">$99<span className="text-xs sm:text-sm text-gray-600">/yr</span></p>
-                <p className="text-xs font-bold text-[#FFC107] mt-1">SAVE $20.88 (17%)</p>
+                <p className="text-xs font-bold text-[#FFC107] mt-1">SAVE $56.88 (36%)</p>
               </div>
             </div>
             <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-700">
-              That&apos;s like getting <strong>2 months free</strong> when you go annual!
+              That&apos;s like getting <strong>4 months free</strong> when you go annual!
             </p>
             <button
               onClick={() => setBillingPeriod('annual')}
@@ -202,7 +202,7 @@ export function PricingSection({
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 font-medium">Price</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-gray-700">$0</td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm font-bold text-[#004D40]">
-                  $9.99/mo or ${isFoundingMemberEligible ? '79' : '99'}/yr
+                  $12.99/mo or ${isFoundingMemberEligible ? '79' : '99'}/yr
                 </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-gray-700">$14.99/mo or $99-109/yr</td>
               </tr>
@@ -279,9 +279,9 @@ export function PricingSection({
               Should I choose monthly or annual pricing?
             </h4>
             <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">
-              <strong>Monthly ($9.99/month)</strong> is great for trying Guapital risk-free. Cancel anytime.
+              <strong>Monthly ($12.99/month)</strong> is great for trying Guapital risk-free. Cancel anytime.
               <br /><br />
-              <strong>Annual ($99/year)</strong> saves you $20.88 (17% off) - that&apos;s basically 2 months free!
+              <strong>Annual ($99/year)</strong> saves you $56.88 (36% off) - that&apos;s almost 4 months free!
               Most users choose annual after trying monthly for 1-2 months.
               <br /><br />
               <strong>Founding Member ($79/year)</strong> locks in the best price forever - only for the first 1,000 users.
@@ -293,7 +293,7 @@ export function PricingSection({
               Why is Guapital competitively priced?
             </h4>
             <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">
-              We match the best annual pricing ($99/year, same as Monarch) but offer a 33% cheaper monthly option ($9.99 vs $14.99).
+              We match the best annual pricing ($99/year, same as Monarch) but offer a 13% cheaper monthly option ($12.99 vs $14.99).
               We&apos;re building for rapid growth, not maximizing revenue. Plus, we don&apos;t sell your data (unlike some competitors).
             </p>
           </div>

@@ -10,7 +10,7 @@ import { useToast } from '@/components/toast/ToastProvider';
  *
  * Displays aggressive growth pricing strategy:
  * - Free tier: 2 crypto wallets, unlimited manual entry
- * - Premium tier: $9.99/month or $99/year (17% savings)
+ * - Premium tier: $12.99/month or $99/year (36% savings)
  *   - Founding members: $79/year forever (first 1,000 users)
  * - Pro tier: ELIMINATED for simplicity
  *

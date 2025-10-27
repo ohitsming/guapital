@@ -16,6 +16,15 @@ const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
   const hasPremium = hasAccess('plaidSync');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
+  // Handler that ensures data check happens after a small delay to allow DB writes to complete
+  const handleDataAdded = async () => {
+    // Small delay to ensure database writes have propagated
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if (onDataAdded) {
+      await onDataAdded();
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-12">
       <div className="text-center mb-12">
@@ -44,7 +53,7 @@ const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
           </p>
           <div className="flex justify-center">
             {hasPremium ? (
-              <PlaidLinkButton onSuccess={onDataAdded} />
+              <PlaidLinkButton onSuccess={handleDataAdded} />
             ) : (
               <button
                 onClick={() => setIsPaymentModalOpen(true)}
@@ -100,7 +109,7 @@ const GetStartedView: React.FC<GetStartedViewProps> = ({ onDataAdded }) => {
             collectibles, or crypto wallets.
           </p>
           <div className="flex justify-center">
-            <AddAssetButton onAssetAdded={onDataAdded} />
+            <AddAssetButton onAssetAdded={handleDataAdded} />
           </div>
           <div className="mt-6 space-y-2 text-sm text-gray-500">
             <div className="flex items-center gap-2">

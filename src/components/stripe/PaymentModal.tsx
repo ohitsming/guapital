@@ -121,7 +121,7 @@ export function PaymentModal({ isOpen, onClose }: PaymentModalProps) {
       savings: slotsLoading
         ? 'Checking availability...'
         : remainingSlots && remainingSlots > 0
-        ? `Save $40.88 (34%) • Only ${remainingSlots} spots left!`
+        ? `Save $76.88 (49%) • Only ${remainingSlots} spots left!`
         : 'Sold Out',
       monthlyEquivalent: '$6.58/month • Locked in forever',
       highlighted: !slotsLoading && remainingSlots !== undefined && remainingSlots > 0,
@@ -134,17 +134,17 @@ export function PaymentModal({ isOpen, onClose }: PaymentModalProps) {
       period: 'per year',
       priceType: 'annual',
       badge: (!slotsLoading && remainingSlots === 0) ? 'Best Value' : undefined,
-      savings: 'Save $20.88 (17%)',
+      savings: 'Save $56.88 (36%)',
       monthlyEquivalent: '$8.25/month',
       highlighted: !slotsLoading && remainingSlots === 0,
     },
     {
       id: 'monthly',
       name: 'Monthly',
-      price: '$9.99',
+      price: '$12.99',
       period: 'per month',
       priceType: 'monthly',
-      monthlyEquivalent: '$9.99/month',
+      monthlyEquivalent: '$12.99/month',
     },
   ];
 
@@ -195,7 +195,7 @@ export function PaymentModal({ isOpen, onClose }: PaymentModalProps) {
                     🎉 Exclusive Founding Member Offer!
                   </p>
                   <p className="text-xs text-[#004D40]/80">
-                    Only {remainingSlots} of 1,000 spots left • $79/year locked in forever • 34% off regular annual pricing
+                    Only {remainingSlots} of 1,000 spots left • $79/year locked in forever • 49% off regular monthly pricing
                   </p>
                 </div>
                 <SparklesIcon className="h-6 w-6 text-[#004D40]" />

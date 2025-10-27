@@ -28,22 +28,29 @@ export async function POST(request: Request) {
     const { item_id, force = false } = await request.json();
 
     // PREMIUM FEATURE CHECK: Plaid syncing is Premium+ only
-    const { data: userSettings } = await supabase
-      .from('user_settings')
-      .select('subscription_tier')
-      .eq('user_id', user.id)
-      .single();
+    // DEVELOPMENT MODE: Skip check in development to enable all features
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
-    const tier = userSettings?.subscription_tier || 'free';
+    let tier = 'premium'; // Default for development
 
-    if (tier === 'free') {
-      return NextResponse.json(
-        {
-          error: 'Premium feature',
-          message: 'Plaid account syncing is only available for Premium subscribers. Upgrade to connect your bank accounts automatically.',
-        },
-        { status: 403 }
-      );
+    if (!isDevelopment) {
+      const { data: userSettings } = await supabase
+        .from('user_settings')
+        .select('subscription_tier')
+        .eq('user_id', user.id)
+        .single();
+
+      tier = userSettings?.subscription_tier || 'free';
+
+      if (tier === 'free') {
+        return NextResponse.json(
+          {
+            error: 'Premium feature',
+            message: 'Plaid account syncing is only available for Premium subscribers. Upgrade to connect your bank accounts automatically.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Get the plaid item from database

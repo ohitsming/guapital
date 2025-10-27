@@ -171,6 +171,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process assets
       if (assetsResult.status === 'fulfilled' && assetsResult.value.assets) {
+        console.log('📊 Manual assets loaded:', assetsResult.value.assets.length);
         setAssets(assetsResult.value.assets);
       } else if (assetsResult.status === 'rejected') {
         console.error('Error fetching assets:', assetsResult.reason);
@@ -178,6 +179,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process Plaid accounts
       if (plaidResult.status === 'fulfilled' && plaidResult.value.accounts) {
+        console.log('🏦 Plaid accounts loaded:', plaidResult.value.accounts.length, plaidResult.value.accounts);
         setPlaidAccounts(plaidResult.value.accounts);
       } else if (plaidResult.status === 'rejected') {
         console.error('Error fetching Plaid accounts:', plaidResult.reason);
@@ -185,6 +187,7 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process crypto wallets
       if (cryptoResult.status === 'fulfilled' && cryptoResult.value.wallets) {
+        console.log('💰 Crypto wallets loaded:', cryptoResult.value.wallets.length);
         setCryptoWallets(cryptoResult.value.wallets);
       } else if (cryptoResult.status === 'rejected') {
         console.error('Error fetching crypto wallets:', cryptoResult.reason);
@@ -505,11 +508,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
   const cryptoEntries = transformCryptoToUnified();
   const allEntries = [...plaidEntries, ...manualEntries, ...cryptoEntries];
 
-  // Don't render the section if there are no entries at all
-  if (allEntries.length === 0) {
-    return null;
-  }
-
   // Separate assets and liabilities first
   let assetEntries = allEntries.filter((a) => a.type === 'asset');
   let liabilityEntries = allEntries.filter((a) => a.type === 'liability');
@@ -617,6 +615,21 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
           />
         </div>
       </div>
+
+      {/* Empty State */}
+      {allEntries.length === 0 && (
+        <div className="text-center py-8 sm:py-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full mb-4">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No accounts yet</h3>
+          <p className="text-sm sm:text-base text-gray-600 mb-6 max-w-md mx-auto px-4">
+            Get started by connecting your bank account, adding a crypto wallet, or manually adding an asset or liability.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-4 sm:space-y-6">
         {/* Assets Section */}

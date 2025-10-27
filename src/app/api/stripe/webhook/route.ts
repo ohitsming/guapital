@@ -498,6 +498,27 @@ export async function POST(request: Request) {
           subscriptionId: subscription.id
         });
 
+        // Get user_id from subscription
+        const { data: userSettings } = await supabase
+          .from('user_settings')
+          .select('user_id')
+          .eq('stripe_subscription_id', subscription.id)
+          .single();
+
+        if (!userSettings) {
+          logger.error('User settings not found for subscription', {
+            requestId,
+            subscriptionId: subscription.id
+          });
+          return NextResponse.json(
+            { error: 'User settings not found' },
+            { status: 404 }
+          );
+        }
+
+        const userId = userSettings.user_id;
+
+        // Update subscription status
         const { error } = await supabase
           .from('user_settings')
           .update({
@@ -521,9 +542,37 @@ export async function POST(request: Request) {
           );
         }
 
-        logger.info('✅ Successfully cancelled subscription', {
+        // AUTO-CONVERT PLAID ACCOUNTS TO MANUAL
+        // When user downgrades from Premium to Free, automatically convert
+        // all Plaid accounts to manual assets to preserve tracking data
+        try {
+          logger.info('Converting Plaid accounts to manual for downgraded user', {
+            requestId,
+            userId
+          });
+
+          const { convertPlaidAccountsToManual } = await import('@/lib/plaid/convert-to-manual');
+          const conversionResult = await convertPlaidAccountsToManual(supabase, userId);
+
+          logger.info('✅ Successfully converted Plaid accounts to manual', {
+            requestId,
+            userId,
+            accountsConverted: conversionResult.accounts_converted,
+            itemsRemoved: conversionResult.items_removed
+          });
+        } catch (conversionError: any) {
+          // Log error but don't fail the webhook (non-critical)
+          logger.error('⚠️ Error during Plaid account conversion (non-critical)', {
+            requestId,
+            userId,
+            error: conversionError.message
+          });
+        }
+
+        logger.info('✅ Successfully cancelled subscription and converted Plaid accounts', {
           requestId,
-          subscriptionId: subscription.id
+          subscriptionId: subscription.id,
+          userId
         });
         break;
       }
