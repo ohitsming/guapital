@@ -6,6 +6,6 @@ echo "Running pre-commit checks..."
 # Run linter
 npm run lint 
 # Run tests
-# npm test 
+npm test 
 
 echo "✅ Pre-commit checks passed!"

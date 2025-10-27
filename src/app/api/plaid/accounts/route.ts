@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { getPlaidClient } from '@/lib/plaid/client';
 
 export async function GET(request: Request) {
   try {
@@ -100,6 +101,7 @@ export async function DELETE(request: Request) {
     // HARD DELETE: Call Plaid API to remove item (stops subscription charges)
     try {
       console.log(`🗑️ Calling Plaid itemRemove for institution: ${plaidItem.institution_name}`);
+      const plaidClient = getPlaidClient();
       await plaidClient.itemRemove({
         access_token: plaidItem.access_token,
       });
