@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import type { NetWorthCalculation, NetWorthBreakdown } from '@/lib/interfaces/networth';
+import { logger } from '@/utils/logger';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -44,7 +45,11 @@ export async function GET(request: Request) {
       .eq('is_active', true);
 
     if (plaidError) {
-      console.error('Error fetching Plaid accounts:', plaidError);
+      logger.error('Error fetching Plaid accounts', {
+        userId: user.id,
+        error: plaidError.message,
+        code: plaidError.code,
+      });
     }
 
     // Process Plaid accounts
@@ -77,7 +82,11 @@ export async function GET(request: Request) {
       .eq('user_id', user.id);
 
     if (cryptoError) {
-      console.error('Error fetching crypto holdings:', cryptoError);
+      logger.error('Error fetching crypto holdings', {
+        userId: user.id,
+        error: cryptoError.message,
+        code: cryptoError.code,
+      });
     }
 
     // Process crypto holdings
@@ -92,7 +101,11 @@ export async function GET(request: Request) {
       .eq('user_id', user.id);
 
     if (assetsError) {
-      console.error('Error fetching manual assets:', assetsError);
+      logger.error('Error fetching manual assets', {
+        userId: user.id,
+        error: assetsError.message,
+        code: assetsError.code,
+      });
     }
 
     // Process manual assets
@@ -165,7 +178,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
-    console.error('Error in GET /api/networth:', error);
+    logger.error('Error calculating net worth', error, {
+      route: '/api/networth',
+      userId: user?.id,
+    });
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }

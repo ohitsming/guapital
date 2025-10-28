@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import {
   MagnifyingGlassIcon,
-  ArrowPathIcon,
   FunnelIcon,
   ArrowDownTrayIcon,
   CheckCircleIcon,
@@ -71,19 +70,6 @@ export function TransactionsPageContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAccess])
-
-  const handleRefresh = async () => {
-    // First sync transactions
-    setIsLoading(true)
-    try {
-      await fetch('/api/plaid/sync-transactions', { method: 'POST' })
-      // Then fetch them
-      await fetchTransactions()
-    } catch (err) {
-      console.error('Error syncing transactions:', err)
-      setIsLoading(false)
-    }
-  }
 
   // Filter transactions
   let filteredTransactions = transactions
@@ -324,30 +310,16 @@ export function TransactionsPageContent() {
       {/* Filters and Actions */}
       <div className="bg-white rounded-xl p-6 shadow-md border-2 border-gray-200 mb-6">
         <div className="flex flex-col gap-4">
-          {/* Search and Actions Row */}
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search transactions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2"
-                title="Sync transactions"
-              >
-                <ArrowPathIcon className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-                Sync
-              </button>
-            </div>
+          {/* Search Row */}
+          <div className="relative flex-1 max-w-md">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+            />
           </div>
 
           {/* Filters Row */}
@@ -399,15 +371,9 @@ export function TransactionsPageContent() {
             ) : (
               <>
                 <p className="text-lg font-semibold text-gray-900 mb-2">No Transactions Yet</p>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600">
                   Connect a bank account via Plaid to automatically sync your transactions.
                 </p>
-                <button
-                  onClick={handleRefresh}
-                  className="px-6 py-3 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors"
-                >
-                  Sync Transactions
-                </button>
               </>
             )}
           </div>
@@ -418,9 +384,7 @@ export function TransactionsPageContent() {
             {filteredTransactions.map((txn) => (
               <div
                 key={txn.id}
-                className={`flex items-center justify-between p-4 border-2 rounded-xl hover:shadow-md transition-all ${
-                  txn.pending ? 'border-yellow-200 bg-yellow-50/50' : 'border-gray-100 hover:border-gray-200'
-                }`}
+                className="flex items-center justify-between p-4 border-2 border-gray-100 hover:border-gray-200 rounded-xl hover:shadow-md transition-all"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 flex-wrap mb-1">

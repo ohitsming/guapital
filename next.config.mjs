@@ -10,16 +10,16 @@ import { remarkRehypeWrap } from 'remark-rehype-wrap'
 import remarkUnwrapImages from 'remark-unwrap-images'
 import shiki from 'shiki'
 import { unifiedConditional } from 'unified-conditional'
-// import { withSentryConfig } from '@sentry/nextjs' // Disabled for now - using instrumentation hook only
+import { withSentryConfig } from '@sentry/nextjs'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
 
-  // Enable instrumentation for Sentry (disabled for development)
-  // experimental: {
-  //   instrumentationHook: true,
-  // },
+  // Enable instrumentation for Sentry
+  experimental: {
+    instrumentationHook: true,
+  },
 
   images: {
     remotePatterns: [
@@ -180,8 +180,48 @@ export default async function config() {
     },
   })
 
-  // Return final config
-  // Note: Sentry error tracking still works via instrumentation.ts and instrumentation-client.ts
-  // We just don't use withSentryConfig wrapper to avoid webpack issues in development
-  return withMDX(nextConfig)
+  // Wrap with MDX first
+  const configWithMDX = withMDX(nextConfig)
+
+  // Then wrap with Sentry (enable in both dev and production)
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  return withSentryConfig(
+    configWithMDX,
+    {
+      // For all available options, see:
+      // https://github.com/getsentry/sentry-webpack-plugin#options
+
+      // Suppresses source map uploading logs during build
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+
+      // Disable source map upload in development
+      disableClientWebpackPlugin: !isProduction,
+      disableServerWebpackPlugin: !isProduction,
+    },
+    {
+      // For all available options, see:
+      // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+      // Upload a larger set of source maps for prettier stack traces (increases build time)
+      widenClientFileUpload: true,
+
+      // Transpiles SDK to be compatible with IE11 (increases bundle size)
+      transpileClientSDK: false,
+
+      // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
+      tunnelRoute: "/monitoring",
+
+      // Hides source maps from generated client bundles
+      hideSourceMaps: true,
+
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      disableLogger: true,
+
+      // Enables automatic instrumentation of Vercel Cron Monitors.
+      automaticVercelMonitors: false,
+    }
+  )
 }

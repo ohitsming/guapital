@@ -192,6 +192,7 @@ export async function removeTransactions(supabase: any, removedTransactionIds: s
 
 /**
  * Log webhook event for debugging/auditing
+ * Returns the log ID if successful, null otherwise
  */
 export async function logWebhookEvent(
   supabase: any,
@@ -199,17 +200,137 @@ export async function logWebhookEvent(
   webhookCode: string,
   itemId: string,
   payload: any
-) {
+): Promise<string | null> {
   try {
-    await supabase.from('webhook_event_log').insert({
-      webhook_type: webhookType,
-      webhook_code: webhookCode,
-      item_id: itemId,
-      payload,
-      received_at: new Date().toISOString(),
-    });
+    const { data, error } = await supabase
+      .from('webhook_event_log')
+      .insert({
+        webhook_type: webhookType,
+        webhook_code: webhookCode,
+        item_id: itemId,
+        payload,
+        event_id: payload.webhook_id || null,
+        received_at: new Date().toISOString(),
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('⚠️ Failed to log webhook event:', error);
+      return null;
+    }
+
+    return data?.id || null;
   } catch (error) {
     // Don't fail webhook processing if logging fails
     console.error('⚠️ Failed to log webhook event:', error);
+    return null;
+  }
+}
+
+/**
+ * Check if a webhook has already been processed (idempotency check)
+ * Returns the existing log entry if found
+ */
+export async function checkWebhookDuplicate(
+  supabase: any,
+  webhookType: string,
+  webhookCode: string,
+  itemId: string,
+  eventId?: string
+): Promise<{ isDuplicate: boolean; existingLog?: any }> {
+  try {
+    // If we have an event_id from the webhook provider, use that for exact match
+    if (eventId) {
+      const { data, error } = await supabase
+        .from('webhook_event_log')
+        .select('id, status, processed_at')
+        .eq('event_id', eventId)
+        .maybeSingle();
+
+      if (!error && data) {
+        return { isDuplicate: true, existingLog: data };
+      }
+    }
+
+    // Otherwise check for recent duplicate (within last 5 minutes)
+    // This prevents processing the same webhook_type+code+item_id multiple times
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from('webhook_event_log')
+      .select('id, status, processed_at')
+      .eq('webhook_type', webhookType)
+      .eq('webhook_code', webhookCode)
+      .eq('item_id', itemId)
+      .eq('status', 'completed')
+      .gte('received_at', fiveMinutesAgo)
+      .order('received_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) {
+      return { isDuplicate: true, existingLog: data };
+    }
+
+    return { isDuplicate: false };
+  } catch (error) {
+    console.error('⚠️ Error checking webhook duplicate:', error);
+    // If we can't check, assume it's not a duplicate (fail open)
+    return { isDuplicate: false };
+  }
+}
+
+/**
+ * Mark webhook as processing
+ */
+export async function markWebhookProcessing(supabase: any, logId: string) {
+  try {
+    await supabase
+      .from('webhook_event_log')
+      .update({ status: 'processing' })
+      .eq('id', logId);
+  } catch (error) {
+    console.error('⚠️ Failed to mark webhook as processing:', error);
+  }
+}
+
+/**
+ * Mark webhook as completed
+ */
+export async function markWebhookCompleted(supabase: any, logId: string) {
+  try {
+    await supabase
+      .from('webhook_event_log')
+      .update({
+        status: 'completed',
+        processed_at: new Date().toISOString(),
+      })
+      .eq('id', logId);
+  } catch (error) {
+    console.error('⚠️ Failed to mark webhook as completed:', error);
+  }
+}
+
+/**
+ * Mark webhook as failed with error message
+ */
+export async function markWebhookFailed(
+  supabase: any,
+  logId: string,
+  errorMessage: string
+) {
+  try {
+    await supabase
+      .from('webhook_event_log')
+      .update({
+        status: 'failed',
+        error_message: errorMessage,
+        processed_at: new Date().toISOString(),
+      })
+      .eq('id', logId);
+  } catch (error) {
+    console.error('⚠️ Failed to mark webhook as failed:', error);
   }
 }

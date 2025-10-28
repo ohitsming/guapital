@@ -6,14 +6,15 @@
  *
  * Categories:
  * - auth: Strict rate limit for login/signup (5 req / 15 min)
- * - api: Moderate limit for general APIs (100 req / 1 min)
+ * - api: Moderate limit for general APIs (300 req / 1 min)
  * - expensive: Very strict for Plaid/crypto sync (10 req / 1 hour)
+ * - support: Moderate limit for support requests (5 req / 1 min)
  */
 
 import { createClient } from '@supabase/supabase-js';
 
 // Rate limit category type
-export type RateLimitCategory = 'auth' | 'api' | 'expensive';
+export type RateLimitCategory = 'auth' | 'api' | 'expensive' | 'support';
 
 // Rate limit configuration
 interface RateLimitConfig {
@@ -38,6 +39,11 @@ export const RATE_LIMIT_CONFIGS: Record<RateLimitCategory, RateLimitConfig> = {
     maxRequests: 10,
     windowSeconds: 3600, // 1 hour
     windowDisplay: '1 hour',
+  },
+  support: {
+    maxRequests: 5,
+    windowSeconds: 60, // 1 minute
+    windowDisplay: '1 minute',
   },
 };
 

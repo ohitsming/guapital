@@ -1,4 +1,5 @@
 import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
+import { logger } from '@/utils/logger';
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
@@ -19,7 +20,10 @@ const plaidClient = new PlaidApi(configuration);
  * 2. Stripe webhook (automatic on downgrade)
  */
 export async function convertPlaidAccountsToManual(supabase: any, userId: string) {
-  console.log(`🔄 Converting Plaid accounts to manual for user ${userId}`);
+  logger.info('Starting Plaid to manual conversion', {
+    userId,
+    action: 'convert_plaid_to_manual_start'
+  });
 
   // Fetch all active Plaid accounts
   const { data: plaidAccounts, error: fetchError } = await supabase
@@ -37,12 +41,18 @@ export async function convertPlaidAccountsToManual(supabase: any, userId: string
     .eq('is_active', true);
 
   if (fetchError) {
-    console.error('Error fetching Plaid accounts:', fetchError);
+    logger.error('Failed to fetch Plaid accounts for conversion', fetchError, {
+      userId,
+      action: 'convert_fetch_accounts_error'
+    });
     throw new Error(`Failed to fetch Plaid accounts: ${fetchError.message}`);
   }
 
   if (!plaidAccounts || plaidAccounts.length === 0) {
-    console.log('No active Plaid accounts found for user');
+    logger.info('No active Plaid accounts found for user', {
+      userId,
+      action: 'convert_no_accounts_found'
+    });
     return {
       success: true,
       accounts_converted: 0,
@@ -51,7 +61,11 @@ export async function convertPlaidAccountsToManual(supabase: any, userId: string
     };
   }
 
-  console.log(`Found ${plaidAccounts.length} Plaid accounts to convert`);
+  logger.info('Found Plaid accounts to convert', {
+    userId,
+    accountCount: plaidAccounts.length,
+    action: 'convert_accounts_found'
+  });
 
   const convertedAssets: any[] = [];
   const plaidItemsToRemove = new Map<string, any>();
@@ -104,7 +118,12 @@ export async function convertPlaidAccountsToManual(supabase: any, userId: string
       .single();
 
     if (insertError) {
-      console.error('Error creating manual asset:', insertError);
+      logger.error('Failed to create manual asset during conversion', insertError, {
+        userId,
+        accountId: account.id,
+        accountName: account.account_name,
+        action: 'convert_create_manual_asset_error'
+      });
       continue;
     }
 
@@ -120,20 +139,42 @@ export async function convertPlaidAccountsToManual(supabase: any, userId: string
       })
       .eq('id', account.id);
 
-    console.log(`✅ Converted ${account.account_name} to manual asset`);
+    logger.info('Successfully converted Plaid account to manual asset', {
+      userId,
+      plaidAccountId: account.id,
+      plaidAccountName: account.account_name,
+      manualAssetId: manualAsset.id,
+      action: 'convert_account_success'
+    });
   }
 
   // Remove Plaid items to stop subscription charges
   let itemsRemoved = 0;
-  for (const [itemId, plaidItem] of plaidItemsToRemove) {
+  for (const [, plaidItem] of plaidItemsToRemove) {
     try {
-      console.log(`🗑️ Removing Plaid item: ${plaidItem.institution_name}`);
+      logger.info('Attempting to remove Plaid item', {
+        userId,
+        plaidItemId: plaidItem.id,
+        itemId: plaidItem.item_id,
+        institutionName: plaidItem.institution_name,
+        action: 'plaid_item_remove_attempt'
+      });
+
+      // Call Plaid API to remove item (stops billing)
       await plaidClient.itemRemove({
         access_token: plaidItem.access_token,
       });
 
+      logger.info('Successfully called Plaid itemRemove API', {
+        userId,
+        plaidItemId: plaidItem.id,
+        itemId: plaidItem.item_id,
+        institutionName: plaidItem.institution_name,
+        action: 'plaid_api_remove_success'
+      });
+
       // Mark item as removed in database
-      await supabase
+      const { error: updateError } = await supabase
         .from('plaid_items')
         .update({
           sync_status: 'removed',
@@ -141,14 +182,45 @@ export async function convertPlaidAccountsToManual(supabase: any, userId: string
         })
         .eq('id', plaidItem.id);
 
+      if (updateError) {
+        logger.error('Failed to update Plaid item status to removed', updateError, {
+          userId,
+          plaidItemId: plaidItem.id,
+          institutionName: plaidItem.institution_name,
+          action: 'plaid_db_update_error'
+        });
+      } else {
+        logger.info('Plaid item marked as removed in database', {
+          userId,
+          plaidItemId: plaidItem.id,
+          itemId: plaidItem.item_id,
+          institutionName: plaidItem.institution_name,
+          action: 'plaid_db_update_success'
+        });
+      }
+
       itemsRemoved++;
-      console.log(`✅ Removed Plaid item: ${plaidItem.institution_name}`);
     } catch (plaidError: any) {
-      console.error(`⚠️ Failed to remove Plaid item ${plaidItem.institution_name}:`, plaidError.message);
+      logger.error('Failed to remove Plaid item via API', plaidError, {
+        userId,
+        plaidItemId: plaidItem.id,
+        itemId: plaidItem.item_id,
+        institutionName: plaidItem.institution_name,
+        errorMessage: plaidError.message,
+        errorCode: plaidError.error_code,
+        action: 'plaid_item_remove_failure'
+      });
     }
   }
 
-  console.log(`✅ Conversion complete: ${convertedAssets.length} accounts converted, ${itemsRemoved} Plaid items removed`);
+  logger.info('Plaid to manual conversion completed', {
+    userId,
+    accountsConverted: convertedAssets.length,
+    itemsRemoved,
+    totalItemsAttempted: plaidItemsToRemove.size,
+    action: 'convert_plaid_to_manual_complete',
+    success: true
+  });
 
   return {
     success: true,

@@ -5,7 +5,12 @@ import {
   syncTransactionsForItem,
   removeTransactions,
   logWebhookEvent,
+  checkWebhookDuplicate,
+  markWebhookProcessing,
+  markWebhookCompleted,
+  markWebhookFailed,
 } from '@/lib/plaid/webhook-sync';
+import { logger } from '@/utils/logger';
 
 /**
  * Plaid Webhook Handler
@@ -21,19 +26,23 @@ import {
  * Cost savings: $3,540/month at 5K users
  */
 export async function POST(request: Request) {
+  let webhookLogId: string | null = null;
+  let supabase: any = null;
+
   try {
     const body = await request.json();
-    const { webhook_type, webhook_code, item_id, error } = body;
+    const { webhook_type, webhook_code, item_id, error, webhook_id } = body;
 
-    console.log('📥 Plaid Webhook Received:', {
+    logger.info('Plaid Webhook Received', {
       webhook_type,
       webhook_code,
       item_id,
+      webhook_id,
       timestamp: new Date().toISOString(),
     });
 
-    // Use service role to bypass RLS for background processing
-    const supabase = createSupabaseClient(
+    // CRITICAL: Use service role to bypass RLS for background processing
+    supabase = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
@@ -44,8 +53,51 @@ export async function POST(request: Request) {
       }
     );
 
-    // Log webhook event for debugging/auditing
-    await logWebhookEvent(supabase, webhook_type, webhook_code, item_id, body);
+    // CRITICAL: Check for duplicate webhooks (idempotency)
+    const duplicateCheck = await checkWebhookDuplicate(
+      supabase,
+      webhook_type,
+      webhook_code,
+      item_id,
+      webhook_id
+    );
+
+    if (duplicateCheck.isDuplicate) {
+      logger.info('Duplicate webhook detected, skipping processing', {
+        webhook_type,
+        webhook_code,
+        item_id,
+        webhook_id,
+        existingLog: duplicateCheck.existingLog,
+      });
+      // Return 200 for duplicates (already processed successfully)
+      return NextResponse.json(
+        { received: true, duplicate: true },
+        { status: 200 }
+      );
+    }
+
+    // CRITICAL: Log webhook event for debugging/auditing
+    webhookLogId = await logWebhookEvent(
+      supabase,
+      webhook_type,
+      webhook_code,
+      item_id,
+      body
+    );
+
+    if (!webhookLogId) {
+      logger.warn('Failed to create webhook log entry (non-critical)', {
+        webhook_type,
+        webhook_code,
+        item_id,
+      });
+    }
+
+    // Mark webhook as processing
+    if (webhookLogId) {
+      await markWebhookProcessing(supabase, webhookLogId);
+    }
 
     // Handle different webhook types
     switch (webhook_type) {
@@ -58,19 +110,57 @@ export async function POST(request: Request) {
         break;
 
       case 'AUTH':
-        console.log('Auth webhook received:', webhook_code);
+        logger.info('Auth webhook received', { webhook_code, item_id });
         break;
 
       default:
-        console.log(`Unhandled webhook type: ${webhook_type}`);
+        logger.info(`Unhandled webhook type: ${webhook_type}`, {
+          webhook_type,
+          webhook_code,
+          item_id,
+        });
     }
 
-    // Always return 200 to acknowledge receipt (prevents Plaid from retrying)
+    // Mark webhook as completed
+    if (webhookLogId) {
+      await markWebhookCompleted(supabase, webhookLogId);
+    }
+
+    logger.info('Webhook processed successfully', {
+      webhook_type,
+      webhook_code,
+      item_id,
+      webhook_id,
+    });
+
+    // ONLY return 200 on successful processing
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
-    console.error('❌ Error processing Plaid webhook:', error);
-    // Still return 200 to prevent Plaid from retrying indefinitely
-    return NextResponse.json({ error: error.message }, { status: 200 });
+    logger.error('Error processing Plaid webhook', error, {
+      route: '/api/plaid/webhook',
+      errorMessage: error.message,
+      stack: error.stack,
+    });
+
+    // Mark webhook as failed
+    if (webhookLogId && supabase) {
+      await markWebhookFailed(
+        supabase,
+        webhookLogId,
+        error.message || 'Unknown error'
+      );
+    }
+
+    // CRITICAL: Return 500 to trigger Plaid retry
+    // This ensures we don't lose data if there's a temporary failure
+    return NextResponse.json(
+      {
+        error: 'Webhook processing failed',
+        message: error.message,
+        retry: true,
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -85,62 +175,110 @@ async function handleTransactionWebhook(
 ) {
   switch (code) {
     case 'INITIAL_UPDATE':
-      console.log(`✅ Initial transaction update for item ${itemId}`);
+      logger.info(`CRITICAL: Initial transaction update for item ${itemId}`);
       // Initial transaction pull is complete - sync recent transactions
       try {
+        logger.info('Syncing initial transactions and balances', {
+          itemId,
+          days: 90,
+        });
+
         await syncTransactionsForItem(supabase, itemId, 90); // Last 90 days
         await syncAccountBalances(supabase, itemId);
 
-        await supabase
+        const { error: updateError } = await supabase
           .from('plaid_items')
           .update({
             sync_status: 'active',
             last_sync_at: new Date().toISOString(),
           })
           .eq('item_id', itemId);
-      } catch (error) {
-        console.error('Error in INITIAL_UPDATE:', error);
+
+        if (updateError) {
+          logger.error('Error updating plaid_item status', {
+            itemId,
+            error: updateError.message,
+            code: updateError.code,
+          });
+        } else {
+          logger.info('Initial sync complete', { itemId });
+        }
+      } catch (error: any) {
+        logger.error('CRITICAL: Error in INITIAL_UPDATE', error, { itemId });
       }
       break;
 
     case 'HISTORICAL_UPDATE':
-      console.log(`📜 Historical transaction update for item ${itemId}`);
+      logger.info(`CRITICAL: Historical transaction update for item ${itemId}`);
       // Historical transactions (last 2 years) are now available
       try {
+        logger.info('Syncing historical transactions', {
+          itemId,
+          days: 730,
+        });
+
         await syncTransactionsForItem(supabase, itemId, 730); // 2 years
-      } catch (error) {
-        console.error('Error in HISTORICAL_UPDATE:', error);
+
+        logger.info('Historical sync complete', { itemId });
+      } catch (error: any) {
+        logger.error('CRITICAL: Error in HISTORICAL_UPDATE', error, { itemId });
       }
       break;
 
     case 'DEFAULT_UPDATE':
-      console.log(`🔄 New transactions available for item ${itemId}`);
-      // This is the KEY webhook that replaces manual refresh calls
+      logger.info(`CRITICAL: New transactions available for item ${itemId}`);
+      // This is the KEY webhook that replaces manual refresh calls (70% cost reduction)
       // New transactions are available - sync them automatically
       try {
+        logger.info('Syncing new transactions and balances', {
+          itemId,
+          days: 30,
+          reason: 'DEFAULT_UPDATE webhook (cost-optimized)',
+        });
+
         await syncTransactionsForItem(supabase, itemId, 30); // Last 30 days
         await syncAccountBalances(supabase, itemId); // Also update balances
-      } catch (error) {
-        console.error('Error in DEFAULT_UPDATE:', error);
+
+        logger.info('Default sync complete', { itemId });
+      } catch (error: any) {
+        logger.error('CRITICAL: Error in DEFAULT_UPDATE', error, { itemId });
       }
       break;
 
     case 'TRANSACTIONS_REMOVED':
-      console.log(`🗑️ Transactions removed for item ${itemId}`);
+      logger.info(`CRITICAL: Transactions removed for item ${itemId}`, {
+        count: body.removed_transactions?.length || 0,
+      });
       const removedTransactionIds = body.removed_transactions || [];
 
-      // Delete removed transactions from database
+      // CRITICAL: Delete removed transactions from database
       if (removedTransactionIds.length > 0) {
         try {
+          logger.info('Removing transactions from database', {
+            itemId,
+            transactionCount: removedTransactionIds.length,
+          });
+
           await removeTransactions(supabase, removedTransactionIds);
-        } catch (error) {
-          console.error('Error removing transactions:', error);
+
+          logger.info('Transactions removed successfully', {
+            itemId,
+            count: removedTransactionIds.length,
+          });
+        } catch (error: any) {
+          logger.error('CRITICAL: Error removing transactions', error, {
+            itemId,
+            transactionCount: removedTransactionIds.length,
+          });
         }
       }
       break;
 
     default:
-      console.log(`Unhandled transaction webhook code: ${code}`);
+      logger.info(`Unhandled transaction webhook code: ${code}`, {
+        code,
+        itemId,
+      });
   }
 }
 
@@ -156,10 +294,15 @@ async function handleItemWebhook(
 ) {
   switch (code) {
     case 'ERROR':
-      console.error(`❌ Item error for ${itemId}:`, error);
+      logger.error(`CRITICAL: Item error for ${itemId}`, {
+        itemId,
+        errorCode: error?.error_code,
+        errorMessage: error?.error_message,
+        errorType: error?.error_type,
+      });
 
-      // Update item status in database
-      await supabase
+      // CRITICAL: Update item status in database
+      const { error: updateError } = await supabase
         .from('plaid_items')
         .update({
           sync_status: 'error',
@@ -168,6 +311,13 @@ async function handleItemWebhook(
         })
         .eq('item_id', itemId);
 
+      if (updateError) {
+        logger.error('Failed to update item error status', {
+          itemId,
+          error: updateError.message,
+        });
+      }
+
       // Common errors:
       // - ITEM_LOGIN_REQUIRED: User needs to re-authenticate
       // - INVALID_CREDENTIALS: Credentials no longer valid
@@ -175,9 +325,12 @@ async function handleItemWebhook(
       break;
 
     case 'PENDING_EXPIRATION':
-      console.warn(`⚠️ Item ${itemId} will expire soon`);
+      logger.warn(`CRITICAL: Item ${itemId} will expire soon`, {
+        itemId,
+        action_required: 'User needs to reconnect',
+      });
 
-      await supabase
+      const { error: expirationError } = await supabase
         .from('plaid_items')
         .update({
           sync_status: 'pending_expiration',
@@ -186,14 +339,23 @@ async function handleItemWebhook(
         })
         .eq('item_id', itemId);
 
+      if (expirationError) {
+        logger.error('Failed to update pending expiration status', {
+          itemId,
+          error: expirationError.message,
+        });
+      }
+
       // Notify user to reconnect their account before it expires
       // You can send an email or show a banner in the dashboard
       break;
 
     case 'USER_PERMISSION_REVOKED':
-      console.warn(`🚫 User revoked permission for item ${itemId}`);
+      logger.warn(`CRITICAL: User revoked permission for item ${itemId}`, {
+        itemId,
+      });
 
-      await supabase
+      const { error: revokeError } = await supabase
         .from('plaid_items')
         .update({
           sync_status: 'disconnected',
@@ -202,19 +364,40 @@ async function handleItemWebhook(
         })
         .eq('item_id', itemId);
 
-      // Mark all associated accounts as inactive
-      await supabase
+      if (revokeError) {
+        logger.error('Failed to update revoked item status', {
+          itemId,
+          error: revokeError.message,
+        });
+      }
+
+      // CRITICAL: Mark all associated accounts as inactive
+      const { error: accountsError } = await supabase
         .from('plaid_accounts')
         .update({ is_active: false })
         .eq('plaid_item_id', itemId);
+
+      if (accountsError) {
+        logger.error('Failed to deactivate accounts for revoked item', {
+          itemId,
+          error: accountsError.message,
+        });
+      } else {
+        logger.info('Deactivated accounts for revoked item', { itemId });
+      }
       break;
 
     case 'WEBHOOK_UPDATE_ACKNOWLEDGED':
-      console.log(`✅ Webhook URL update acknowledged for item ${itemId}`);
+      logger.info(`Webhook URL update acknowledged for item ${itemId}`, {
+        itemId,
+      });
       break;
 
     default:
-      console.log(`Unhandled item webhook code: ${code}`);
+      logger.info(`Unhandled item webhook code: ${code}`, {
+        code,
+        itemId,
+      });
   }
 }
 

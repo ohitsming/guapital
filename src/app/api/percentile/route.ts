@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/utils/logger';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -38,7 +39,11 @@ export async function GET(request: Request) {
 
         if (demoError && demoError.code !== 'PGRST116') {
             // PGRST116 = no rows returned, which is OK for new users
-            console.error('Error fetching user demographics:', demoError);
+            logger.error('Error fetching user demographics', {
+                userId: user.id,
+                error: demoError.message,
+                code: demoError.code,
+            });
             return NextResponse.json({ error: 'Failed to fetch user demographics' }, { status: 500 });
         }
 
@@ -60,7 +65,12 @@ export async function GET(request: Request) {
         });
 
         if (snapshotError) {
-            console.error('Error creating/updating snapshot:', snapshotError);
+            logger.error('Error creating/updating percentile snapshot', {
+                userId: user.id,
+                date: today,
+                error: snapshotError.message,
+                code: snapshotError.code,
+            });
         }
 
         // Call the hybrid percentile calculation function
@@ -71,7 +81,12 @@ export async function GET(request: Request) {
             });
 
         if (calcError) {
-            console.error('Error calculating percentile:', calcError);
+            logger.error('Error calculating percentile', {
+                userId: user.id,
+                ageBracket: demographics.age_bracket,
+                error: calcError.message,
+                code: calcError.code,
+            });
             return NextResponse.json({ error: 'Failed to calculate percentile' }, { status: 500 });
         }
 
@@ -179,7 +194,10 @@ export async function GET(request: Request) {
         }, { status: 200 });
 
     } catch (error: any) {
-        console.error('Error in GET /api/percentile:', error);
+        logger.error('Error getting percentile data', error, {
+            route: '/api/percentile',
+            userId: user?.id,
+        });
         return NextResponse.json(
             { error: 'Internal server error', details: error.message },
             { status: 500 }

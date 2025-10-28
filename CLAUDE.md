@@ -233,6 +233,8 @@ Monarch has feature parity: net worth dashboard, Plaid, crypto, transactions, hi
 
 **Always prioritize:** Reliability, mobile-first, speed, beautiful UX, privacy/security
 
+**Code style:** Do not use emojis in code (log messages, comments, etc.). Keep code professional and clean.
+
 **Decision framework:** Does this help track net worth / reduce friction / increase viral sharing / ship in <2 weeks? If no → Don't build yet.
 
 **Scope creep red flags (Phase 2+):**

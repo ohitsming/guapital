@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import axios from 'axios';
+import { logger } from '@/utils/logger';
 
 // Alchemy API endpoint builder
 const getAlchemyEndpoint = (blockchain: string) => {
@@ -42,8 +43,8 @@ const getTokenPrices = async (tokenIds: string[]): Promise<Record<string, number
       prices[id] = data.usd || 0;
     });
     return prices;
-  } catch (error) {
-    console.error('Error fetching token prices:', error);
+  } catch (error: any) {
+    logger.warn('Error fetching token prices', { error: error.message });
     return {};
   }
 };
@@ -67,10 +68,12 @@ export async function POST(request: Request) {
 
     // Debug: Check if API key exists
     if (!process.env.ALCHEMY_API_KEY) {
-      console.error('ALCHEMY_API_KEY is not set in environment variables');
+      logger.error('ALCHEMY_API_KEY is not set in environment variables', {
+        userId: user.id,
+        walletId: wallet_id,
+      });
       return NextResponse.json({ error: 'Alchemy API key not configured' }, { status: 500 });
     }
-    console.log('Alchemy API Key exists:', process.env.ALCHEMY_API_KEY?.substring(0, 5) + '...');
 
     // Get wallet details
     const { data: wallet, error: walletError } = await supabase
@@ -170,8 +173,13 @@ export async function POST(request: Request) {
             usd_price: 0, // Would need additional API call to get price
             usd_value: 0,
           });
-        } catch (metadataError) {
-          console.error('Error fetching token metadata:', metadataError);
+        } catch (metadataError: any) {
+          logger.warn('Error fetching token metadata', {
+            userId: user.id,
+            walletId: wallet.id,
+            tokenAddress: token.contractAddress,
+            error: metadataError.message,
+          });
         }
       }
 
@@ -190,9 +198,12 @@ export async function POST(request: Request) {
           .insert(holdings);
 
         if (holdingsError) {
-          console.error('Error inserting holdings:', holdingsError);
-        } else {
-          console.log('Successfully inserted holdings');
+          logger.error('Error inserting crypto holdings', {
+            userId: user.id,
+            walletId: wallet.id,
+            error: holdingsError.message,
+            code: holdingsError.code,
+          });
         }
       }
 
@@ -212,7 +223,12 @@ export async function POST(request: Request) {
         total_value_usd: holdings.reduce((sum, h) => sum + h.usd_value, 0),
       });
     } catch (alchemyError: any) {
-      console.error('Alchemy API error:', alchemyError);
+      logger.error('Alchemy API error', alchemyError, {
+        userId: user.id,
+        walletId: wallet.id,
+        blockchain: wallet.blockchain,
+        walletAddress: wallet.wallet_address,
+      });
 
       // Update wallet with error status
       await supabase
@@ -226,7 +242,10 @@ export async function POST(request: Request) {
       throw alchemyError;
     }
   } catch (error: any) {
-    console.error('Error syncing wallet:', error);
+    logger.error('Error syncing crypto wallet', error, {
+      userId: user?.id,
+      route: '/api/crypto/sync-wallet',
+    });
     return NextResponse.json(
       { error: 'Failed to sync wallet', details: error.message },
       { status: 500 }

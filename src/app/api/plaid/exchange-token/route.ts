@@ -3,13 +3,18 @@ import { createClient } from '@/utils/supabase/server';
 import { PlaidItem } from '@/lib/interfaces/plaid';
 import { subDays, format } from 'date-fns';
 import { getPlaidClient } from '@/lib/plaid/client';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
+  let user: any = null;
+
   try {
     const supabase = createClient();
     const {
-      data: { user },
+      data: { user: authUser },
     } = await supabase.auth.getUser();
+
+    user = authUser;
 
     if (!user) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
@@ -96,7 +101,13 @@ export async function POST(request: Request) {
         .single();
 
       if (updateError) {
-        console.error('Error updating plaid item:', updateError);
+        logger.error('Error updating plaid item', {
+          userId: user.id,
+          itemId: existingItem.id,
+          institutionId: institutionId,
+          error: updateError.message,
+          code: updateError.code,
+        });
         return NextResponse.json(
           { error: 'Failed to update plaid item', details: updateError.message },
           { status: 500 }
@@ -127,7 +138,13 @@ export async function POST(request: Request) {
         .single();
 
       if (insertError) {
-        console.error('Error inserting plaid item:', insertError);
+        logger.error('Error inserting plaid item', {
+          userId: user.id,
+          institutionId: institutionId,
+          institutionName: institutionName,
+          error: insertError.message,
+          code: insertError.code,
+        });
         return NextResponse.json(
           { error: 'Failed to insert plaid item', details: insertError.message },
           { status: 500 }
@@ -138,7 +155,10 @@ export async function POST(request: Request) {
     }
 
     if (!plaidItem) {
-      console.error('Error storing plaid item: plaidItem is null');
+      logger.error('Error storing plaid item: plaidItem is null', {
+        userId: user.id,
+        institutionId: institutionId,
+      });
       return NextResponse.json(
         { error: 'Failed to store plaid item' },
         { status: 500 }
@@ -171,7 +191,13 @@ export async function POST(request: Request) {
       .insert(accountsToInsert);
 
     if (accountsError) {
-      console.error('Error storing accounts:', accountsError);
+      logger.error('Error storing Plaid accounts', {
+        userId: user.id,
+        plaidItemId: plaidItem.id,
+        accountsCount: accountsToInsert.length,
+        error: accountsError.message,
+        code: accountsError.code,
+      });
       return NextResponse.json(
         { error: 'Failed to store accounts', details: accountsError.message },
         { status: 500 }
@@ -237,16 +263,24 @@ export async function POST(request: Request) {
           if (!txnError) {
             totalInserted += batch.length;
           } else {
-            console.error('Error inserting transaction batch:', txnError);
+            logger.error('Error inserting Plaid transaction batch', {
+              userId: user.id,
+              plaidItemId: plaidItem.id,
+              batchSize: batch.length,
+              error: txnError.message,
+              code: txnError.code,
+            });
           }
         }
-
-        console.log(`✅ Initial transaction sync complete: ${totalInserted} transactions synced`);
       }
-    } catch (syncError) {
+    } catch (syncError: any) {
       // Don't fail the whole request if transaction sync fails
       // User can manually sync later from the UI
-      console.error('⚠️ Warning: Initial transaction sync failed (non-critical):', syncError);
+      logger.warn('Initial transaction sync failed (non-critical)', {
+        userId: user.id,
+        plaidItemId: plaidItem.id,
+        error: syncError.message,
+      });
     }
 
     return NextResponse.json({
@@ -256,7 +290,10 @@ export async function POST(request: Request) {
       accounts_count: accounts.length,
     });
   } catch (error: any) {
-    console.error('Error exchanging token:', error);
+    logger.error('Error exchanging Plaid token', error, {
+      route: '/api/plaid/exchange-token',
+      userId: user?.id,
+    });
     return NextResponse.json(
       { error: 'Failed to exchange token', details: error.message },
       { status: 500 }

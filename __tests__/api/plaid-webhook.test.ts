@@ -24,7 +24,11 @@ jest.mock('@/lib/plaid/webhook-sync', () => ({
   syncAccountBalances: jest.fn().mockResolvedValue(undefined),
   syncTransactionsForItem: jest.fn().mockResolvedValue(undefined),
   removeTransactions: jest.fn().mockResolvedValue(undefined),
-  logWebhookEvent: jest.fn().mockResolvedValue(undefined),
+  logWebhookEvent: jest.fn().mockResolvedValue('mock-log-id-123'),
+  checkWebhookDuplicate: jest.fn().mockResolvedValue({ isDuplicate: false }),
+  markWebhookProcessing: jest.fn().mockResolvedValue(undefined),
+  markWebhookCompleted: jest.fn().mockResolvedValue(undefined),
+  markWebhookFailed: jest.fn().mockResolvedValue(undefined),
 }));
 
 const { createClient } = require('@supabase/supabase-js');
@@ -33,6 +37,10 @@ const {
   syncTransactionsForItem,
   removeTransactions,
   logWebhookEvent,
+  checkWebhookDuplicate,
+  markWebhookProcessing,
+  markWebhookCompleted,
+  markWebhookFailed,
 } = require('@/lib/plaid/webhook-sync');
 
 describe('GET /api/plaid/webhook', () => {
@@ -581,10 +589,8 @@ describe('POST /api/plaid/webhook', () => {
     });
 
     it('should handle logWebhookEvent failures gracefully', async () => {
-      // Mock logging function to throw error
-      logWebhookEvent.mockRejectedValueOnce(
-        new Error('Webhook logging failed')
-      );
+      // Mock logging function to return null (simulates internal error handling)
+      logWebhookEvent.mockResolvedValueOnce(null);
 
       const request = createMockRequest({
         method: 'POST',
@@ -598,11 +604,11 @@ describe('POST /api/plaid/webhook', () => {
       const response = await handleWebhook(request);
       const json = await extractJson(response);
 
-      // Should still return 200 to prevent Plaid retries
+      // Should still return 200 even if logging fails (logging is non-critical)
       expect(response.status).toBe(200);
-      // Returns error object instead of received: true
-      expect(json.error).toBeDefined();
-      expect(json.error).toContain('Webhook logging failed');
+      expect(json.received).toBe(true);
+      // Webhook processing should continue even without logging
+      expect(syncTransactionsForItem).toHaveBeenCalled();
     });
 
     it('should handle malformed webhook payload gracefully', async () => {
@@ -697,8 +703,10 @@ describe('POST /api/plaid/webhook', () => {
       const response = await handleWebhook(request);
       const json = await extractJson(response);
 
-      // Should still return 200 to prevent retries
-      expect(response.status).toBe(200);
+      // Should return 500 to trigger Plaid retry (can't process invalid JSON)
+      expect(response.status).toBe(500);
+      expect(json.error).toBeDefined();
+      expect(json.retry).toBe(true);
     });
 
     it('should handle missing Supabase credentials gracefully', async () => {

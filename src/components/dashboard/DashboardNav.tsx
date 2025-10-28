@@ -16,7 +16,8 @@ import {
     ChevronUpIcon,
     ChevronDownIcon,
     Bars3Icon,
-    BanknotesIcon
+    BanknotesIcon,
+    LifebuoyIcon
 } from '@heroicons/react/24/outline'
 import { SparklesIcon } from '@heroicons/react/24/solid'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
@@ -238,6 +239,14 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                         >
                             <div className="space-y-1">
                                 <Link
+                                    href="/dashboard/settings"
+                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <Cog6ToothIcon className="h-5 w-5" />
+                                    Settings
+                                </Link>
+                                <Link
                                     href="/dashboard/billing"
                                     onClick={() => setIsAccountDropdownOpen(false)}
                                     className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
@@ -246,12 +255,12 @@ export function DashboardNav({ isOpen = false, onClose, onOpen, user }: Dashboar
                                     Billing
                                 </Link>
                                 <Link
-                                    href="/dashboard/settings"
+                                    href="/dashboard/support"
                                     onClick={() => setIsAccountDropdownOpen(false)}
                                     className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
                                 >
-                                    <Cog6ToothIcon className="h-5 w-5" />
-                                    Settings
+                                    <LifebuoyIcon className="h-5 w-5" />
+                                    Support
                                 </Link>
                                 <button
                                     onClick={() => {

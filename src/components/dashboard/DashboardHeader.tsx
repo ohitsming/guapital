@@ -111,6 +111,19 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
                                         <MenuItem>
                                             {({ focus }) => (
                                                 <Link
+                                                    href="/dashboard/settings"
+                                                    className={clsx(
+                                                        focus ? 'bg-neutral-100' : '',
+                                                        'block px-4 py-2 text-sm text-neutral-700'
+                                                    )}
+                                                >
+                                                    Settings
+                                                </Link>
+                                            )}
+                                        </MenuItem>
+                                        <MenuItem>
+                                            {({ focus }) => (
+                                                <Link
                                                     href="/dashboard/billing"
                                                     className={clsx(
                                                         focus ? 'bg-neutral-100' : '',
@@ -124,13 +137,13 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
                                         <MenuItem>
                                             {({ focus }) => (
                                                 <Link
-                                                    href="/dashboard/settings"
+                                                    href="/dashboard/support"
                                                     className={clsx(
                                                         focus ? 'bg-neutral-100' : '',
                                                         'block px-4 py-2 text-sm text-neutral-700'
                                                     )}
                                                 >
-                                                    Settings
+                                                    Support
                                                 </Link>
                                             )}
                                         </MenuItem>

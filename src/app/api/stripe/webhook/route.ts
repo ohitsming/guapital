@@ -120,7 +120,7 @@ export async function POST(request: Request) {
           );
         }
 
-        // Check if user_settings row exists, create if it doesn't
+        // CRITICAL: Check if user_settings row exists, create if it doesn't
         logger.info('Fetching existing user_settings', {
           requestId,
           userId: session.metadata.user_id
@@ -132,7 +132,15 @@ export async function POST(request: Request) {
           .eq('user_id', session.metadata.user_id)
           .single();
 
-        // If user_settings doesn't exist, create it
+        logger.info('User settings fetch result', {
+          requestId,
+          userId: session.metadata.user_id,
+          found: !fetchError || fetchError.code !== 'PGRST116',
+          currentTier: existingSettings?.subscription_tier,
+          errorCode: fetchError?.code,
+        });
+
+        // CRITICAL: If user_settings doesn't exist, create it
         if (fetchError && fetchError.code === 'PGRST116') {
           logger.warn('User settings not found, creating new row', {
             requestId,
@@ -148,7 +156,7 @@ export async function POST(request: Request) {
             });
 
           if (insertError) {
-            logger.error('Failed to create user_settings', {
+            logger.error('CRITICAL: Failed to create user_settings', {
               requestId,
               userId: session.metadata.user_id,
               error: insertError,
@@ -204,8 +212,8 @@ export async function POST(request: Request) {
           );
         }
 
-        // Get the price ID from the session to track founding members
-        logger.info('Fetching line items from Stripe', {
+        // CRITICAL: Get the price ID from the session to track founding members
+        logger.info('CRITICAL: Fetching line items from Stripe', {
           requestId,
           sessionId: session.id
         });
@@ -222,11 +230,9 @@ export async function POST(request: Request) {
             lineItemsCount: lineItems.data.length
           });
         } catch (stripeError: any) {
-          logger.error('Error fetching line items from Stripe', {
+          logger.error('CRITICAL: Error fetching line items from Stripe', stripeError, {
             requestId,
             sessionId: session.id,
-            error: stripeError.message,
-            stack: stripeError.stack
           });
           return NextResponse.json(
             { error: 'Failed to fetch checkout session line items from Stripe' },
@@ -246,9 +252,9 @@ export async function POST(request: Request) {
           );
         }
 
-        // Get subscription details to populate start/end dates
+        // CRITICAL: Get subscription details to populate start/end dates
         const subscriptionId = session.subscription as string;
-        logger.info('Fetching subscription from Stripe', {
+        logger.info('CRITICAL: Fetching subscription from Stripe', {
           requestId,
           subscriptionId
         });
@@ -320,11 +326,9 @@ export async function POST(request: Request) {
             currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString()
           });
         } catch (stripeError: any) {
-          logger.error('Error fetching subscription from Stripe', {
+          logger.error('CRITICAL: Error fetching subscription from Stripe', stripeError, {
             requestId,
             subscriptionId,
-            error: stripeError.message,
-            stack: stripeError.stack
           });
           return NextResponse.json(
             { error: 'Failed to fetch subscription from Stripe' },
@@ -332,8 +336,7 @@ export async function POST(request: Request) {
           );
         }
 
-        // Period dates already extracted above (currentPeriodStart, currentPeriodEnd)
-        // Update user to premium tier with subscription dates
+        // CRITICAL: Update user to premium tier with subscription dates
         const updateData = {
           subscription_tier: 'premium',
           subscription_status: 'active',
@@ -344,10 +347,12 @@ export async function POST(request: Request) {
           subscription_end_date: new Date(currentPeriodEnd * 1000).toISOString(),
         };
 
-        logger.info('Updating user_settings to premium', {
+        logger.info('CRITICAL: Updating user_settings to premium', {
           requestId,
           userId: session.metadata.user_id,
-          updateData
+          subscriptionId,
+          priceId,
+          tier: 'premium',
         });
 
         const { error, data: updatedData } = await supabase
@@ -357,7 +362,7 @@ export async function POST(request: Request) {
           .select();
 
         if (error) {
-          logger.error('Failed to update user_settings', {
+          logger.error('CRITICAL: Failed to update user_settings to premium', {
             requestId,
             userId: session.metadata.user_id,
             error,
@@ -383,7 +388,7 @@ export async function POST(request: Request) {
           );
         }
 
-        logger.info('✅ Successfully upgraded user to premium', {
+        logger.info('Successfully upgraded user to premium', {
           requestId,
           userId: session.metadata.user_id,
           priceId,
@@ -397,6 +402,13 @@ export async function POST(request: Request) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as any;
+
+        logger.info('CRITICAL: Processing subscription update', {
+          requestId,
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        });
 
         // Get current_period dates - try root level first, then from items
         let currentPeriodEnd = subscription.current_period_end;
@@ -413,7 +425,7 @@ export async function POST(request: Request) {
 
         const tier = subscription.status === 'active' ? 'premium' : 'free';
 
-        logger.info('Processing customer.subscription.updated', {
+        logger.info('Subscription update details', {
           requestId,
           subscriptionId: subscription.id,
           status: subscription.status,
@@ -455,7 +467,14 @@ export async function POST(request: Request) {
           );
         }
 
-        // Update subscription tier, status, and period dates
+        // CRITICAL: Update subscription tier, status, and period dates
+        logger.info('CRITICAL: Updating subscription in database', {
+          requestId,
+          subscriptionId: subscription.id,
+          newTier: tier,
+          newStatus: subscription.status,
+        });
+
         const { error } = await supabase
           .from('user_settings')
           .update({
@@ -468,7 +487,7 @@ export async function POST(request: Request) {
           .eq('stripe_subscription_id', subscription.id);
 
         if (error) {
-          logger.error('Error updating subscription status', {
+          logger.error('CRITICAL: Error updating subscription status', {
             requestId,
             subscriptionId: subscription.id,
             error,
@@ -481,7 +500,7 @@ export async function POST(request: Request) {
           );
         }
 
-        logger.info('✅ Successfully updated subscription', {
+        logger.info('Successfully updated subscription', {
           requestId,
           subscriptionId: subscription.id,
           tier,
@@ -493,12 +512,12 @@ export async function POST(request: Request) {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as any;
 
-        logger.info('Processing customer.subscription.deleted', {
+        logger.info('CRITICAL: Processing subscription deletion/cancellation', {
           requestId,
           subscriptionId: subscription.id
         });
 
-        // Get user_id from subscription
+        // CRITICAL: Get user_id from subscription
         const { data: userSettings } = await supabase
           .from('user_settings')
           .select('user_id')
@@ -506,7 +525,7 @@ export async function POST(request: Request) {
           .single();
 
         if (!userSettings) {
-          logger.error('User settings not found for subscription', {
+          logger.error('CRITICAL: User settings not found for cancelled subscription', {
             requestId,
             subscriptionId: subscription.id
           });
@@ -518,7 +537,13 @@ export async function POST(request: Request) {
 
         const userId = userSettings.user_id;
 
-        // Update subscription status
+        logger.info('CRITICAL: Downgrading user to free tier', {
+          requestId,
+          userId,
+          subscriptionId: subscription.id,
+        });
+
+        // CRITICAL: Update subscription status
         const { error } = await supabase
           .from('user_settings')
           .update({
@@ -529,9 +554,10 @@ export async function POST(request: Request) {
           .eq('stripe_subscription_id', subscription.id);
 
         if (error) {
-          logger.error('Error handling subscription cancellation', {
+          logger.error('CRITICAL: Error handling subscription cancellation', {
             requestId,
             subscriptionId: subscription.id,
+            userId,
             error,
             errorCode: error.code,
             errorMessage: error.message
@@ -542,11 +568,11 @@ export async function POST(request: Request) {
           );
         }
 
-        // AUTO-CONVERT PLAID ACCOUNTS TO MANUAL
+        // CRITICAL: AUTO-CONVERT PLAID ACCOUNTS TO MANUAL
         // When user downgrades from Premium to Free, automatically convert
         // all Plaid accounts to manual assets to preserve tracking data
         try {
-          logger.info('Converting Plaid accounts to manual for downgraded user', {
+          logger.info('CRITICAL: Converting Plaid accounts to manual for downgraded user', {
             requestId,
             userId
           });
@@ -554,7 +580,7 @@ export async function POST(request: Request) {
           const { convertPlaidAccountsToManual } = await import('@/lib/plaid/convert-to-manual');
           const conversionResult = await convertPlaidAccountsToManual(supabase, userId);
 
-          logger.info('✅ Successfully converted Plaid accounts to manual', {
+          logger.info('Successfully converted Plaid accounts to manual', {
             requestId,
             userId,
             accountsConverted: conversionResult.accounts_converted,
@@ -562,14 +588,13 @@ export async function POST(request: Request) {
           });
         } catch (conversionError: any) {
           // Log error but don't fail the webhook (non-critical)
-          logger.error('⚠️ Error during Plaid account conversion (non-critical)', {
+          logger.error('WARNING: Error during Plaid account conversion (non-critical)', conversionError, {
             requestId,
             userId,
-            error: conversionError.message
           });
         }
 
-        logger.info('✅ Successfully cancelled subscription and converted Plaid accounts', {
+        logger.info('Successfully cancelled subscription and converted Plaid accounts', {
           requestId,
           subscriptionId: subscription.id,
           userId
@@ -616,13 +641,21 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
-    logger.error('Fatal error processing webhook', {
+    logger.error('Fatal error processing Stripe webhook', {
       error,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
+      requestId
     });
+
+    // CRITICAL: Return 500 to trigger Stripe retry
+    // Stripe will retry failed webhooks automatically
     return NextResponse.json(
-      { error: 'Webhook processing failed', details: error.message },
+      {
+        error: 'Webhook processing failed',
+        details: error.message,
+        retry: true
+      },
       { status: 500 }
     );
   }

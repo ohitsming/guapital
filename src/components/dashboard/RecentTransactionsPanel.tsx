@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import EmptyState from '@/components/dashboard/EmptyState'
-import { ReceiptPercentIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ReceiptPercentIcon } from '@heroicons/react/24/outline'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import { useToast } from '@/components/toast/ToastProvider'
 
@@ -34,7 +34,6 @@ interface RecentTransactionsPanelProps {
 export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactionsPanelProps) {
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
-    const [syncing, setSyncing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const { showToast } = useToast()
 
@@ -69,51 +68,6 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
         fetchTransactions()
     }, [fetchTransactions])
 
-    const handleSync = async () => {
-        try {
-            setSyncing(true)
-            setError(null) // Clear any existing errors
-
-            const response = await fetch('/api/plaid/sync-transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ days: 90 })
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-
-                // Provide specific error messages based on status
-                if (response.status === 404) {
-                    showToast('No connected accounts found. Please connect a bank account first.', 'error')
-                } else if (response.status === 401) {
-                    showToast('Please log in again to sync transactions.', 'error')
-                } else {
-                    const errorMessage = errorData.details || errorData.error || 'Failed to sync transactions'
-                    showToast(`Sync failed: ${errorMessage}`, 'error')
-                }
-                return
-            }
-
-            const data = await response.json()
-
-            // Show success message with details
-            if (data.transactions_synced > 0) {
-                showToast(`Successfully synced ${data.transactions_synced} transaction${data.transactions_synced !== 1 ? 's' : ''} from ${data.items_processed} account${data.items_processed !== 1 ? 's' : ''}.`, 'success')
-            } else {
-                showToast('Sync completed. No new transactions found.', 'info')
-            }
-
-            // Refresh transactions after sync (show errors via toast)
-            await fetchTransactions(true)
-        } catch (err) {
-            console.error('Error syncing transactions:', err)
-            showToast('Unable to sync transactions. Please try again later.', 'error')
-        } finally {
-            setSyncing(false)
-        }
-    }
-
     const getCategoryDisplay = (txn: Transaction) => {
         if (txn.ai_category) {
             return txn.ai_category
@@ -138,15 +92,6 @@ export default function RecentTransactionsPanel({ limit = 50 }: RecentTransactio
         <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200">
             <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-bold text-[#004D40]">Recent Transactions</h2>
-                <button
-                    onClick={handleSync}
-                    disabled={syncing}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#004D40] hover:bg-[#004D40]/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Sync transactions"
-                >
-                    <ArrowPathIcon className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                    {syncing ? 'Syncing...' : 'Sync'}
-                </button>
             </div>
 
             {loading ? (
