@@ -50,11 +50,15 @@ const getTokenPrices = async (tokenIds: string[]): Promise<Record<string, number
 };
 
 export async function POST(request: Request) {
+  let user: any = null;
+
   try {
     const supabase = createClient();
     const {
-      data: { user },
+      data: { user: authUser },
     } = await supabase.auth.getUser();
+
+    user = authUser;
 
     if (!user) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });

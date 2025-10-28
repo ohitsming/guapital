@@ -8,11 +8,15 @@ export const dynamic = 'force-dynamic';
 
 // GET /api/networth - Calculate current net worth from all sources
 export async function GET(request: Request) {
+  let user: any = null;
+
   try {
     const supabase = createClient();
     const {
-      data: { user },
+      data: { user: authUser },
     } = await supabase.auth.getUser();
+
+    user = authUser;
 
     if (!user) {
       return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
