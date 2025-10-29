@@ -74,13 +74,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get current net worth from the main API to ensure consistency
-    const currentNetWorth = await fetch(`${request.url.replace('/trajectory/projection', '/networth')}`, {
-      headers: request.headers,
-    }).then(async (res) => {
-      if (!res.ok) return { total_assets: 0, total_liabilities: 0, net_worth: 0 }
-      return res.json()
-    })
+    // Calculate current net worth directly (avoid circular fetch issues)
+    // We'll calculate this from the accounts we fetch below
+    let currentNetWorth = { total_assets: 0, total_liabilities: 0, net_worth: 0 }
 
     // Fetch all user accounts (Plaid, manual, and crypto)
     const [plaidAccounts, manualAssets, cryptoWallets] = await Promise.all([
@@ -288,10 +284,10 @@ export async function GET(request: Request) {
       }
     }
 
-    // Use the official net worth calculation instead of recalculating
-    const actualNetWorth = currentNetWorth.net_worth
-    const actualTotalAssets = currentNetWorth.total_assets
-    const actualTotalLiabilities = currentNetWorth.total_liabilities
+    // Calculate the actual net worth from the accounts we've processed
+    const actualTotalAssets = totalAssets
+    const actualTotalLiabilities = totalLiabilities
+    const actualNetWorth = actualTotalAssets - actualTotalLiabilities
 
     // Calculate aggregate projections
     const totalProjections = {

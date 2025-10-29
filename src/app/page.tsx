@@ -138,7 +138,7 @@ export default function LandingPage() {
                             style={{ opacity: 1 }}
                             className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-4"
                         >
-                            <span className="text-gray-900 dark:text-white">Get Your Guap Together</span>
+                            <span className="text-gray-900">Get Your Guap Together</span>
                             <br />
                             <span className="bg-gradient-to-r from-[#004D40] to-[#00695C] bg-clip-text text-transparent">
                                 Watch Your Capital Grow
@@ -150,11 +150,11 @@ export default function LandingPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
-                            className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-400 mb-8 sm:mb-12 max-w-4xl mx-auto font-light px-4"
+                            className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 sm:mb-12 max-w-4xl mx-auto font-light px-4"
                         >
                             Track your entire net worth. { ' ' }
                             <br className="hidden sm:block" />
-                            <strong className="text-gray-900 dark:text-white font-semibold">See where you rank</strong> against your generation.
+                            <strong className="text-gray-900 font-semibold">See where you rank</strong> against your generation.
                         </motion.p>
 
                         {/* CTA Buttons */}

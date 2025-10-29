@@ -224,7 +224,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process assets
       if (assetsResult.status === 'fulfilled' && assetsResult.value.assets) {
-        console.log('📊 Manual assets loaded:', assetsResult.value.assets.length);
         setAssets(assetsResult.value.assets);
       } else if (assetsResult.status === 'rejected') {
         console.error('Error fetching assets:', assetsResult.reason);
@@ -232,7 +231,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process Plaid accounts
       if (plaidResult.status === 'fulfilled' && plaidResult.value.accounts) {
-        console.log('🏦 Plaid accounts loaded:', plaidResult.value.accounts.length, plaidResult.value.accounts);
         setPlaidAccounts(plaidResult.value.accounts);
       } else if (plaidResult.status === 'rejected') {
         console.error('Error fetching Plaid accounts:', plaidResult.reason);
@@ -240,7 +238,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
 
       // Process crypto wallets
       if (cryptoResult.status === 'fulfilled' && cryptoResult.value.wallets) {
-        console.log('💰 Crypto wallets loaded:', cryptoResult.value.wallets.length);
         setCryptoWallets(cryptoResult.value.wallets);
       } else if (cryptoResult.status === 'rejected') {
         console.error('Error fetching crypto wallets:', cryptoResult.reason);
