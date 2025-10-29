@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown';
 import EditAssetModal from './EditAssetModal';
 import { useSubscription } from '@/lib/context/SubscriptionContext';
@@ -11,17 +11,8 @@ import type { PlaidAccount } from '@/lib/interfaces/plaid';
 import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto';
 import { formatCurrency } from '@/utils/formatters';
 
-type SortOption = 'recent' | 'value-high' | 'value-low' | 'name';
-
-const SORT_LABELS: Record<SortOption, string> = {
-  recent: 'Most Recent',
-  'value-high': 'Highest Value',
-  'value-low': 'Lowest Value',
-  name: 'Name (A-Z)',
-};
-
 const CATEGORY_LABELS: Record<string, string> = {
-  // Asset categories
+  // Asset categories (manual)
   real_estate: 'Real Estate',
   vehicle: 'Vehicle',
   private_equity: 'Private Equity',
@@ -33,12 +24,76 @@ const CATEGORY_LABELS: Record<string, string> = {
   p2p_lending: 'P2P Lending',
   crypto: 'Cryptocurrency',
   other: 'Other Assets',
-  // Liability categories
+
+  // Liability categories (manual)
   mortgage: 'Mortgage',
   personal_loan: 'Personal Loan',
   business_debt: 'Business Debt',
   credit_debt: 'Credit/IOU',
   other_debt: 'Other Debt',
+
+  // Plaid account types - Depository
+  checking: 'Checking',
+  savings: 'Savings',
+  hsa: 'HSA',
+  cd: 'CD',
+  money_market: 'Money Market',
+  paypal: 'PayPal',
+  prepaid: 'Prepaid',
+  cash_management: 'Cash Management',
+  ebt: 'EBT',
+
+  // Plaid account types - Credit
+  credit_card: 'Credit Card',
+
+  // Plaid account types - Loan
+  auto: 'Auto Loan',
+  business: 'Business Loan',
+  commercial: 'Commercial Loan',
+  construction: 'Construction Loan',
+  consumer: 'Consumer Loan',
+  home_equity: 'Home Equity',
+  line_of_credit: 'Line of Credit',
+  loan: 'Loan',
+  student: 'Student Loan',
+
+  // Plaid account types - Investment
+  '401k': '401(k)',
+  '403b': '403(b)',
+  '457b': '457(b)',
+  '529': '529 Plan',
+  brokerage: 'Brokerage',
+  ira: 'IRA',
+  isa: 'ISA',
+  keogh: 'Keogh',
+  lif: 'LIF',
+  lira: 'LIRA',
+  lrif: 'LRIF',
+  lrsp: 'LRSP',
+  mutual_fund: 'Mutual Fund',
+  non_taxable_brokerage_account: 'Non-Taxable Brokerage',
+  pension: 'Pension',
+  plan: 'Investment Plan',
+  prif: 'PRIF',
+  profit_sharing_plan: 'Profit Sharing',
+  rdsp: 'RDSP',
+  resp: 'RESP',
+  retirement: 'Retirement',
+  rlif: 'RLIF',
+  roth: 'Roth IRA',
+  roth_401k: 'Roth 401(k)',
+  rrif: 'RRIF',
+  rrsp: 'RRSP',
+  sarsep: 'SARSEP',
+  sep_ira: 'SEP IRA',
+  simple_ira: 'SIMPLE IRA',
+  sipp: 'SIPP',
+  stock_plan: 'Stock Plan',
+  tfsa: 'TFSA',
+  trust: 'Trust',
+  ugma: 'UGMA',
+  utma: 'UTMA',
+  variable_annuity: 'Variable Annuity',
 };
 
 interface PlaidAccountWithInstitution extends PlaidAccount {
@@ -98,8 +153,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
   const [editingAsset, setEditingAsset] = useState<ManualAsset | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [expandedWallets, setExpandedWallets] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<SortOption>('value-high');
-  const [showSortMenu, setShowSortMenu] = useState(false);
 
   const { hasAccess } = useSubscription();
 
@@ -437,24 +490,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
     });
   };
 
-  // Sort function
-  const sortEntries = (entries: UnifiedEntry[]): UnifiedEntry[] => {
-    const sorted = [...entries];
-
-    switch (sortBy) {
-      case 'recent':
-        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      case 'value-high':
-        return sorted.sort((a, b) => b.value - a.value);
-      case 'value-low':
-        return sorted.sort((a, b) => a.value - b.value);
-      case 'name':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      default:
-        return sorted;
-    }
-  };
-
   // Show skeleton while loading
   if (isLoading) {
     return (
@@ -519,10 +554,6 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
   const totalLiabilitiesCount = liabilityEntries.length;
   const totalEntriesCount = totalAssetsCount + totalLiabilitiesCount;
 
-  // Sort entries using the selected sort method
-  assetEntries = sortEntries(assetEntries);
-  liabilityEntries = sortEntries(liabilityEntries);
-
   // Limit if specified
   if (limitDisplay && limitDisplay > 0) {
     assetEntries = assetEntries.slice(0, limitDisplay);
@@ -556,66 +587,11 @@ const ManualAssetsSection: React.FC<ManualAssetsSectionProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Sort Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowSortMenu(!showSortMenu)}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
-              title="Sort accounts"
-            >
-              <ArrowsUpDownIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-              <span className="hidden sm:inline">{SORT_LABELS[sortBy]}</span>
-              <svg className="hidden sm:block h-4 w-4 text-gray-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Sort Dropdown Menu */}
-            {showSortMenu && (
-              <>
-                {/* Backdrop to close menu */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowSortMenu(false)}
-                />
-                {/* Menu */}
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border-2 border-gray-200 py-2 z-20">
-                  <div className="px-3 py-2 border-b border-gray-200">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sort By</p>
-                  </div>
-                  {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([value, label]) => (
-                    <button
-                      key={value}
-                      onClick={() => {
-                        setSortBy(value);
-                        setShowSortMenu(false);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between group ${
-                        sortBy === value
-                          ? 'bg-[#004D40] text-white font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span>{label}</span>
-                      {sortBy === value && (
-                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <AddAccountDropdown
-            onAccountAdded={handleEditSuccess}
-            onSyncStart={handleSyncStart}
-            onSyncComplete={handleSyncComplete}
-          />
-        </div>
+        <AddAccountDropdown
+          onAccountAdded={handleEditSuccess}
+          onSyncStart={handleSyncStart}
+          onSyncComplete={handleSyncComplete}
+        />
       </div>
 
       {/* Empty State */}

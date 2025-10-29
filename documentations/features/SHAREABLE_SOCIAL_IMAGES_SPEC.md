@@ -1,7 +1,7 @@
 # Shareable Social Media Images - Implementation Specification
 
 **Status:** Not Started
-**Priority:** #2 (After Percentile Ranking, Before FIRE Calculator)
+**Priority:** #2 (After Percentile Ranking, Before Trajectory)
 **Estimated Time:** 1-2 days (MVP), 3-5 days (Enhanced)
 **Strategic Value:** 🔥 **CRITICAL for viral growth**
 
@@ -1151,16 +1151,16 @@ When you use our shareable image generation feature:
 
 **Original Priority:**
 1. ✅ Percentile Ranking (Complete)
-2. ❌ FIRE Calculator (Not Started)
+2. ❌ Trajectory (Not Started)
 
 **New Recommended Priority:**
 1. ✅ Percentile Ranking (Complete)
 2. **🚀 Shareable Social Images (THIS)** ← **DO THIS NEXT**
-3. FIRE Calculator
+3. Trajectory
 
 **Rationale:**
 - Shareable images **multiply the impact** of percentile ranking
-- FIRE calculator is a feature, shareable images are a **growth engine**
+- Trajectory is a feature, shareable images are a **growth engine**
 - 1-2 days of work → exponential viral growth
 
 ---

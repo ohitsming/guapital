@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/outline'
 import type { PercentileResponse } from '@/lib/interfaces/percentile'
 import PercentileLearnMoreModal from './PercentileLearnMoreModal'
+import ShareButton from './ShareButton'
+import ProgressCelebrationModal from './ProgressCelebrationModal'
 
 interface PercentileRankCardProps {
     data: PercentileResponse
@@ -148,6 +150,16 @@ export default function PercentileRankCard({ data, onRefresh }: PercentileRankCa
                         </div>
                     )}
 
+                    {/* Share Button */}
+                    <div className="pt-2">
+                        <ShareButton
+                            percentile={topPercentile}
+                            age={parseInt(data.age_bracket?.split('-')[0] || '28')}
+                            netWorth={data.net_worth || 0}
+                            className="w-full justify-center"
+                        />
+                    </div>
+
                     {/* Disclaimer */}
                     {data.uses_seed_data && (
                         <div className="flex items-start space-x-2 p-3 bg-gray-50 rounded-md">
@@ -193,6 +205,13 @@ export default function PercentileRankCard({ data, onRefresh }: PercentileRankCa
                 ageBracket={data.age_bracket || '26-28'}
                 totalUsers={data.total_users || 0}
                 usesSeedData={data.uses_seed_data || false}
+            />
+
+            {/* Progress Celebration Modal */}
+            <ProgressCelebrationModal
+                percentile={topPercentile}
+                age={parseInt(data.age_bracket?.split('-')[0] || '28')}
+                netWorth={data.net_worth || 0}
             />
         </>
     )

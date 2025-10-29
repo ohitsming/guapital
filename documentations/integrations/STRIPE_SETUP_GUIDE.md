@@ -107,7 +107,7 @@ STRIPE_SECRET_KEY=sk_test_your_secret_key_here
 
 ```
 Name: Guapital Premium
-Description: Unlimited accounts, full transaction history, percentile ranking, FIRE calculator, and advanced reports
+Description: Unlimited accounts, full transaction history, percentile ranking, Trajectory, and advanced reports
 
 Image: [Upload your logo or product screenshot - optional]
 ```

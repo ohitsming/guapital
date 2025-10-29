@@ -17,7 +17,8 @@ import {
     ChevronDownIcon,
     Bars3Icon,
     BanknotesIcon,
-    LifebuoyIcon
+    LifebuoyIcon,
+    RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 import { SparklesIcon } from '@heroicons/react/24/solid'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
@@ -36,6 +37,7 @@ interface NavItem {
 const navigation: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'Accounts', href: '/dashboard/accounts', icon: WalletIcon },
+    { name: 'Trajectory', href: '/dashboard/trajectory', icon: RocketLaunchIcon },
     { name: 'Transactions', href: '/dashboard/transactions', icon: CreditCardIcon, requiresPremium: true },
     { name: 'Reports', href: '/dashboard/reports', icon: ChartBarIcon, requiresPremium: true },
     // { name: 'Cash Flow', href: '/dashboard/budget', icon: BanknotesIcon, requiresPremium: true }, // Removed for now

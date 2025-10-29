@@ -1,3 +1,5 @@
+import { COMPANY_SUPPORT_ADDRESS } from '@/lib/constant';
+
 export default function TermsOfService() {
     return (
         <div className="max-w-3xl mx-auto px-4 py-10 text-base text-gray-800">
@@ -131,7 +133,7 @@ export default function TermsOfService() {
                 <p className="mb-2">
                     For questions about these Terms, please contact:
                 </p>
-                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@guapital.com" className="text-blue-600 underline">support@guapital.com</a></p>
+                <p className="mb-2"><strong>Email:</strong> <a href={`mailto:${COMPANY_SUPPORT_ADDRESS}`} className="text-blue-600 underline">{COMPANY_SUPPORT_ADDRESS}</a></p>
             </div>
         </div>
     );

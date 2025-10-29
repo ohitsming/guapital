@@ -4,11 +4,6 @@
 
 import * as Sentry from '@sentry/nextjs';
 
-// Debug log to verify this file is loading
-console.log('[Sentry Client] sentry.client.config.ts is loading...');
-console.log('[Sentry Client] DSN:', process.env.NEXT_PUBLIC_SENTRY_DSN ? 'Set' : 'Missing');
-console.log('[Sentry Client] Enabled:', process.env.NEXT_PUBLIC_SENTRY_ENABLED);
-
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -64,6 +59,3 @@ Sentry.init({
   // Note: Client-side needs NEXT_PUBLIC_ prefix to access env vars
   enabled: process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SENTRY_ENABLED === 'true',
 });
-
-console.log('[Sentry Client] Initialization complete. Enabled:',
-  process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SENTRY_ENABLED === 'true');

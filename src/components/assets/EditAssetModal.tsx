@@ -129,6 +129,8 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
     category: asset.category,
     entry_type: asset.entry_type,
     notes: asset.notes || '',
+    loan_term_years: asset.loan_term_years ?? null,
+    interest_rate: asset.interest_rate ?? null,
   });
   const [displayValue, setDisplayValue] = useState<string>(asset.current_value.toString());
   const [history, setHistory] = useState<ManualAssetHistory[]>([]);
@@ -187,6 +189,8 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
         category: asset.category,
         entry_type: asset.entry_type,
         notes: asset.notes || '',
+        loan_term_years: asset.loan_term_years ?? null,
+        interest_rate: asset.interest_rate ?? null,
       });
 
       // Format display value with commas
@@ -376,6 +380,69 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
             </p>
           )}
         </div>
+
+        {/* Loan Term and Interest Rate (Liabilities Only) */}
+        {asset.entry_type === 'liability' && (
+          <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+            <p className="text-sm font-semibold text-gray-900 mb-3">
+              Loan Details <span className="text-gray-400 font-normal">(For trajectory calculations)</span>
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Loan Term */}
+              <div className="group">
+                <label htmlFor="loan_term_years" className="block text-sm font-medium text-gray-700 mb-2">
+                  Loan Term (years)
+                </label>
+                <input
+                  id="loan_term_years"
+                  type="number"
+                  min="0"
+                  max="50"
+                  step="1"
+                  value={formData.loan_term_years ?? ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    loan_term_years: e.target.value ? parseInt(e.target.value) : null
+                  })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg transition-all duration-200
+                             focus:outline-none focus:border-[#004D40] focus:ring-4 focus:ring-[#004D40]/10
+                             hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed
+                             text-sm placeholder:text-gray-400"
+                  placeholder="30"
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter 0 for credit cards</p>
+              </div>
+
+              {/* Interest Rate */}
+              <div className="group">
+                <label htmlFor="interest_rate" className="block text-sm font-medium text-gray-700 mb-2">
+                  Interest Rate (%)
+                </label>
+                <input
+                  id="interest_rate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={formData.interest_rate ? (formData.interest_rate * 100).toFixed(2) : ''}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    interest_rate: e.target.value ? parseFloat(e.target.value) / 100 : null
+                  })}
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg transition-all duration-200
+                             focus:outline-none focus:border-[#004D40] focus:ring-4 focus:ring-[#004D40]/10
+                             hover:border-gray-300 disabled:bg-gray-50 disabled:cursor-not-allowed
+                             text-sm placeholder:text-gray-400"
+                  placeholder="6.00"
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-gray-500 mt-1">Annual percentage rate</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Category - Grid Selection */}
         <div>

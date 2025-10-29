@@ -34,6 +34,8 @@ export interface ManualAsset {
   category: ManualEntryCategory;
   entry_type: EntryType;
   notes?: string;
+  loan_term_years?: number | null; // For liabilities: loan term in years (0 = revolving credit)
+  interest_rate?: number | null; // For liabilities: annual rate as decimal (e.g., 0.06 = 6%)
   created_at: string;
   updated_at: string;
 }
@@ -53,4 +55,6 @@ export interface AssetFormData {
   category: ManualEntryCategory;
   entry_type: EntryType;
   notes?: string;
+  loan_term_years?: number | null;
+  interest_rate?: number | null;
 }

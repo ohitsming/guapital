@@ -1,3 +1,5 @@
+import { COMPANY_SUPPORT_ADDRESS } from '@/lib/constant';
+
 export default function PrivacyPolicy() {
     return (
         <div className="max-w-3xl mx-auto px-4 py-10 text-base text-gray-800">
@@ -79,7 +81,7 @@ export default function PrivacyPolicy() {
                     <li className="mb-2">Object to certain data processing activities</li>
                 </ul>
                 <p className="mb-4">
-                    To exercise these rights, contact us at support@guapital.com. We&apos;ll respond within 30 days.
+                    To exercise these rights, contact us at {COMPANY_SUPPORT_ADDRESS}. We&apos;ll respond within 30 days.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">7. Sharing and Disclosure</h2>
@@ -135,7 +137,7 @@ export default function PrivacyPolicy() {
 
                 <h3 className="text-xl font-semibold mt-6 mb-3">Your Rights</h3>
                 <p className="mb-4">
-                    Under GDPR and other privacy laws, you have the right to access, correct, or delete your percentile ranking data at any time. You may exercise these rights by opting out through your account settings or contacting us at support@guapital.com.
+                    Under GDPR and other privacy laws, you have the right to access, correct, or delete your percentile ranking data at any time. You may exercise these rights by opting out through your account settings or contacting us at {COMPANY_SUPPORT_ADDRESS}.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">9. International Data Transfers</h2>
@@ -157,7 +159,7 @@ export default function PrivacyPolicy() {
                 <p className="mb-2">
                     If you have questions about this Privacy Policy or our data practices, please contact us:
                 </p>
-                <p className="mb-2"><strong>Email:</strong> <a href="mailto:support@guapital.com" className="text-blue-600 underline">support@guapital.com</a></p>
+                <p className="mb-2"><strong>Email:</strong> <a href={`mailto:${COMPANY_SUPPORT_ADDRESS}`} className="text-blue-600 underline">{COMPANY_SUPPORT_ADDRESS}</a></p>
                 <p className="mb-6">We&apos;re here to help and committed to protecting your privacy.</p>
 
             </div>

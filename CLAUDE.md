@@ -1,5 +1,10 @@
 # CLAUDE.md
 
+
+# TODO
+* remove manual sync for plaid api
+
+
 ## Project Overview
 
 **Guapital** - Privacy-first net worth tracker for young adults (24-35) with $50K-$500K net worth. Targets tech workers who hold traditional investments, crypto, and emerging assets.
@@ -118,7 +123,39 @@ All features shipped: Plaid integration (Transactions product only), crypto trac
 4. Social OAuth production URLs
 5. Register Plaid webhook URL: `https://your-domain.com/api/plaid/webhook`
 
-**Phase 2:** FIRE calculator, social sharing, milestone badges, partner/household finance tracking
+**Phase 2 Feature Roadmap (Prioritized by Realistic Growth Impact):**
+
+**#1 Priority: Referral Program** (2-3 days, direct growth incentive)
+- "Give friend 1 month Premium free, get 1 month free" mechanics
+- Why: Direct incentive for word-of-mouth. Financial conversations happen privately (not publicly on social media)
+- Privacy-compatible: Targets 1-on-1 sharing behavior that actually happens
+- Implementation: Referral codes, tracking table, email templates, redemption logic
+
+**#2 Priority: SEO Content** (ongoing, Phase 2 focus)
+- "Net Worth Percentile by Age" flagship article, competitor comparisons
+- Why: High-intent search traffic, compounds over time, captures users actively looking for solution
+- SEO: 12K searches/month for "net worth percentile by age", 18K for "how to calculate net worth"
+- Implementation: Blog section, markdown content, og:meta tags, internal linking
+
+**#3 Priority: Trajectory** (1-2 weeks, SEO opportunity)
+- Calculate path to financial independence based on savings rate
+- Why: Target audience (24-35 tech workers) loves FIRE content
+- SEO: "FIRE calculator" = 40K searches/month
+- Implementation: Simple formula (25x expenses rule), chart visualization
+
+**#4 Priority: Sankey Diagram** (2-3 weeks, unique differentiator)
+- Visual cashflow: income → expenses → savings/investments
+- Why: Unique feature Monarch/YNAB don't have
+- Premium upsell: "See where your money flows"
+- Implementation: d3.js/Recharts Sankey, transaction categorization (already have Plaid transactions)
+
+**#5 Priority: Partner/Household Tracking** (3-4 weeks, network effects)
+- Shared net worth view for couples
+- Why: 2 users per household, higher retention
+- Monetization: Family plan pricing ($149/yr for 2 users)
+- Implementation: Multi-user auth, shared resources table, permissions
+
+**Decision framework:** Ship referral program first (proven ROI, privacy-compatible). SEO compounds over time. Core product reliability drives organic word-of-mouth. Validate ALL assumptions with real users before building speculative viral mechanics.
 
 ## Pricing Strategy
 
@@ -175,13 +212,15 @@ Monarch has feature parity: net worth dashboard, Plaid, crypto, transactions, hi
 ### The Killer Feature: Percentile Ranking
 
 **Why it works:**
-1. Gamification: "Top 15% of 28-year-olds" is screenshot-worthy
-2. Social proof: Users share on Twitter/Reddit/Instagram
-3. Viral loop: Every share = free marketing
-4. Hard to copy: Requires critical mass + 6-12 months dev time
-5. Network effects: More users = more valuable
+1. **Unique value prop:** Shows users where they stand vs peers (no competitor has this)
+2. **Gamification/motivation:** "Top 15% of 28-year-olds" creates tangible progress tracking
+3. **SEO moat:** Enables unique content competitors can't replicate (hybrid SCF + real user data)
+4. **Hard to copy:** Requires critical mass + 6-12 months dev time
+5. **Network effects:** More users = more accurate percentiles = more valuable
 
-**Competitive moat:** First-mover advantage + data advantage. Monarch would need 6-12 months to build. By then, we have network effects.
+**Competitive moat:** First-mover advantage + data advantage. Monarch would need 6-12 months to build. By then, we have SEO authority, backlinks, and user trust.
+
+**Reality check on virality:** Financial data is THE most private info. Don't expect organic social sharing. Instead, percentiles drive value through: (1) SEO content unique to us, (2) private word-of-mouth ("I finally know where I stand"), (3) retention (users check back to see progress).
 
 ### Launch Positioning
 
@@ -193,11 +232,185 @@ Monarch has feature parity: net worth dashboard, Plaid, crypto, transactions, hi
 
 **Phase 0 (Months 1-3):** Build in public, waitlist (200-500), private beta (50-100)
 
-**Phase 1 (Months 4-6):** Product Hunt, Reddit (r/PersonalFinance, r/Fire), Twitter, Indie Hackers. Goal: 500 signups, 100 paying.
+**Phase 1 (Months 4-6):** Product Hunt, Reddit (r/PersonalFinance, r/Fire), Twitter, Indie Hackers. **Launch referral program Week 1** (low-effort, high-ROI). Goal: 500 signups, 100 paying.
 
-**Phase 2 (Months 7-12):** SEO content, YouTube, Discord community, YouTuber affiliates. Goal: 2,000 users, 400 paying.
+**Phase 2 (Months 7-12):** SEO content (primary focus), YouTube, Discord community, YouTuber affiliates. Optimize referral program based on data. Goal: 2,000 users, 400 paying.
 
-**Phase 3 (Months 13-24):** FB/IG ads ($50-100 CAC), Google ads, referral program. Goal: 10,000 users, 2,000 paying ($480K ARR).
+**Phase 3 (Months 13-24):** FB/IG ads ($50-100 CAC), Google ads, partnerships. Goal: 10,000 users, 2,000 paying ($480K ARR).
+
+## SEO & Content Strategy
+
+### Why SEO Matters
+
+Educational financial content drives sustainable, low-CAC user acquisition. Unlike paid ads, SEO compounds over time. At 15K users, organic traffic should represent 30-40% of signups (following Copilot's playbook).
+
+**Key advantages:**
+- High search volume for net worth/percentile keywords
+- Builds authority and trust in financial literacy space
+- Supports "wealth-building mindset" positioning
+- Leverages percentile ranking for unique content angles competitors can't copy
+
+**Timeline:** Defer to Phase 2 (Months 7-12). SEO takes 3-6 months to rank - too slow for initial traction. Focus Phase 1 on Product Hunt/Reddit/Twitter for faster feedback loops.
+
+### Content Pillars
+
+**1. Percentile Ranking Content (Leverage Killer Feature)**
+- "Net Worth Percentile by Age: Where Do You Rank?" (PRIMARY pillar)
+- "Am I Wealthy? Compare Your Net Worth to Peers"
+- "Top 10% Net Worth by Age: What Does It Take?"
+- "Net Worth Milestones: 25th, 50th, 75th, 90th Percentile Breakdown"
+
+**Why this works:** Uses hybrid SCF + real user data for unique insights. Monarch/YNAB can't compete without 6-12 months dev time + critical mass. Every article ties back to percentile tracker signup CTA.
+
+**2. Net Worth Tracking Guides**
+- "How to Calculate Net Worth (+ Free Tracker)"
+- "5 Assets Young Adults Forget to Track" (crypto, stock options, 401k vesting, etc.)
+- "Net Worth vs Income: Why Wealth Tracking Matters More"
+- "How to Track Crypto Net Worth Across Multiple Wallets"
+
+**3. Competitor Comparison**
+- "Best Net Worth Tracker 2025: Guapital vs Monarch vs Copilot"
+- "Monarch Alternatives: 5 Net Worth Apps for Crypto Investors"
+- "YNAB vs Net Worth Trackers: Which is Right for You?"
+
+**Strategic angle:** Position as crypto-first alternative to Monarch, wealth-building alternative to YNAB.
+
+### Keyword Strategy
+
+**High-Intent Keywords (Target First):**
+
+| Keyword | Monthly Searches | Difficulty | Priority |
+|---------|------------------|------------|----------|
+| net worth percentile by age | 12,000 | Medium | HIGH |
+| am i wealthy for my age | 8,500 | Low | HIGH |
+| best net worth tracker | 6,200 | High | MEDIUM |
+| how to calculate net worth | 18,000 | Medium | HIGH |
+| monarch alternative | 2,400 | Low | MEDIUM |
+| crypto net worth tracker | 1,800 | Low | HIGH |
+| net worth vs income | 9,500 | Low | MEDIUM |
+
+**Content Gap Opportunities:**
+- Monarch: No percentile ranking content (our moat)
+- YNAB: Dominates budgeting, weak on net worth tracking
+- Copilot: iOS-only, no crypto coverage
+- Personal Capital: Acquired by Empower, brand confusion
+
+**Long-tail Strategy:**
+- "net worth percentile 28 year old" (low competition, high intent)
+- "how to track defi net worth" (crypto angle)
+- "net worth tracker for tech workers" (audience-specific)
+
+### Content Calendar
+
+**Phase 2 Launch (Months 7-9):**
+- Month 7: "Net Worth Percentile by Age" (flagship piece, 3K+ words)
+- Month 8: "How to Calculate Net Worth (+ Free Tracker)"
+- Month 9: "Best Net Worth Tracker 2025" (competitor comparison)
+
+**Phase 2 Growth (Months 10-12):**
+- Month 10: "5 Assets Young Adults Forget to Track"
+- Month 11: "Am I Wealthy? Compare Your Net Worth to Peers"
+- Month 12: "How to Track Crypto Net Worth"
+
+**Publication Frequency:** 1-2 posts/month (sustainable for small team)
+
+**Format:** 2,000-3,500 words, actionable guides with examples, screenshots, data visualizations. Every article ends with CTA to sign up.
+
+### Success Metrics
+
+**Organic Traffic Goals:**
+
+| Month | Monthly Visitors | Signups from SEO | Conversion Rate |
+|-------|------------------|------------------|-----------------|
+| Month 9 | 500 | 15-25 | 3-5% |
+| Month 12 | 2,000 | 60-100 | 3-5% |
+| Month 18 | 8,000 | 240-400 | 3-5% |
+| Month 24 | 20,000 | 600-1,000 | 3-5% |
+
+**ROI Timeline:**
+- Months 7-9: Investment phase (writing, no traffic)
+- Months 10-12: Early traction (500-2K visitors/month)
+- Months 13-18: Compounding growth (2K-8K visitors/month)
+- Months 19-24: Mature channel (8K-20K visitors/month, 30-40% of signups)
+
+**Leading Indicators:**
+- Google Search Console impressions/clicks
+- Keyword rankings (track top 20 keywords)
+- Backlinks from high-authority sites (Reddit, Indie Hackers, finance blogs)
+- Time on page >3 minutes (engagement signal)
+
+### Budget & Resources
+
+**Option 1: DIY (Recommended for Phase 2)**
+- Cost: Your time (8-12 hours/article)
+- Quality: High (domain expertise, authentic voice)
+- SEO: Use SurferSEO ($89/month) for keyword optimization
+- Total: $89/month + time
+
+**Option 2: Outsourced**
+- Cost: $200-500/article (finance writers)
+- Quality: Medium (requires heavy editing/fact-checking)
+- Risk: Generic voice, may need rewrites
+- Total: $400-1,000/month (2 articles)
+
+**Recommendation:** Start DIY. At 2,000 users ($22K MRR), consider outsourcing to freelancer for $300/article while you provide outline + data insights.
+
+**Tools:**
+- SurferSEO: Keyword optimization ($89/month)
+- Ahrefs/SEMrush: Competitor research ($99-199/month, optional)
+- Grammarly: Editing ($12/month)
+
+### Distribution & Amplification
+
+**1. Reddit Amplification**
+- Post to r/personalfinance, r/financialindependence, r/Fire
+- Use percentile data in comments (with link to full article)
+- Engage authentically - don't spam
+
+**2. Twitter Strategy**
+- Tweet thread summarizing key insights
+- Tag finance influencers (when relevant)
+- Use visuals (percentile charts, infographics)
+
+**3. Backlink Strategy**
+- Guest post on Indie Hackers (bootstrapped SaaS angle)
+- Outreach to finance bloggers (offer unique percentile data)
+- HARO (Help A Reporter Out) for journalist requests
+
+**4. Email Newsletter**
+- Repurpose content for weekly newsletter
+- Build email list via blog signup CTA
+- Nurture to free trial (Premium conversion)
+
+### What to Avoid
+
+**Don't Create:**
+- Generic budgeting content ("10 budgeting tips") - conflicts with positioning, YNAB dominates
+- Thin content (<1,500 words) - Google penalizes low-quality finance content (YMYL)
+- Clickbait headlines - damages trust in financial vertical
+- Investment advice - regulatory/liability risk
+- Crypto trading tips - outside core value prop (tracking, not trading)
+
+**Content Quality Bar:**
+- Every article must be 2,000+ words with unique insights
+- Use real data (SCF + user data when available)
+- Include actionable steps, not just theory
+- Maintain professional, educational tone
+- Cite sources (Federal Reserve, Pew Research, etc.)
+
+### Competitive Moat
+
+**Why This Works:**
+1. **Unique Data:** Hybrid SCF + real user percentile data = content angle competitors can't replicate
+2. **First-Mover:** 6-12 month head start on percentile content
+3. **Authentic Voice:** Founder-written = domain expertise + authentic positioning
+4. **Network Effects:** More users = richer data = better content = more users
+
+**Monarch's Challenge:** To compete, they'd need to:
+1. Build percentile ranking feature (6-12 months)
+2. Acquire user base critical mass
+3. Create content strategy around it
+By then, Guapital has SEO authority + backlinks.
 
 ## Business Model (Follow Copilot's Playbook)
 
@@ -235,7 +448,7 @@ Monarch has feature parity: net worth dashboard, Plaid, crypto, transactions, hi
 
 **Code style:** Do not use emojis in code (log messages, comments, etc.). Keep code professional and clean.
 
-**Decision framework:** Does this help track net worth / reduce friction / increase viral sharing / ship in <2 weeks? If no → Don't build yet.
+**Decision framework:** Does this help track net worth / reduce friction / improve core reliability / ship in <2 weeks? If no → Don't build yet. Prioritize proven growth channels (referrals, SEO, product quality) over speculative viral mechanics.
 
 **Scope creep red flags (Phase 2+):**
 - Budgeting features (conflicts with positioning - YNAB dominates)

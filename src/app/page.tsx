@@ -61,7 +61,7 @@ export default function LandingPage() {
     return (
         <main className="">
             {/* HERO SECTION */}
-            <section className="relative min-h-[90vh] sm:min-h-[95vh] flex items-center justify-center overflow-hidden">
+            <section className="relative overflow-hidden">
                 {/* Animated background gradient */}
                 <div className="absolute inset-0 " />
                 <motion.div
@@ -90,8 +90,8 @@ export default function LandingPage() {
                     className="absolute bottom-1/4 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-[#004D40]/20 rounded-full blur-3xl"
                 />
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-                    <div className="text-center min-h-[60vh] sm:min-h-[65vh] flex flex-col items-center justify-center pt-8 sm:pt-0">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 md:pt-24">
+                    <div className="text-center">
                         {/* Founding member badge */}
                         {!isLoading && remainingSlots !== null && remainingSlots > 0 && (
                             <motion.div
@@ -135,9 +135,10 @@ export default function LandingPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.3 }}
+                            style={{ opacity: 1 }}
                             className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-4"
                         >
-                            <span className="text-gray-900 dark:text-white">Get Your Guap Together { ' ' }</span>
+                            <span className="text-gray-900 dark:text-white">Get Your Guap Together</span>
                             <br />
                             <span className="bg-gradient-to-r from-[#004D40] to-[#00695C] bg-clip-text text-transparent">
                                 Watch Your Capital Grow
@@ -201,7 +202,7 @@ export default function LandingPage() {
                         initial={{ opacity: 0, y: 60 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 1 }}
-                        className="mt-12 sm:mt-16 md:mt-20 mb-16 sm:mb-24 md:mb-32"
+                        className="mt-8 sm:mt-12 md:mt-16 mb-16 sm:mb-24 md:mb-32"
                     >
                         <div className="relative max-w-6xl mx-auto px-2 sm:px-0">
                             {/* Glow effect */}

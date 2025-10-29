@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon, FunnelIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, TrashIcon, MagnifyingGlassIcon, ArrowPathIcon, ChevronDownIcon, ChevronRightIcon, XMarkIcon, FunnelIcon } from '@heroicons/react/24/outline'
 import { AddAccountDropdown } from '@/components/ui/AddAccountDropdown'
 import EditAssetModal from '@/components/assets/EditAssetModal'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -11,15 +11,6 @@ import type { ManualAsset } from '@/lib/interfaces/asset'
 import type { PlaidAccount } from '@/lib/interfaces/plaid'
 import type { CryptoWallet, CryptoHolding } from '@/lib/interfaces/crypto'
 import { formatCurrency } from '@/utils/formatters'
-
-type SortOption = 'recent' | 'value-high' | 'value-low' | 'name';
-
-const SORT_LABELS: Record<SortOption, string> = {
-  recent: 'Most Recent',
-  'value-high': 'Highest Value',
-  'value-low': 'Lowest Value',
-  name: 'Name (A-Z)',
-};
 
 const CATEGORY_LABELS: Record<string, string> = {
   // Asset categories
@@ -84,8 +75,6 @@ export function AccountsPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'asset' | 'liability'>('all')
   const [filterSource, setFilterSource] = useState<'all' | 'plaid' | 'manual' | 'crypto'>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('recent')
-  const [showSortMenu, setShowSortMenu] = useState(false)
 
   const { hasAccess } = useSubscription()
 
@@ -368,24 +357,6 @@ export function AccountsPageContent() {
     })
   }
 
-  // Sort function
-  const sortEntries = (entries: UnifiedEntry[]): UnifiedEntry[] => {
-    const sorted = [...entries]
-
-    switch (sortBy) {
-      case 'recent':
-        return sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      case 'value-high':
-        return sorted.sort((a, b) => b.value - a.value)
-      case 'value-low':
-        return sorted.sort((a, b) => a.value - b.value)
-      case 'name':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name))
-      default:
-        return sorted
-    }
-  }
-
   // Combine and filter entries
   const plaidEntries = transformPlaidToUnified()
   const manualEntries = transformManualToUnified()
@@ -409,9 +380,6 @@ export function AccountsPageContent() {
       CATEGORY_LABELS[entry.category]?.toLowerCase().includes(searchQuery.toLowerCase())
     )
   }
-
-  // Sort entries using the selected sort method
-  allEntries = sortEntries(allEntries)
 
   // Calculate totals
   const totalAssets = allEntries
@@ -581,106 +549,45 @@ export function AccountsPageContent() {
           )}
 
           {/* Filters and Actions Row */}
-          <div className="flex flex-col gap-2 sm:gap-3">
-            {/* Filters Row */}
-            <div className="flex gap-2 flex-wrap">
-              <Dropdown
-                value={filterType}
-                onChange={(value) => setFilterType(value as any)}
-                options={[
-                  { value: 'all', label: 'All Types' },
-                  { value: 'asset', label: 'Assets' },
-                  { value: 'liability', label: 'Liabilities' },
-                ]}
-                className="flex-1 min-w-[120px] sm:flex-initial"
+          <div className="flex gap-2 flex-wrap">
+            <Dropdown
+              value={filterType}
+              onChange={(value) => setFilterType(value as any)}
+              options={[
+                { value: 'all', label: 'All Types' },
+                { value: 'asset', label: 'Assets' },
+                { value: 'liability', label: 'Liabilities' },
+              ]}
+              className="flex-1 min-w-[120px] sm:flex-initial"
+            />
+
+            <Dropdown
+              value={filterSource}
+              onChange={(value) => setFilterSource(value as any)}
+              options={[
+                { value: 'all', label: 'All Sources' },
+                { value: 'plaid', label: 'Plaid' },
+                { value: 'crypto', label: 'Crypto' },
+                { value: 'manual', label: 'Manual' },
+              ]}
+              className="flex-1 min-w-[120px] sm:flex-initial"
+            />
+
+            <button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex-shrink-0 px-3 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all flex items-center justify-center"
+              title="Refresh"
+            >
+              <ArrowPathIcon className={`h-5 w-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+
+            <div className="flex-1 min-w-[140px] sm:flex-initial">
+              <AddAccountDropdown
+                onAccountAdded={handleEditSuccess}
+                onSyncStart={handleSyncStart}
+                onSyncComplete={handleSyncComplete}
               />
-
-              <Dropdown
-                value={filterSource}
-                onChange={(value) => setFilterSource(value as any)}
-                options={[
-                  { value: 'all', label: 'All Sources' },
-                  { value: 'plaid', label: 'Plaid' },
-                  { value: 'crypto', label: 'Crypto' },
-                  { value: 'manual', label: 'Manual' },
-                ]}
-                className="flex-1 min-w-[120px] sm:flex-initial"
-              />
-
-              {/* Sort Button */}
-              <div className="relative flex-1 min-w-[160px] sm:flex-initial">
-                <button
-                  onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
-                  title="Sort accounts"
-                >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <ArrowsUpDownIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 shrink-0" />
-                    <span className="truncate text-sm">{SORT_LABELS[sortBy]}</span>
-                  </div>
-                  <svg className="h-4 w-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Sort Dropdown Menu */}
-                {showSortMenu && (
-                  <>
-                    {/* Backdrop to close menu */}
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowSortMenu(false)}
-                    />
-                    {/* Menu */}
-                    <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border-2 border-gray-200 py-2 z-20">
-                      <div className="px-3 py-2 border-b border-gray-200">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sort By</p>
-                      </div>
-                      {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([value, label]) => (
-                        <button
-                          key={value}
-                          onClick={() => {
-                            setSortBy(value)
-                            setShowSortMenu(false)
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-all flex items-center justify-between group ${
-                            sortBy === value
-                              ? 'bg-[#004D40] text-white font-semibold'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <span>{label}</span>
-                          {sortBy === value && (
-                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Action Buttons Row */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="flex-shrink-0 px-3 py-2 border-2 border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 transition-all flex items-center justify-center"
-                title="Refresh"
-              >
-                <ArrowPathIcon className={`h-5 w-5 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
-
-              <div className="flex-1 min-w-[140px]">
-                <AddAccountDropdown
-                  onAccountAdded={handleEditSuccess}
-                  onSyncStart={handleSyncStart}
-                  onSyncComplete={handleSyncComplete}
-                />
-              </div>
             </div>
           </div>
         </div>
