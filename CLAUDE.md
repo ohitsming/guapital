@@ -2,7 +2,13 @@
 
 
 # TODO
+* ~~FIRE calculator create user input income calculator, add accuracy to the forecast~~ ✅ DONE (Oct 2025 - implemented per-account monthly contributions instead, better for privacy)
 * remove manual sync for plaid api
+* mdx markup to create social content
+  * make sure it has sharable links to twitter / facebook / and copy link method for sharing
+  * create a library of blog posts and store it in a master content md
+  * find trending reddit and create blog post specifically answer their questions
+  * post comment to the reddit, create backlink effect when user shares or click on the link
 
 
 ## Project Overview
@@ -37,17 +43,92 @@ npm run lint/test        # QA
 
 ### Database Schema (Supabase + RLS)
 
-**Core Tables:**
-- `plaid_items`, `plaid_accounts`, `plaid_transactions` - Plaid integration
-- `webhook_event_log` - Plaid webhook audit trail (30-day retention)
-- `crypto_wallets`, `crypto_holdings` - Multi-chain crypto
-- `manual_assets`, `manual_asset_history` - Manual entries
-- `net_worth_snapshots` - Daily historical tracking
-- `user_demographics`, `user_settings` - User data
-- `percentile_seed_data` - Federal Reserve SCF 2022 (49 records)
-- `percentile_snapshots` - Daily percentile calculations
-- `percentile_milestones` - Achievement tracking
-- `rate_limit_attempts` - Rate limiting (IP/user-based)
+**IMPORTANT: Database Development Best Practices**
+
+Before creating any new tables or modifying schema:
+1. **Check existing schema first**: Always query the database or review `supabase/migrations/` directory to understand current structure
+2. **Avoid duplicate tables**: Search for existing tables that serve similar purposes before creating new ones
+3. **Follow migration patterns**: Create new migration files following the naming convention `###_descriptive_name.sql`
+4. **Test locally first**: Apply migrations to local Supabase instance before production
+5. **Preserve data integrity**: Use proper foreign keys, constraints, and cascading rules
+6. **Enable RLS by default**: All user-owned tables must have Row Level Security enabled
+7. **Index strategically**: Add indexes for columns used in WHERE clauses, JOINs, and ORDER BY operations
+8. **Use unique constraints**: Prevent duplicates at database level (e.g., `item_id`, `account_id`, `transaction_id`)
+9. **Document in migrations**: Include comments explaining complex business logic in migration files
+10. **Leverage existing functions**: Reuse database functions for common operations (net worth calculation, percentile ranking, etc.)
+
+**Complete Database Schema (27 migrations applied)**
+
+**Plaid Integration (Webhook-Driven Sync)**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **plaid_items** | Institutional connections | user_id, item_id (UNIQUE), access_token, institution_name, webhook_last_received_at, sync_count_daily, last_successful_sync_at | Tracks webhook receipt, daily sync quotas |
+| **plaid_accounts** | Individual accounts | user_id, plaid_item_id (FK), account_id (UNIQUE), account_name, account_type, current_balance, is_active, converted_to_manual_asset_id (FK) | Soft delete via is_active flag |
+| **plaid_transactions** | Transaction history | user_id, plaid_account_id (FK), transaction_id (UNIQUE), transaction_date, merchant_name, category[], amount, ai_category, pending | Preserved after account conversion |
+
+**Crypto Tracking (Multi-Chain)**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **crypto_wallets** | Wallet addresses | user_id, wallet_address, wallet_name, blockchain (eth/polygon/base/arbitrum/optimism) | UNIQUE (user_id, wallet_address, blockchain) |
+| **crypto_holdings** | Token balances | user_id, crypto_wallet_id (FK), token_symbol, token_name, balance (NUMERIC high precision), usd_value | Auto-synced via Alchemy API |
+
+**Manual Asset Management**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **manual_assets** | User-entered assets/liabilities | user_id, asset_name, current_value, entry_type (asset/liability), category, converted_from_plaid_account_id (FK) | 15 valid categories (CHECK constraint) |
+| **manual_asset_history** | Edit audit trail | manual_asset_id (FK CASCADE DELETE), user_id, old_value, new_value, changed_at | Immutable history log |
+
+**Net Worth Tracking**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **net_worth_snapshots** | Daily historical tracking | user_id, snapshot_date, total_assets, total_liabilities, net_worth, breakdown (JSONB) | UNIQUE (user_id, snapshot_date) |
+
+**Percentile Ranking (THE Killer Feature)**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **percentile_seed_data** | Federal Reserve SCF 2022 benchmarks | age_bracket, percentile (10/25/50/75/90/95/99), net_worth, source, data_year | Public read-only (49 rows) |
+| **percentile_snapshots** | Daily percentile calculations | user_id, snapshot_date, age_bracket, net_worth, percentile, rank_position, total_users_in_bracket, uses_seed_data | UNIQUE (user_id, snapshot_date) |
+| **percentile_milestones** | Achievement tracking | user_id, milestone_type (top 50%/25%/10%/5%/1%), achieved_at, net_worth_at_achievement | UNIQUE (user_id, milestone_type) |
+
+**FIRE Trajectory (Financial Independence)**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **trajectory_snapshots** | Daily FIRE calculations | user_id, snapshot_date, monthly_income, monthly_expenses, monthly_savings, savings_rate, current_net_worth, fire_number (25x annual), years_to_fire, projected_fire_date, conservative_years (5%), aggressive_years (9%) | UNIQUE (user_id, snapshot_date) |
+| **trajectory_milestones** | FIRE achievements | user_id, milestone_type (Coast FIRE/Lean FIRE/FIRE/Fat FIRE), achieved_at, net_worth_at_achievement, annual_expenses_at_achievement | UNIQUE (user_id, milestone_type) |
+| **account_projection_config** | Per-account projection assumptions | user_id, account_id, account_source (manual_assets/plaid_accounts/crypto_wallets), custom_growth_rate (-1 to 1), custom_loan_term_years (≥0), scenario_name (default/conservative/aggressive), monthly_contribution | Polymorphic account references |
+
+**User Profile & Subscription**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **user_profiles** | Basic profile metadata | id (FK auth.users), full_name, email, onboarding (JSONB) | Auto-created on signup |
+| **user_settings** | Subscription & preferences | user_id (FK UNIQUE), subscription_tier (free/premium/pro), subscription_status, stripe_customer_id, stripe_subscription_id, stripe_price_id, email_notifications, cancel_at_period_end | Auto-created on signup |
+| **user_demographics** | Age bracket & percentile opt-in | user_id (FK UNIQUE), date_of_birth, age_bracket (auto-calculated trigger), percentile_opt_in, percentile_consent_timestamp, uses_seed_data | Explicit opt-in required |
+
+**System Tables**
+| Table | Purpose | Key Columns | Constraints |
+|-------|---------|-------------|-------------|
+| **webhook_event_log** | Plaid webhook audit trail | webhook_type, webhook_code, item_id, payload (JSONB), received_at, processed_at, error_message, event_id, retry_count, status | 30-day retention, service role only |
+| **rate_limit_attempts** | Request throttling | identifier (IP or user_id), endpoint_category (auth/api/expensive), request_count, window_start, last_request_at | 24-hour retention, service role only |
+| **support_requests** | User feedback/support | user_id, email, type (bug/feature/account/question/other), description, status (open/in_progress/resolved/closed) | User-owned with RLS |
+| **share_events** | Social sharing analytics | user_id, event_type (initiated/completed/clicked), share_type (static/progress/annual/milestone/streak), platform (twitter/linkedin/instagram/reddit/copy_link), percentile, anonymous | Anonymous sharing supported |
+
+**Database Functions (Business Logic)**
+- `calculate_current_net_worth(user_id)` - Sums Plaid + crypto + manual assets/liabilities
+- `calculate_percentile_hybrid(user_id, age_bracket)` - Hybrid SCF + real user data algorithm
+- `calculate_trajectory(...)` - FIRE calculations with compound interest formulas
+- `should_sync_plaid_item(item_id)` - 24-hour cache check, prevents redundant API calls
+- `check_and_increment_rate_limit(...)` - Atomic rate limiting (auth: 5/15min, api: 300/min, expensive: 10/hour)
+- `record_daily_snapshots()` - Cron job for net worth snapshots (midnight UTC)
+- `calculate_daily_percentiles()` - Cron job for percentile rankings (1am UTC)
+- `calculate_daily_trajectories()` - Cron job for FIRE projections (1:30am UTC)
+- `cleanup_old_rate_limits()` - Cron job for cleanup (3am UTC)
+- `opt_in_percentile_tracking(...)` - SECURITY DEFINER for opt-in flow
+
+**Scheduled Jobs (pg_cron)**
+- 0:00 UTC - Daily net worth snapshots for all users
+- 1:00 UTC - Daily percentile calculations for opted-in users
+- 1:30 UTC - Daily FIRE trajectory projections
+- 3:00 UTC - Rate limit cleanup (>24h old records)
 
 ### Auth Pattern
 
@@ -108,6 +189,7 @@ All features shipped: Plaid integration (Transactions product only), crypto trac
 - Premium gates fixed
 - **Plaid webhook implementation** (70% cost reduction, real-time sync)
 - **Auto-convert Plaid→Manual on downgrade** (preserves tracking data)
+- **Monthly contribution tracking** (per-account FIRE projections, no salary required - privacy win!)
 
 **Pre-Launch (2-3 days):**
 1. Mobile testing
@@ -117,7 +199,7 @@ All features shipped: Plaid integration (Transactions product only), crypto trac
 5. **Testing complete:** 130/168 tests passing (77%), including 19 integration tests ✅
 
 **Pre-Production (3-4 hours):**
-1. Apply migrations to production Supabase (001-020)
+1. Apply migrations to production Supabase (001-027, includes monthly contribution tracking)
 2. Enable pg_cron, verify cron jobs (snapshots, rate limit cleanup)
 3. Configure Stripe ($79 founding, $99 regular)
 4. Social OAuth production URLs
@@ -137,11 +219,13 @@ All features shipped: Plaid integration (Transactions product only), crypto trac
 - SEO: 12K searches/month for "net worth percentile by age", 18K for "how to calculate net worth"
 - Implementation: Blog section, markdown content, og:meta tags, internal linking
 
-**#3 Priority: Trajectory** (1-2 weeks, SEO opportunity)
-- Calculate path to financial independence based on savings rate
+**#3 Priority: Trajectory** ✅ **COMPLETE** (SEO opportunity)
+- ✅ Calculate path to financial independence based on savings rate
+- ✅ Per-account monthly contribution tracking (no salary required - privacy win!)
+- ✅ Real-time projection updates with compound interest + annuity formulas
 - Why: Target audience (24-35 tech workers) loves FIRE content
 - SEO: "FIRE calculator" = 40K searches/month
-- Implementation: Simple formula (25x expenses rule), chart visualization
+- Next: Add 25x expenses rule visualization, blog content
 
 **#4 Priority: Sankey Diagram** (2-3 weeks, unique differentiator)
 - Visual cashflow: income → expenses → savings/investments
@@ -446,8 +530,6 @@ By then, Guapital has SEO authority + backlinks.
 
 **Always prioritize:** Reliability, mobile-first, speed, beautiful UX, privacy/security
 
-**Code style:** Do not use emojis in code (log messages, comments, etc.). Keep code professional and clean.
-
 **Decision framework:** Does this help track net worth / reduce friction / improve core reliability / ship in <2 weeks? If no → Don't build yet. Prioritize proven growth channels (referrals, SEO, product quality) over speculative viral mechanics.
 
 **Scope creep red flags (Phase 2+):**
@@ -458,6 +540,100 @@ By then, Guapital has SEO authority + backlinks.
 - Credit score monitoring
 
 **Never compromise:** Data encryption, secure auth, backups, user privacy
+
+### Coding Best Practices
+
+**General Code Quality**
+1. **No emojis in code**: Log messages, comments, variable names, function names should be professional and clean
+2. **TypeScript strict mode**: Enable strict type checking, avoid `any` types
+3. **Error handling**: Always wrap async operations in try/catch, return meaningful error messages
+4. **Logging**: Use structured logging with context (user_id, action, timestamp) for debugging
+5. **Comments**: Explain "why" not "what" - code should be self-documenting
+6. **DRY principle**: Extract repeated logic into reusable functions/utilities
+7. **Single Responsibility**: Functions should do one thing well
+8. **Naming conventions**: Use descriptive names (e.g., `calculateMonthlyContribution` not `calc`)
+
+**Database Development**
+1. **Check schema first**: Always review `supabase/migrations/` before creating new tables
+2. **Avoid duplicate tables**: Search for existing tables that serve similar purposes
+3. **Follow migration patterns**: Name files `###_descriptive_name.sql`, increment numbers sequentially
+4. **Test locally first**: Apply migrations to local Supabase before production
+5. **Use RLS policies**: Enable Row Level Security on all user-owned tables
+6. **Leverage existing functions**: Reuse database functions (net worth calculations, percentile ranking)
+7. **Add proper indexes**: Index columns used in WHERE, JOIN, ORDER BY operations
+8. **Unique constraints**: Prevent duplicates at database level (e.g., transaction_id, item_id)
+9. **Foreign keys with CASCADE**: Define cascading delete rules (e.g., manual_asset_history → manual_assets)
+10. **Document complex logic**: Add SQL comments explaining business rules
+
+**API Development**
+1. **Auth first**: Always check `auth.getUser()` before processing requests
+2. **Input validation**: Validate all request parameters with Zod or similar
+3. **Rate limiting**: Use existing rate limit middleware (auth/api/expensive categories)
+4. **Error responses**: Return consistent error format with status codes
+   ```typescript
+   return NextResponse.json({ error: 'Description' }, { status: 400 })
+   ```
+5. **Supabase patterns**: Use `createClient()` from `@/utils/supabase/server` for API routes
+6. **Avoid N+1 queries**: Use JOINs or parallel queries instead of loops
+7. **Transaction safety**: Use database transactions for multi-step operations
+8. **Idempotency**: Design APIs to handle duplicate requests safely (especially webhooks)
+
+**React/Next.js Development**
+1. **Server vs Client components**: Default to Server Components, use 'use client' only when needed
+2. **API wrapper**: Use `apiGet/apiPost` from `@/utils/api` for automatic rate limit handling
+3. **Subscription context**: Use `useSubscription()` hook for feature gating
+4. **Loading states**: Always show loading UI during async operations
+5. **Error boundaries**: Handle errors gracefully with user-friendly messages
+6. **Avoid prop drilling**: Use Context for deeply nested props
+7. **Memoization**: Use `useMemo/useCallback` for expensive computations
+8. **Parallel data fetching**: Fetch independent data in parallel, not sequentially
+
+**Security Best Practices**
+1. **Never expose secrets**: Service role keys only in API routes (server-side)
+2. **Sanitize inputs**: Validate and sanitize all user inputs before database queries
+3. **RLS enforcement**: Trust database RLS policies, don't replicate in application code
+4. **Webhook verification**: Verify webhook signatures (Stripe, Plaid) before processing
+5. **HTTPS only**: All external API calls must use HTTPS
+6. **Token management**: Never log or expose access tokens, encrypt sensitive data
+7. **Rate limiting**: Leverage existing rate limiting for all public endpoints
+8. **CORS configuration**: Restrict origins in production (Plaid, Stripe, Supabase only)
+
+**Testing Standards**
+1. **Test critical paths**: Net worth calculation, percentile ranking, subscription flows
+2. **Integration tests**: Test webhook flows, Stripe events, database triggers
+3. **Mock external APIs**: Use test fixtures for Plaid, Alchemy, Stripe responses
+4. **Test error scenarios**: Handle network failures, invalid inputs, race conditions
+5. **Run tests locally**: `npm test` before committing changes
+6. **Maintain test coverage**: Aim for >75% coverage on critical business logic
+
+**Performance Optimization**
+1. **Database indexes**: Add indexes for frequently queried columns
+2. **Query optimization**: Use EXPLAIN ANALYZE to identify slow queries
+3. **Caching strategy**: Leverage existing 24-hour sync cache for Plaid items
+4. **Batch operations**: Use batch inserts/updates instead of loops
+5. **Lazy loading**: Load components/data only when needed
+6. **Image optimization**: Use Next.js Image component with proper sizing
+7. **Code splitting**: Use dynamic imports for large components
+
+**Version Control**
+1. **Atomic commits**: One logical change per commit
+2. **Meaningful commit messages**: Follow format "feat/fix/refactor: Description"
+3. **Branch strategy**: Feature branches off main, merge after testing
+4. **Review migrations**: Always review SQL migrations before merging
+5. **No secrets in git**: Use .env files, never commit API keys
+
+**Code Review Checklist**
+Before submitting code, verify:
+- [ ] No duplicate tables/functions (checked existing schema)
+- [ ] RLS policies enabled on new tables
+- [ ] Indexes added for query performance
+- [ ] Error handling implemented
+- [ ] Tests passing (npm test)
+- [ ] No console.logs or emojis in production code
+- [ ] API routes have auth checks
+- [ ] Rate limiting applied
+- [ ] TypeScript types defined (no `any`)
+- [ ] Comments explain complex business logic
 
 ## Security & Monitoring
 
@@ -560,7 +736,7 @@ Real-data-only (no backfill/synthetic). Daily cron (`pg_cron`) midnight UTC. Gho
 ├── __tests__/               # Test suite (168 tests, 77% passing, includes 19 integration tests)
 ├── documentations/          # API costs, percentile specs, deployment guides, research
 ├── scripts/                 # SCF data processing, test utilities
-├── supabase/migrations/     # 001-020 (schema, subscriptions, percentile, rate limiting, webhooks)
+├── supabase/migrations/     # 001-027 (schema, subscriptions, percentile, rate limiting, webhooks, trajectory, projections)
 ├── src/
 │   ├── app/
 │   │   ├── api/             # assets, cashflow, crypto, networth, percentile, plaid, supabase

@@ -20,7 +20,7 @@ const plaidClient = new PlaidApi(configuration);
  */
 export async function syncAccountBalances(supabase: any, itemId: string) {
   try {
-    console.log(`🔄 Syncing account balances for item ${itemId}`);
+    console.log(`Syncing account balances for item ${itemId}`);
 
     // Get the plaid item
     const { data: plaidItem, error: itemError } = await supabase
@@ -30,7 +30,7 @@ export async function syncAccountBalances(supabase: any, itemId: string) {
       .single();
 
     if (itemError || !plaidItem) {
-      console.error('❌ Plaid item not found:', itemError);
+      console.error('Plaid item not found:', itemError);
       throw new Error(`Plaid item not found: ${itemId}`);
     }
 
@@ -41,9 +41,10 @@ export async function syncAccountBalances(supabase: any, itemId: string) {
 
     const accounts = accountsResponse.data.accounts;
 
-    // Update balances in database
+    // Update balances ONLY for active accounts (not soft-deleted)
+    let syncedCount = 0;
     for (const account of accounts) {
-      await supabase
+      const { error: updateError } = await supabase
         .from('plaid_accounts')
         .update({
           current_balance: account.balances.current || 0,
@@ -52,13 +53,18 @@ export async function syncAccountBalances(supabase: any, itemId: string) {
           updated_at: new Date().toISOString(),
         })
         .eq('account_id', account.account_id)
-        .eq('user_id', plaidItem.user_id);
+        .eq('user_id', plaidItem.user_id)
+        .eq('is_active', true); // CRITICAL: Only update active accounts
+
+      if (!updateError) {
+        syncedCount++;
+      }
     }
 
-    console.log(`✅ Synced ${accounts.length} account balances for item ${itemId}`);
-    return { success: true, accounts_synced: accounts.length };
+    console.log(`Synced ${syncedCount} active account balances (${accounts.length} total from Plaid) for item ${itemId}`);
+    return { success: true, accounts_synced: syncedCount };
   } catch (error: any) {
-    console.error('❌ Error syncing account balances:', error);
+    console.error('Error syncing account balances:', error);
     throw error;
   }
 }
@@ -69,7 +75,7 @@ export async function syncAccountBalances(supabase: any, itemId: string) {
  */
 export async function syncTransactionsForItem(supabase: any, itemId: string, days = 30) {
   try {
-    console.log(`🔄 Syncing transactions for item ${itemId}`);
+    console.log(`Syncing transactions for item ${itemId}`);
 
     // Get the plaid item
     const { data: plaidItem, error: itemError } = await supabase
@@ -79,7 +85,7 @@ export async function syncTransactionsForItem(supabase: any, itemId: string, day
       .single();
 
     if (itemError || !plaidItem) {
-      console.error('❌ Plaid item not found:', itemError);
+      console.error('Plaid item not found:', itemError);
       throw new Error(`Plaid item not found: ${itemId}`);
     }
 
@@ -106,7 +112,7 @@ export async function syncTransactionsForItem(supabase: any, itemId: string, day
       .eq('plaid_item_id', plaidItem.id);
 
     if (!accounts || accounts.length === 0) {
-      console.warn('⚠️ No accounts found for item:', itemId);
+      console.warn('No accounts found for item:', itemId);
       return { success: true, transactions_synced: 0 };
     }
 
@@ -143,7 +149,7 @@ export async function syncTransactionsForItem(supabase: any, itemId: string, day
       if (!txnError) {
         totalSynced += batch.length;
       } else {
-        console.error('❌ Error upserting transaction batch:', txnError);
+        console.error('Error upserting transaction batch:', txnError);
       }
     }
 
@@ -156,10 +162,10 @@ export async function syncTransactionsForItem(supabase: any, itemId: string, day
       })
       .eq('item_id', itemId);
 
-    console.log(`✅ Synced ${totalSynced} transactions for item ${itemId}`);
+    console.log(`Synced ${totalSynced} transactions for item ${itemId}`);
     return { success: true, transactions_synced: totalSynced };
   } catch (error: any) {
-    console.error('❌ Error syncing transactions:', error);
+    console.error('Error syncing transactions:', error);
     throw error;
   }
 }
@@ -170,7 +176,7 @@ export async function syncTransactionsForItem(supabase: any, itemId: string, day
  */
 export async function removeTransactions(supabase: any, removedTransactionIds: string[]) {
   try {
-    console.log(`🗑️ Removing ${removedTransactionIds.length} transactions`);
+    console.log(`Removing ${removedTransactionIds.length} transactions`);
 
     const { error } = await supabase
       .from('plaid_transactions')
@@ -178,14 +184,14 @@ export async function removeTransactions(supabase: any, removedTransactionIds: s
       .in('transaction_id', removedTransactionIds);
 
     if (error) {
-      console.error('❌ Error removing transactions:', error);
+      console.error('Error removing transactions:', error);
       throw error;
     }
 
-    console.log(`✅ Removed ${removedTransactionIds.length} transactions`);
+    console.log(`Removed ${removedTransactionIds.length} transactions`);
     return { success: true, transactions_removed: removedTransactionIds.length };
   } catch (error: any) {
-    console.error('❌ Error removing transactions:', error);
+    console.error('Error removing transactions:', error);
     throw error;
   }
 }
@@ -217,14 +223,14 @@ export async function logWebhookEvent(
       .single();
 
     if (error) {
-      console.error('⚠️ Failed to log webhook event:', error);
+      console.error('Failed to log webhook event:', error);
       return null;
     }
 
     return data?.id || null;
   } catch (error) {
     // Don't fail webhook processing if logging fails
-    console.error('⚠️ Failed to log webhook event:', error);
+    console.error('Failed to log webhook event:', error);
     return null;
   }
 }
@@ -276,7 +282,7 @@ export async function checkWebhookDuplicate(
 
     return { isDuplicate: false };
   } catch (error) {
-    console.error('⚠️ Error checking webhook duplicate:', error);
+    console.error('Error checking webhook duplicate:', error);
     // If we can't check, assume it's not a duplicate (fail open)
     return { isDuplicate: false };
   }
@@ -292,7 +298,7 @@ export async function markWebhookProcessing(supabase: any, logId: string) {
       .update({ status: 'processing' })
       .eq('id', logId);
   } catch (error) {
-    console.error('⚠️ Failed to mark webhook as processing:', error);
+    console.error('Failed to mark webhook as processing:', error);
   }
 }
 
@@ -309,7 +315,7 @@ export async function markWebhookCompleted(supabase: any, logId: string) {
       })
       .eq('id', logId);
   } catch (error) {
-    console.error('⚠️ Failed to mark webhook as completed:', error);
+    console.error('Failed to mark webhook as completed:', error);
   }
 }
 
@@ -331,6 +337,6 @@ export async function markWebhookFailed(
       })
       .eq('id', logId);
   } catch (error) {
-    console.error('⚠️ Failed to mark webhook as failed:', error);
+    console.error('Failed to mark webhook as failed:', error);
   }
 }

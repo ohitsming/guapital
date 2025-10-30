@@ -84,9 +84,19 @@ export default function AccountsList() {
             })
 
             if (!response.ok) {
-                throw new Error('Failed to delete account')
+                const data = await response.json()
+
+                if (response.status === 404) {
+                    alert(data.error || 'Account not found. It may have already been deleted.')
+                    await fetchAccounts()
+                    return
+                }
+
+                throw new Error(data.error || 'Failed to delete account')
             }
 
+            const data = await response.json()
+            alert(data.message || 'Account removed successfully')
             await fetchAccounts()
         } catch (error) {
             console.error('Error deleting account:', error)

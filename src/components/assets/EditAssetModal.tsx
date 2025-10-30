@@ -47,9 +47,9 @@ const ASSET_CATEGORIES: CategoryConfig[] = [
   },
   {
     value: 'cash',
-    label: 'Cash',
+    label: 'Cash / Bank Accounts',
     icon: BanknotesIcon,
-    description: 'Physical cash, safe holdings',
+    description: 'Checking, savings, money market',
   },
   {
     value: 'investment',
@@ -382,10 +382,11 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
         </div>
 
         {/* Loan Term and Interest Rate (Liabilities Only) */}
-        {asset.entry_type === 'liability' && (
+        {/* Loan details removed - configure in Trajectory page */}
+        {asset.entry_type === 'liability' && false && (
           <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
             <p className="text-sm font-semibold text-gray-900 mb-3">
-              Loan Details <span className="text-gray-400 font-normal">(For trajectory calculations)</span>
+              Loan Details <span className="text-gray-400 font-normal">(Configure in Trajectory page)</span>
             </p>
 
             <div className="grid grid-cols-2 gap-4">
@@ -426,7 +427,7 @@ const EditAssetModal: React.FC<EditAssetModalProps> = ({ isOpen, onClose, onSucc
                   min="0"
                   max="100"
                   step="0.01"
-                  value={formData.interest_rate ? (formData.interest_rate * 100).toFixed(2) : ''}
+                  value={formData.interest_rate !== null ? ((formData.interest_rate as number) * 100).toFixed(2) : ''}
                   onChange={(e) => setFormData({
                     ...formData,
                     interest_rate: e.target.value ? parseFloat(e.target.value) / 100 : null

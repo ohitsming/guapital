@@ -16,6 +16,7 @@ export const GROWTH_RATE_CONFIG = {
   /**
    * Cash & Cash Equivalents
    */
+  cash: 0.001,          // 0.1% - Minimal interest
   checking: 0.001,      // 0.1% - Minimal interest
   savings: 0.02,        // 2% - High-yield savings accounts
   cd: 0.04,             // 4% - Certificates of Deposit
@@ -68,7 +69,7 @@ export const GROWTH_RATE_CONFIG = {
   // ============================================================================
   // LIABILITIES - Interest Rates
   // ============================================================================
-  // Note: Negative rates represent interest charged on debt.
+  // Note: These are POSITIVE interest rates for liabilities.
   // These are default interest rates used when users don't specify custom rates.
   //
   // Database: manual_assets.interest_rate (nullable)
@@ -77,15 +78,18 @@ export const GROWTH_RATE_CONFIG = {
   //
   // For trajectory calculations, we use these rates + loan terms to calculate
   // monthly payments with proper principal/interest split.
+  //
+  // The trajectory calculation logic uses Math.abs() to ensure proper handling,
+  // but we store them as positive values for consistency.
 
-  credit_card: -0.20,   // 20% APR - High interest credit card debt
-  mortgage: -0.06,      // 6% APR - Typical mortgage interest rate
-  auto_loan: -0.06,     // 6% APR - Auto loan interest rate
-  student_loan: -0.05,  // 5% APR - Student loan interest rate
-  personal_loan: -0.10, // 10% APR - Personal loan interest rate
-  other_liability: -0.08, // 8% APR - Generic debt interest rate
-  loan: -0.08,          // 8% APR - Generic loan interest rate
-  credit: -0.18,        // 18% APR - Credit/revolving debt
+  credit_card: 0.20,    // 20% APR - High interest credit card debt
+  mortgage: 0.06,       // 6% APR - Typical mortgage interest rate
+  auto_loan: 0.06,      // 6% APR - Auto loan interest rate
+  student_loan: 0.05,   // 5% APR - Student loan interest rate
+  personal_loan: 0.10,  // 10% APR - Personal loan interest rate
+  other_liability: 0.08, // 8% APR - Generic debt interest rate
+  loan: 0.08,           // 8% APR - Generic loan interest rate
+  credit: 0.18,         // 18% APR - Credit/revolving debt
 
   // ============================================================================
   // MANUAL ENTRIES & FALLBACK

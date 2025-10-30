@@ -14,6 +14,7 @@ import type {
   TrajectoryProjectionResponse,
   AccountProjection,
 } from '@/lib/interfaces/trajectory-projection'
+import { getLoanTermForCategory } from '@/lib/config/growth-rates'
 import Modal from '@/components/Modal'
 
 // Category labels for account types
@@ -117,7 +118,17 @@ export function TrajectoryPageContent() {
   const [showCalculationModal, setShowCalculationModal] = useState(false)
   const [editingAccount, setEditingAccount] = useState<AccountProjection | null>(null)
   const [customGrowthRate, setCustomGrowthRate] = useState<number>(0)
+  const [growthRateInput, setGrowthRateInput] = useState<string>('0')
+  const [customLoanTerm, setCustomLoanTerm] = useState<number>(0)
+  const [loanTermInput, setLoanTermInput] = useState<string>('0')
+  const [customMonthlyContribution, setCustomMonthlyContribution] = useState<number>(0)
+  const [monthlyContributionInput, setMonthlyContributionInput] = useState<string>('0')
+  const [enableContributionToggle, setEnableContributionToggle] = useState<Record<string, boolean>>({})
   const [customRates, setCustomRates] = useState<Record<string, number>>({})
+  const [customLoanTerms, setCustomLoanTerms] = useState<Record<string, number>>({})
+  const [customMonthlyContributions, setCustomMonthlyContributions] = useState<Record<string, number>>({})
+  const [originalProjections, setOriginalProjections] = useState<Record<string, AccountProjection>>({})
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     fetchProjections()
@@ -136,6 +147,16 @@ export function TrajectoryPageContent() {
 
       const data: TrajectoryProjectionResponse = await response.json()
       setProjections(data)
+
+      // Store original projections for each account (to restore when user resets to original values)
+      const originals: Record<string, AccountProjection> = {}
+      data.projections.breakdown.assets.forEach(acc => {
+        originals[acc.id] = { ...acc }
+      })
+      data.projections.breakdown.liabilities.forEach(acc => {
+        originals[acc.id] = { ...acc }
+      })
+      setOriginalProjections(originals)
     } catch (err) {
       console.error('Error fetching projections:', err)
       setError(err instanceof Error ? err.message : 'Failed to load projections')
@@ -160,7 +181,7 @@ export function TrajectoryPageContent() {
   }
 
   const formatPercentage = (rate: number): string => {
-    return `${(rate * 100).toFixed(1)}%`
+    return `${(rate * 100).toFixed(2)}%`
   }
 
   const getProjectedValue = () => {
@@ -202,17 +223,89 @@ export function TrajectoryPageContent() {
 
   const handleEditGrowthRate = (account: AccountProjection) => {
     setEditingAccount(account)
-    const rate = (customRates[account.id] ?? account.growthRate) * 100
-    setCustomGrowthRate(parseFloat(rate.toFixed(2)))
+
+    // Get current rate (always stored as positive for liabilities now)
+    const currentRate = customRates[account.id] ?? account.growthRate
+    const rate = Math.abs(currentRate) * 100
+    const rateValue = parseFloat(rate.toFixed(2))
+    setCustomGrowthRate(rateValue)
+    setGrowthRateInput(rateValue.toFixed(2))
+
+    // Initialize loan term for liabilities with fallback to config defaults
+    const defaultLoanTerm = getLoanTermForCategory(account.category)
+    const loanTerm = customLoanTerms[account.id] ?? account.loanTermYears ?? defaultLoanTerm
+    setCustomLoanTerm(loanTerm)
+    setLoanTermInput(loanTerm.toString())
+
+    // Initialize monthly contribution
+    const monthlyContribution = customMonthlyContributions[account.id] ?? account.monthlyContribution ?? 0
+    setCustomMonthlyContribution(monthlyContribution)
+    setMonthlyContributionInput(monthlyContribution.toString())
+
+    // Initialize toggle state - enable if account already has a contribution set
+    if (monthlyContribution > 0) {
+      setEnableContributionToggle(prev => ({
+        ...prev,
+        [account.id]: true
+      }))
+    }
   }
 
-  const handleSaveGrowthRate = () => {
+  const handleSaveGrowthRate = async () => {
     if (!editingAccount) return
 
+    setIsSaving(true)
     const newRate = customGrowthRate / 100
+
+    // Check if this is a liability
+    const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt', 'auto', 'student', 'credit_card', 'loan', 'home_equity', 'line_of_credit']
+    const isLiability = editingAccount.accountType === 'liability' ||
+                       editingAccount.accountType === 'credit' ||
+                       editingAccount.accountType === 'loan' ||
+                       liabilityCategories.includes(editingAccount.category)
+
+    // Save to database for both assets and liabilities
+    try {
+      const response = await fetch(`/api/assets/${editingAccount.id}/loan-details`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          loan_term_years: isLiability ? customLoanTerm : null,
+          interest_rate: newRate,
+          monthly_contribution: customMonthlyContribution,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save changes')
+      }
+
+      console.log(isLiability ? '✓ Loan details saved to database' : '✓ Growth rate saved to database')
+    } catch (error) {
+      console.error('Error saving changes:', error)
+      // Continue with local update even if API fails
+    } finally {
+      setIsSaving(false)
+    }
+
     setCustomRates(prev => ({
       ...prev,
       [editingAccount.id]: newRate
+    }))
+
+    // Save custom loan term for liabilities
+    setCustomLoanTerms(prev => ({
+      ...prev,
+      [editingAccount.id]: customLoanTerm
+    }))
+
+    // Save custom monthly contribution
+    setCustomMonthlyContributions(prev => ({
+      ...prev,
+      [editingAccount.id]: customMonthlyContribution
     }))
 
     // Recalculate projections with new rate
@@ -224,32 +317,137 @@ export function TrajectoryPageContent() {
         return accounts.map(acc => {
           if (acc.id === editingAccount.id) {
             const currentBalance = acc.currentBalance
-            const isLiability = acc.accountType === 'liability' || acc.accountType === 'credit' || acc.accountType === 'loan'
 
-            // For liabilities, we need to recalculate using the API
-            // because it requires loan term data for proper paydown calculation
-            // For now, just update the rate and mark as needing recalc
+            // Check if this is a liability using multiple methods
+            const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt', 'auto', 'student', 'credit_card', 'loan', 'home_equity', 'line_of_credit']
+            const isLiability = acc.accountType === 'liability' ||
+                               acc.accountType === 'credit' ||
+                               acc.accountType === 'loan' ||
+                               liabilityCategories.includes(acc.category)
+
+            console.log('DEBUG - Checking if liability:', {
+              accountName: acc.name,
+              accountType: acc.accountType,
+              category: acc.category,
+              isLiability
+            })
+
+            // Check if we're back to original values (within a small tolerance)
+            const originalAccount = originalProjections[acc.id]
+            if (originalAccount) {
+              const originalRate = originalAccount.growthRate
+              const originalTerm = originalAccount.loanTermYears ?? getLoanTermForCategory(originalAccount.category)
+              const isBackToOriginal = Math.abs(newRate - originalRate) < 0.0001 && customLoanTerm === originalTerm
+
+              // If back to original values for a liability, use the original projections from the API
+              if (isLiability && isBackToOriginal && originalAccount.projectedValues) {
+                return {
+                  ...acc,
+                  growthRate: newRate,
+                  loanTermYears: customLoanTerm,
+                  projectedValues: originalAccount.projectedValues
+                }
+              }
+            }
+
+            // Otherwise, recalculate projections with new rate and loan term
+            const calculateLiabilityProjection = (balance: number, rate: number, term: number, years: number): number => {
+              console.log('[Frontend Calculation]', {
+                account: editingAccount.name,
+                balance,
+                rate,
+                term,
+                years,
+                willBePaidOff: years >= term
+              })
+
+              // If no term or rate, assume constant balance
+              if (!term || !rate) {
+                console.log('[Frontend] Returning balance (no term/rate):', balance)
+                return balance
+              }
+
+              // If projection years >= loan term, loan is fully paid off
+              if (years >= term) {
+                console.log('[Frontend] Loan paid off at year', years, '(term:', term, ')')
+                return 0
+              }
+
+              // Calculate fixed monthly payment
+              const monthlyRate = Math.abs(rate) / 12
+              const totalMonths = term * 12
+              const fixedMonthlyPayment = balance * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+
+              // Calculate remaining balance after N years
+              let remainingBalance = balance
+              const projectionMonths = years * 12
+
+              for (let month = 0; month < projectionMonths; month++) {
+                const monthlyInterest = remainingBalance * monthlyRate
+                const principalPayment = fixedMonthlyPayment - monthlyInterest
+                remainingBalance = Math.max(0, remainingBalance - principalPayment)
+                if (remainingBalance <= 0) {
+                  return 0
+                }
+              }
+
+              return remainingBalance
+            }
+
+            // Helper function: calculate future value with monthly contributions
+            const calculateAssetWithContributions = (balance: number, rate: number, years: number, monthlyContribution: number): number => {
+              // Future value of current balance
+              const fvOfBalance = balance * Math.pow(1 + rate, years)
+
+              // Future value of monthly contributions (annuity formula)
+              // FV = PMT × [((1+r)^n - 1) / r]
+              const fvOfContributions = rate === 0
+                ? monthlyContribution * 12 * years  // If no growth, just sum contributions
+                : monthlyContribution * 12 * (Math.pow(1 + rate, years) - 1) / rate
+
+              return fvOfBalance + fvOfContributions
+            }
+
+            const projectedValues = isLiability
+              ? {
+                  // For liabilities: calculate paydown with loan term
+                  oneYear: calculateLiabilityProjection(currentBalance, newRate, customLoanTerm, 1),
+                  fiveYears: calculateLiabilityProjection(currentBalance, newRate, customLoanTerm, 5),
+                  tenYears: calculateLiabilityProjection(currentBalance, newRate, customLoanTerm, 10),
+                  twentyYears: calculateLiabilityProjection(currentBalance, newRate, customLoanTerm, 20),
+                  thirtyYears: calculateLiabilityProjection(currentBalance, newRate, customLoanTerm, 30),
+                }
+              : {
+                  // For assets: compound growth with contributions
+                  oneYear: calculateAssetWithContributions(currentBalance, newRate, 1, customMonthlyContribution),
+                  fiveYears: calculateAssetWithContributions(currentBalance, newRate, 5, customMonthlyContribution),
+                  tenYears: calculateAssetWithContributions(currentBalance, newRate, 10, customMonthlyContribution),
+                  twentyYears: calculateAssetWithContributions(currentBalance, newRate, 20, customMonthlyContribution),
+                  thirtyYears: calculateAssetWithContributions(currentBalance, newRate, 30, customMonthlyContribution),
+                }
+
+            console.log('='.repeat(80))
+            console.log('FINAL PROJECTION RESULTS FOR:', editingAccount.name)
+            console.log('='.repeat(80))
+            console.log('Account Type:', acc.accountType)
+            console.log('Is Liability:', isLiability)
+            console.log('Current Balance:', currentBalance.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('Interest Rate:', (newRate * 100).toFixed(2) + '%')
+            console.log('Loan Term:', customLoanTerm, 'years')
+            console.log('')
+            console.log('PROJECTED VALUES:')
+            console.log('  1 year: ', projectedValues.oneYear.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('  5 years:', projectedValues.fiveYears.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('  10 years:', projectedValues.tenYears.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('  20 years:', projectedValues.twentyYears.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('  30 years:', projectedValues.thirtyYears.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))
+            console.log('='.repeat(80))
+
             return {
               ...acc,
               growthRate: newRate,
-              projectedValues: isLiability
-                ? {
-                    // For liabilities, keep existing projections
-                    // (would need full API call to recalculate properly with loan terms)
-                    oneYear: acc.projectedValues.oneYear,
-                    fiveYears: acc.projectedValues.fiveYears,
-                    tenYears: acc.projectedValues.tenYears,
-                    twentyYears: acc.projectedValues.twentyYears,
-                    thirtyYears: acc.projectedValues.thirtyYears,
-                  }
-                : {
-                    // For assets: compound growth
-                    oneYear: currentBalance * Math.pow(1 + newRate, 1),
-                    fiveYears: currentBalance * Math.pow(1 + newRate, 5),
-                    tenYears: currentBalance * Math.pow(1 + newRate, 10),
-                    twentyYears: currentBalance * Math.pow(1 + newRate, 20),
-                    thirtyYears: currentBalance * Math.pow(1 + newRate, 30),
-                  }
+              loanTermYears: isLiability ? customLoanTerm : acc.loanTermYears,
+              projectedValues
             }
           }
           return acc
@@ -290,10 +488,48 @@ export function TrajectoryPageContent() {
       })
 
       updatedProjections.projections.projections = totalProjections
+
+      // Recalculate milestones
+      const actualTotalAssets = updatedProjections.projections.breakdown.assets.reduce((sum, a) => sum + a.currentBalance, 0)
+      const actualTotalLiabilities = updatedProjections.projections.breakdown.liabilities.reduce((sum, l) => sum + l.currentBalance, 0)
+      const actualNetWorth = actualTotalAssets - actualTotalLiabilities
+
+      const milestones: any = {}
+
+      // Years to reach $1M
+      if (actualNetWorth < 1000000 && actualNetWorth > 0) {
+        const avgGrowthRate = updatedProjections.projections.breakdown.assets.length > 0
+          ? updatedProjections.projections.breakdown.assets.reduce((sum, a) => sum + a.growthRate, 0) / updatedProjections.projections.breakdown.assets.length
+          : 0.07
+
+        const targetAssets = 1000000 + actualTotalLiabilities
+        if (actualTotalAssets > 0 && targetAssets > actualTotalAssets) {
+          const yearsToMillion = Math.log(targetAssets / actualTotalAssets) / Math.log(1 + avgGrowthRate)
+          milestones.reachMillionaire = Math.max(0, yearsToMillion)
+        }
+      }
+
+      // Years to double net worth
+      if (actualNetWorth > 0) {
+        const avgGrowthRate = updatedProjections.projections.breakdown.assets.length > 0
+          ? updatedProjections.projections.breakdown.assets.reduce((sum, a) => sum + a.growthRate, 0) / updatedProjections.projections.breakdown.assets.length
+          : 0.07
+
+        const targetAssets = 2 * actualNetWorth + actualTotalLiabilities
+        if (actualTotalAssets > 0 && targetAssets > actualTotalAssets) {
+          const yearsToDouble = Math.log(targetAssets / actualTotalAssets) / Math.log(1 + avgGrowthRate)
+          milestones.double = Math.max(0, yearsToDouble)
+        }
+      }
+
+      updatedProjections.projections.milestones = milestones
       setProjections(updatedProjections)
     }
 
     setEditingAccount(null)
+
+    // Refresh projections from API to get updated milestones
+    await fetchProjections()
   }
 
   const getEffectiveGrowthRate = (account: AccountProjection): number => {
@@ -317,6 +553,24 @@ export function TrajectoryPageContent() {
     const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt', 'auto', 'student', 'credit_card', 'loan', 'home_equity', 'line_of_credit']
     const isLiability = account.accountType === 'liability' || account.accountType === 'credit' || account.accountType === 'loan' || liabilityCategories.includes(account.category)
     const categoryLabel = CATEGORY_LABELS[account.category] || account.category
+
+    // Calculate monthly payment for liabilities
+    const calculateMonthlyPayment = (balance: number, annualRate: number, termYears: number): number => {
+      if (!termYears || termYears === 0 || !annualRate) {
+        // Revolving credit: use 3% minimum payment
+        return balance * 0.03
+      }
+
+      const monthlyRate = Math.abs(annualRate) / 12
+      const totalMonths = termYears * 12
+      const numerator = monthlyRate * Math.pow(1 + monthlyRate, totalMonths)
+      const denominator = Math.pow(1 + monthlyRate, totalMonths) - 1
+      return balance * (numerator / denominator)
+    }
+
+    const monthlyPayment = isLiability && account.loanTermYears
+      ? calculateMonthlyPayment(account.currentBalance, Math.abs(effectiveRate), account.loanTermYears)
+      : null
 
     return (
       <div key={account.id} className="bg-white rounded-lg p-4 border border-gray-200">
@@ -345,11 +599,11 @@ export function TrajectoryPageContent() {
               <PencilIcon className="h-4 w-4" />
             </button>
             <span className={`text-xs px-2 py-1 rounded-full ${
-              effectiveRate >= 0
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              isLiability
+                ? 'bg-red-100 text-red-800'
+                : 'bg-green-100 text-green-800'
             }`}>
-              {formatPercentage(effectiveRate)}
+              {formatPercentage(Math.abs(effectiveRate))}
             </span>
           </div>
         </div>
@@ -367,6 +621,27 @@ export function TrajectoryPageContent() {
             </p>
           </div>
         </div>
+        {monthlyPayment && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">Est. Monthly Payment</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(monthlyPayment)}
+                <span className="text-xs font-normal text-gray-500">/mo</span>
+              </p>
+            </div>
+            {account.loanTermYears && (
+              <p className="text-xs text-gray-400 mt-1">
+                {account.loanTermYears}-year term @ {formatPercentage(Math.abs(effectiveRate))} APR
+              </p>
+            )}
+          </div>
+        )}
       </div>
     )
   }
@@ -644,9 +919,11 @@ export function TrajectoryPageContent() {
                 <div>
                   <h4 className="text-md font-semibold text-gray-900 mb-3">Assets</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {projections.projections.breakdown.assets.map(account =>
-                      renderAccountProjection(account)
-                    )}
+                    {projections.projections.breakdown.assets
+                      .sort((a, b) => b.currentBalance - a.currentBalance)
+                      .map(account =>
+                        renderAccountProjection(account)
+                      )}
                   </div>
                 </div>
               )}
@@ -655,9 +932,11 @@ export function TrajectoryPageContent() {
                 <div>
                   <h4 className="text-md font-semibold text-gray-900 mb-3">Liabilities</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {projections.projections.breakdown.liabilities.map(account =>
-                      renderAccountProjection(account)
-                    )}
+                    {projections.projections.breakdown.liabilities
+                      .sort((a, b) => b.currentBalance - a.currentBalance)
+                      .map(account =>
+                        renderAccountProjection(account)
+                      )}
                   </div>
                 </div>
               )}
@@ -665,20 +944,23 @@ export function TrajectoryPageContent() {
           </div>
 
           {/* Disclaimer */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
             <div className="flex items-start gap-2">
-              <InformationCircleIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-gray-600">
-                <h4 className="font-semibold mb-2 text-gray-700">Disclaimer</h4>
-                <ul className="space-y-1 list-disc list-inside">
-                  <li><strong>Not Financial Advice:</strong> These projections are educational estimates only and should not be considered professional financial advice.</li>
-                  <li><strong>Based on Historical Averages:</strong> Growth rates are based on historical market averages and do not guarantee future performance.</li>
-                  <li><strong>Market Volatility:</strong> Actual returns will vary significantly due to market conditions, economic factors, and individual circumstances.</li>
-                  <li><strong>Assumptions:</strong> Projections assume no additional contributions, withdrawals, or changes to your accounts.</li>
-                  <li><strong>Consult a Professional:</strong> For personalized financial planning, please consult with a qualified financial advisor.</li>
+              <InformationCircleIcon className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-gray-700">
+                <h4 className="font-semibold mb-2 text-gray-900">Important Disclaimer</h4>
+                <ul className="space-y-1.5 list-disc list-inside">
+                  <li><strong>Not Financial Advice:</strong> Guapital is not a registered investment advisor. These projections are automated calculations for educational purposes only and should not be considered personalized financial, investment, tax, or legal advice.</li>
+                  <li><strong>Not a Recommendation:</strong> We do not provide recommendations to buy, sell, or hold any securities or investments. All projections are based on your inputs and generic assumptions.</li>
+                  <li><strong>Historical Data Limitations:</strong> Growth rates are based on historical market averages. Past performance does not guarantee or predict future results.</li>
+                  <li><strong>Market Volatility:</strong> Actual returns will vary significantly due to market conditions, economic factors, fees, taxes, inflation, and individual circumstances.</li>
+                  <li><strong>Simplified Assumptions:</strong> Projections assume constant growth rates. Monthly contributions (if specified) are assumed to continue at the same rate indefinitely. Projections do not account for withdrawals, fees, taxes, salary changes, or life events. Real-world results will differ.</li>
+                  <li><strong>Contribution Sustainability:</strong> If you&apos;ve specified monthly contributions, ensure these are sustainable based on your income and expenses. Projections assume contributions continue regardless of income, employment, or spending changes.</li>
+                  <li><strong>Your Responsibility:</strong> You are solely responsible for your financial decisions. These tools do not constitute a recommendation for any course of action.</li>
+                  <li><strong>Consult a Professional:</strong> For personalized financial planning, investment advice, or tax guidance, please consult with a qualified and registered financial advisor, CPA, or attorney.</li>
                 </ul>
-                <p className="mt-2 text-xs text-gray-500 italic">
-                  Use these projections as a general planning tool to understand potential growth trajectories, not as a guarantee of future wealth.
+                <p className="mt-3 text-xs text-gray-600 font-medium border-t border-amber-200 pt-2">
+                  By using this tool, you acknowledge that Guapital provides educational calculators only and does not provide investment advice or act as your financial advisor. All projections are hypothetical and for informational purposes only.
                 </p>
               </div>
             </div>
@@ -700,9 +982,20 @@ export function TrajectoryPageContent() {
               <p>
                 All calculations use compound interest formulas:
               </p>
-              <div className="bg-gray-100 p-4 rounded-lg font-mono text-center">
-                Future Value = Current Balance × (1 + Growth Rate)^Years
+              <div className="bg-gray-100 p-4 rounded-lg space-y-2">
+                <div className="font-mono text-sm">
+                  <div className="font-semibold mb-1">Without Contributions:</div>
+                  <div>Future Value = Current Balance × (1 + Rate)^Years</div>
+                </div>
+                <div className="font-mono text-sm mt-3">
+                  <div className="font-semibold mb-1">With Monthly Contributions:</div>
+                  <div>Future Value = Current Balance × (1 + Rate)^Years</div>
+                  <div className="ml-4">+ Monthly Contribution × 12 × [(1 + Rate)^Years - 1] / Rate</div>
+                </div>
               </div>
+              <p className="text-xs text-gray-600 italic">
+                💡 Add monthly contributions to each account for more accurate FIRE (Financial Independence, Retire Early) projections.
+              </p>
             </div>
           </Modal>
 
@@ -710,78 +1003,389 @@ export function TrajectoryPageContent() {
           <Modal
             isOpen={editingAccount !== null}
             onClose={() => setEditingAccount(null)}
-            title="Edit Growth Rate"
+            title={editingAccount ? (() => {
+              const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt', 'auto', 'student', 'credit_card', 'loan', 'home_equity', 'line_of_credit']
+              const isLiability = editingAccount.accountType === 'liability' ||
+                                 editingAccount.accountType === 'credit' ||
+                                 editingAccount.accountType === 'loan' ||
+                                 liabilityCategories.includes(editingAccount.category)
+              return isLiability ? "Edit Interest Rate" : "Edit Growth Rate"
+            })() : "Edit Account"}
           >
-            {editingAccount && (
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-700 mb-1">Account</p>
-                  <p className="font-medium text-gray-900">{editingAccount.name}</p>
-                  {editingAccount.accountType && (
-                    <p className="text-xs text-gray-500">{formatAccountTypeTitle(editingAccount.accountType)}</p>
-                  )}
-                </div>
+            {editingAccount && (() => {
+              const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'other_debt', 'auto', 'student', 'credit_card', 'loan', 'home_equity', 'line_of_credit']
+              const isLiability = editingAccount.accountType === 'liability' || editingAccount.accountType === 'credit' || editingAccount.accountType === 'loan' || liabilityCategories.includes(editingAccount.category)
 
-                <div>
-                  <label htmlFor="growth-rate" className="block text-sm font-medium text-gray-700 mb-2">
-                    Annual Growth Rate (%)
-                  </label>
-                  <input
-                    id="growth-rate"
-                    type="number"
-                    step="0.01"
-                    min="-100"
-                    max="100"
-                    value={customGrowthRate}
-                    onChange={(e) => setCustomGrowthRate(parseFloat(e.target.value))}
-                    onBlur={(e) => {
-                      const value = parseFloat(e.target.value)
-                      if (!isNaN(value)) {
-                        setCustomGrowthRate(parseFloat(value.toFixed(2)))
-                      }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Previous: {formatPercentage(customRates[editingAccount.id] ?? editingAccount.growthRate)}
-                  </p>
-                </div>
+              return (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-700 mb-1">Account</p>
+                    <p className="font-medium text-gray-900">{editingAccount.name}</p>
+                    {editingAccount.accountType && (
+                      <p className="text-xs text-gray-500">{formatAccountTypeTitle(editingAccount.accountType)}</p>
+                    )}
+                  </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-600 mb-2">Preview with {customGrowthRate.toFixed(1)}%:</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <label htmlFor="growth-rate" className="block text-sm font-medium text-gray-700 mb-2">
+                      {isLiability ? 'Annual Interest Rate (%)' : 'Annual Growth Rate (%)'}
+                    </label>
+                    <input
+                      id="growth-rate"
+                      type="number"
+                      step="0.01"
+                      min="-100"
+                      max="100"
+                      value={growthRateInput}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setGrowthRateInput(value)
+
+                        // Update numeric value for calculations
+                        const parsed = parseFloat(value)
+                        if (!isNaN(parsed)) {
+                          setCustomGrowthRate(parsed)
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = parseFloat(e.target.value)
+                        if (!isNaN(value)) {
+                          const rounded = parseFloat(value.toFixed(2))
+                          setCustomGrowthRate(rounded)
+                          setGrowthRateInput(rounded.toFixed(2))
+                        } else {
+                          // If invalid, reset to previous value
+                          setGrowthRateInput(customGrowthRate.toFixed(2))
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Current: {formatPercentage(Math.abs(customRates[editingAccount.id] ?? editingAccount.growthRate))}
+                    </p>
+                    {isLiability && (
+                      <p className="text-xs text-gray-600 mt-2 italic">
+                        Note: For liabilities, enter the interest rate as a positive number (e.g., 6.5 for 6.5% APR). This will be used to calculate your debt paydown over time.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Loan Term Field (for liabilities only) */}
+                  {isLiability && (
                     <div>
-                      <span className="text-gray-500">10 years:</span>
-                      <span className="ml-2 font-semibold text-[#004D40]">
-                        {formatCurrency(editingAccount.currentBalance * Math.pow(1 + customGrowthRate / 100, 10))}
-                      </span>
+                      <label htmlFor="loan-term" className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Term (years)
+                      </label>
+                      <input
+                        id="loan-term"
+                        type="number"
+                        step="1"
+                        min="0"
+                        max="50"
+                        value={loanTermInput}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setLoanTermInput(value)
+
+                          // Update numeric value for calculations
+                          const parsed = parseFloat(value)
+                          if (!isNaN(parsed)) {
+                            setCustomLoanTerm(Math.round(parsed))
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = parseFloat(e.target.value)
+                          if (!isNaN(value) && value >= 0) {
+                            const rounded = Math.round(value)
+                            setCustomLoanTerm(rounded)
+                            setLoanTermInput(rounded.toString())
+                          } else {
+                            // If invalid, reset to previous value
+                            setLoanTermInput(customLoanTerm.toString())
+                          }
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Current: {customLoanTerms[editingAccount.id] ?? editingAccount.loanTermYears ?? getLoanTermForCategory(editingAccount.category)} years
+                        {!editingAccount.loanTermYears && !customLoanTerms[editingAccount.id] && (
+                          <span className="text-gray-400"> (default)</span>
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-2 italic">
+                        Enter 0 for revolving credit (e.g., credit cards with minimum payments). Otherwise, enter the loan term in years (e.g., 30 for a 30-year mortgage).
+                      </p>
                     </div>
-                    <div>
-                      <span className="text-gray-500">20 years:</span>
-                      <span className="ml-2 font-semibold text-[#004D40]">
-                        {formatCurrency(editingAccount.currentBalance * Math.pow(1 + customGrowthRate / 100, 20))}
-                      </span>
+                  )}
+
+                  {/* Monthly Contribution Field (for specific account types or manually enabled) */}
+                  {(() => {
+                    // Whitelist of account categories that support monthly contributions by default
+                    const contributionEnabledCategories = [
+                      // Retirement accounts
+                      '401k', '403b', 'roth', 'ira', '529', 'hsa',
+                      'sep_ira', 'simple_ira', 'roth_401k', 'pension', 'retirement',
+
+                      // Investment accounts
+                      'brokerage', 'investment', 'mutual_fund', 'stock_plan',
+
+                      // Savings
+                      'savings', 'cd', 'money_market',
+
+                      // Crypto (DCA strategy)
+                      'crypto', 'ethereum', 'bitcoin', 'polygon', 'base', 'arbitrum', 'optimism',
+                      'crypto_ethereum', 'crypto_polygon', 'crypto_base', 'crypto_arbitrum', 'crypto_optimism',
+
+                      // Business investment
+                      'business',
+                    ]
+
+                    const categoryLower = editingAccount.category.toLowerCase()
+                    const isDefaultEnabled = contributionEnabledCategories.some(cat =>
+                      categoryLower.includes(cat.toLowerCase()) || cat.toLowerCase().includes(categoryLower)
+                    )
+
+                    const isManuallyEnabled = enableContributionToggle[editingAccount.id]
+                    const shouldShowContribution = isLiability || isDefaultEnabled || isManuallyEnabled
+
+                    // Show toggle for non-liability assets not in default whitelist
+                    const shouldShowToggle = !isLiability && !isDefaultEnabled
+
+                    return (
+                      <>
+                        {shouldShowToggle && (
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Enable Monthly Contributions</p>
+                              <p className="text-xs text-gray-500 mt-0.5">Track ongoing deposits to this account</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isManuallyEnabled || false}
+                                onChange={(e) => {
+                                  setEnableContributionToggle(prev => ({
+                                    ...prev,
+                                    [editingAccount.id]: e.target.checked
+                                  }))
+                                }}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#004D40]"></div>
+                            </label>
+                          </div>
+                        )}
+
+                        {shouldShowContribution && (
+                  <div>
+                    <label htmlFor="monthly-contribution" className="block text-sm font-medium text-gray-700 mb-2">
+                      {isLiability ? 'Monthly Payment Override (Optional)' : 'Monthly Contribution (Optional)'}
+                    </label>
+                    <input
+                      id="monthly-contribution"
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={monthlyContributionInput}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setMonthlyContributionInput(value)
+
+                        // Update numeric value for calculations
+                        const parsed = parseFloat(value)
+                        if (!isNaN(parsed)) {
+                          setCustomMonthlyContribution(Math.max(0, parsed))
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = parseFloat(e.target.value)
+                        if (!isNaN(value) && value >= 0) {
+                          const rounded = Math.round(value)
+                          setCustomMonthlyContribution(rounded)
+                          setMonthlyContributionInput(rounded.toString())
+                        } else {
+                          // If invalid, reset to previous value
+                          setMonthlyContributionInput(customMonthlyContribution.toString())
+                        }
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Current: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(customMonthlyContributions[editingAccount.id] ?? editingAccount.monthlyContribution ?? 0)}
+                      {!editingAccount.monthlyContribution && !customMonthlyContributions[editingAccount.id] && (
+                        <span className="text-gray-400"> (not set)</span>
+                      )}
+                    </p>
+                    {isLiability ? (
+                      <p className="text-xs text-gray-600 mt-2 italic">
+                        Override the calculated payment if you&apos;re paying extra to pay down debt faster. Leave at 0 to use calculated payment from loan terms.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-gray-600 mt-2 italic">
+                          Expected monthly deposit to this account.
+                        </p>
+                        {editingAccount.category === '401k' && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            💡 Annual 401(k) contribution limit (2025): $23,000 ($1,916/month)
+                          </p>
+                        )}
+                        {editingAccount.category === 'ira' && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            💡 Annual IRA contribution limit (2025): $7,000 ($583/month)
+                          </p>
+                        )}
+                        {editingAccount.category === 'roth' && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            💡 Annual Roth IRA contribution limit (2025): $7,000 ($583/month)
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                        )}
+                      </>
+                    )
+                  })()}
+
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-xs text-gray-600 mb-2">
+                      {isLiability ? `Projected balance with ${Math.abs(customGrowthRate).toFixed(2)}% interest:` : `Projected value with ${customGrowthRate.toFixed(2)}% growth:`}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-500">10 years:</span>
+                        <span className="ml-2 font-semibold text-[#004D40]">
+                          {formatCurrency((() => {
+                            const rate = customGrowthRate / 100
+                            if (isLiability && customLoanTerm > 0) {
+                              // Use liability projection with amortization
+                              if (10 >= customLoanTerm) return 0 // Fully paid off
+
+                              const monthlyRate = Math.abs(rate) / 12
+                              const totalMonths = customLoanTerm * 12
+                              const fixedMonthlyPayment = editingAccount.currentBalance * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+
+                              let remainingBalance = editingAccount.currentBalance
+                              const projectionMonths = 10 * 12
+
+                              for (let month = 0; month < projectionMonths; month++) {
+                                const monthlyInterest = remainingBalance * monthlyRate
+                                const principalPayment = fixedMonthlyPayment - monthlyInterest
+                                remainingBalance = Math.max(0, remainingBalance - principalPayment)
+                                if (remainingBalance <= 0) return 0
+                              }
+
+                              return remainingBalance
+                            }
+                            // Asset: compound growth with contributions
+                            const fvOfBalance = editingAccount.currentBalance * Math.pow(1 + Math.abs(rate), 10)
+                            const fvOfContributions = Math.abs(rate) === 0
+                              ? customMonthlyContribution * 12 * 10
+                              : customMonthlyContribution * 12 * (Math.pow(1 + Math.abs(rate), 10) - 1) / Math.abs(rate)
+                            return fvOfBalance + fvOfContributions
+                          })())}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">20 years:</span>
+                        <span className="ml-2 font-semibold text-[#004D40]">
+                          {formatCurrency((() => {
+                            const rate = customGrowthRate / 100
+                            if (isLiability && customLoanTerm > 0) {
+                              // Use liability projection with amortization
+                              if (20 >= customLoanTerm) return 0 // Fully paid off
+
+                              const monthlyRate = Math.abs(rate) / 12
+                              const totalMonths = customLoanTerm * 12
+                              const fixedMonthlyPayment = editingAccount.currentBalance * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+
+                              let remainingBalance = editingAccount.currentBalance
+                              const projectionMonths = 20 * 12
+
+                              for (let month = 0; month < projectionMonths; month++) {
+                                const monthlyInterest = remainingBalance * monthlyRate
+                                const principalPayment = fixedMonthlyPayment - monthlyInterest
+                                remainingBalance = Math.max(0, remainingBalance - principalPayment)
+                                if (remainingBalance <= 0) return 0
+                              }
+
+                              return remainingBalance
+                            }
+                            // Asset: compound growth with contributions
+                            const fvOfBalance = editingAccount.currentBalance * Math.pow(1 + Math.abs(rate), 20)
+                            const fvOfContributions = Math.abs(rate) === 0
+                              ? customMonthlyContribution * 12 * 20
+                              : customMonthlyContribution * 12 * (Math.pow(1 + Math.abs(rate), 20) - 1) / Math.abs(rate)
+                            return fvOfBalance + fvOfContributions
+                          })())}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">30 years:</span>
+                        <span className="ml-2 font-semibold text-[#004D40]">
+                          {formatCurrency((() => {
+                            const rate = customGrowthRate / 100
+                            if (isLiability && customLoanTerm > 0) {
+                              // Use liability projection with amortization
+                              if (30 >= customLoanTerm) return 0 // Fully paid off
+
+                              const monthlyRate = Math.abs(rate) / 12
+                              const totalMonths = customLoanTerm * 12
+                              const fixedMonthlyPayment = editingAccount.currentBalance * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+
+                              let remainingBalance = editingAccount.currentBalance
+                              const projectionMonths = 30 * 12
+
+                              for (let month = 0; month < projectionMonths; month++) {
+                                const monthlyInterest = remainingBalance * monthlyRate
+                                const principalPayment = fixedMonthlyPayment - monthlyInterest
+                                remainingBalance = Math.max(0, remainingBalance - principalPayment)
+                                if (remainingBalance <= 0) return 0
+                              }
+
+                              return remainingBalance
+                            }
+                            // Asset: compound growth with contributions
+                            const fvOfBalance = editingAccount.currentBalance * Math.pow(1 + Math.abs(rate), 30)
+                            const fvOfContributions = Math.abs(rate) === 0
+                              ? customMonthlyContribution * 12 * 30
+                              : customMonthlyContribution * 12 * (Math.pow(1 + Math.abs(rate), 30) - 1) / Math.abs(rate)
+                            return fvOfBalance + fvOfContributions
+                          })())}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => setEditingAccount(null)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveGrowthRate}
-                    disabled={isNaN(customGrowthRate)}
-                    className="flex-1 px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Save
-                  </button>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => setEditingAccount(null)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveGrowthRate}
+                      disabled={isNaN(customGrowthRate) || isSaving}
+                      className="flex-1 px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#00695C] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isSaving ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        'Save'
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
           </Modal>
         </>
       ) : (

@@ -22,46 +22,77 @@ import {
 
 /**
  * Calculate projected liability balance over time with loan paydown
- * Returns decreasing balances as principal is paid down
+ *
+ * This function calculates what the remaining balance will be at a specific point
+ * in time based on a FIXED amortization schedule.
+ *
+ * @param currentBalance - The current principal balance of the loan
+ * @param interestRate - Annual interest rate (e.g., 0.06 for 6%)
+ * @param termYears - The TOTAL loan term in years (defines the amortization schedule)
+ * @param projectionYears - How many years into the future to project
+ * @returns The remaining balance at the projection point
+ *
+ * Example: $370K mortgage, 6% interest, 10-year term
+ * - At year 5: ~$172K remaining (calculated via amortization)
+ * - At year 10: $0 (loan fully paid off)
+ * - At year 20: $0 (loan was already paid off at year 10)
  */
 function calculateLiabilityProjection(
   currentBalance: number,
   interestRate: number,
   termYears: number,
-  years: number
+  projectionYears: number
 ): number {
-  // If no term or interest rate, assume it stays constant (e.g., credit cards making minimum payments)
-  if (!termYears || !interestRate) {
+  // Validate inputs
+  if (currentBalance <= 0) {
+    return 0
+  }
+
+  if (!interestRate || interestRate === 0) {
+    // No interest = no payment schedule, balance stays constant
     return currentBalance
   }
 
-  // Calculate FIXED monthly payment based on original loan terms
-  // This payment stays constant throughout the loan
+  if (termYears === null || termYears === undefined || termYears === 0) {
+    // Revolving credit (credit cards) or no term specified
+    // Balance stays constant (we're not modeling minimum payments)
+    return currentBalance
+  }
+
+  // Key logic: If projection point is >= loan term, loan is fully paid off
+  if (projectionYears >= termYears) {
+    return 0
+  }
+
+  // Calculate the FIXED monthly payment based on the loan term
+  // This is the amortization formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
   const monthlyRate = Math.abs(interestRate) / 12
   const totalMonths = termYears * 12
-  const fixedMonthlyPayment = currentBalance * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1)
+  const numerator = monthlyRate * Math.pow(1 + monthlyRate, totalMonths)
+  const denominator = Math.pow(1 + monthlyRate, totalMonths) - 1
+  const fixedMonthlyPayment = currentBalance * (numerator / denominator)
 
-  // Calculate remaining balance after N years of fixed payments
-  let balance = currentBalance
-  const projectionMonths = years * 12
+  // Simulate N years of payments to find remaining balance
+  let remainingBalance = currentBalance
+  const monthsToSimulate = projectionYears * 12
 
-  for (let month = 0; month < projectionMonths; month++) {
-    // Calculate interest on current balance
-    const monthlyInterest = balance * monthlyRate
+  for (let month = 0; month < monthsToSimulate; month++) {
+    // Interest accrued this month
+    const interestPayment = remainingBalance * monthlyRate
 
-    // Principal payment = fixed payment - interest
-    const principalPayment = fixedMonthlyPayment - monthlyInterest
+    // Principal paid down this month
+    const principalPayment = fixedMonthlyPayment - interestPayment
 
-    // Reduce balance by principal payment
-    balance = Math.max(0, balance - principalPayment)
+    // Update remaining balance
+    remainingBalance -= principalPayment
 
-    // If balance is paid off, return 0
-    if (balance <= 0) {
+    // Prevent negative balances (loan is paid off)
+    if (remainingBalance <= 0) {
       return 0
     }
   }
 
-  return balance
+  return remainingBalance
 }
 
 export async function GET(request: Request) {
@@ -78,8 +109,8 @@ export async function GET(request: Request) {
     // We'll calculate this from the accounts we fetch below
     let currentNetWorth = { total_assets: 0, total_liabilities: 0, net_worth: 0 }
 
-    // Fetch all user accounts (Plaid, manual, and crypto)
-    const [plaidAccounts, manualAssets, cryptoWallets] = await Promise.all([
+    // Fetch all user accounts (Plaid, manual, and crypto) AND their projection configs
+    const [plaidAccounts, manualAssets, cryptoWallets, projectionConfigs] = await Promise.all([
       // Plaid accounts
       supabase
         .from('plaid_accounts')
@@ -109,7 +140,23 @@ export async function GET(request: Request) {
           )
         `)
         .eq('user_id', user.id),
+
+      // Projection configs (custom growth rates and loan terms)
+      supabase
+        .from('account_projection_config')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('scenario_name', 'default'),
     ])
+
+    // Create a map for quick lookup of projection configs by account_id + source
+    const configMap = new Map<string, any>()
+    if (projectionConfigs.data) {
+      for (const config of projectionConfigs.data) {
+        const key = `${config.account_source}:${config.account_id}`
+        configMap.set(key, config)
+      }
+    }
 
     // Process accounts into projections
     const assetProjections: AccountProjection[] = []
@@ -123,19 +170,20 @@ export async function GET(request: Request) {
         const balance = account.current_balance || 0
         const isLiability = account.account_type === 'credit' || account.account_type === 'loan' || balance < 0
         const category = account.account_subtype || account.account_type || 'other'
-        const growthRate = getGrowthRate(category)
+        const defaultGrowthRate = getGrowthRate(category)
 
-        console.log('DEBUG - Plaid Account:', {
-          name: account.account_name,
-          account_type: account.account_type,
-          account_subtype: account.account_subtype,
-          balance,
-          isLiability
-        })
+        // Get custom config if it exists
+        const configKey = `plaid_accounts:${account.id}`
+        const config = configMap.get(configKey)
 
-        // For Plaid liabilities, use defaults from config (no user-provided loan data)
-        const loanInterestRate = isLiability ? getGrowthRateForCategory(category) : growthRate
-        const loanTermYears = isLiability ? getLoanTermForCategory(category) : null
+        // Use custom values from config, or fall back to defaults
+        const growthRate = config?.custom_growth_rate ?? defaultGrowthRate
+        const loanInterestRate = isLiability
+          ? (config?.custom_growth_rate ?? getGrowthRateForCategory(category))
+          : growthRate
+        const loanTermYears = isLiability
+          ? (config?.custom_loan_term_years ?? getLoanTermForCategory(category))
+          : null
 
         const projection: AccountProjection = {
           id: account.id,
@@ -144,6 +192,8 @@ export async function GET(request: Request) {
           accountType: account.account_type, // Add Plaid account type
           currentBalance: Math.abs(balance),
           growthRate: growthRate,
+          loanTermYears: isLiability ? loanTermYears ?? undefined : undefined,
+          monthlyContribution: config?.monthly_contribution ?? undefined,
           projectedValues: isLiability && loanTermYears !== null
             ? {
                 // For liabilities with payments: balance DECREASES over time
@@ -183,24 +233,24 @@ export async function GET(request: Request) {
         const liabilityCategories = ['mortgage', 'personal_loan', 'business_debt', 'credit_debt', 'auto_loan', 'student_loan', 'other_debt', 'loan']
         const isLiability = asset.asset_type === 'liability' || balance < 0 || liabilityCategories.includes(category.toLowerCase())
 
-        const growthRate = getGrowthRate(category)
+        const defaultGrowthRate = getGrowthRate(category)
 
-        console.log('DEBUG - Manual Asset:', {
-          name: asset.asset_name,
-          asset_type: asset.asset_type,
-          category: asset.category,
-          balance,
-          isLiability
-        })
+        // Get custom config if it exists
+        const configKey = `manual_assets:${asset.id}`
+        const config = configMap.get(configKey)
 
-        // For liabilities, use actual loan data if available, otherwise defaults
+        // Use custom values from config, or fall back to defaults
+        const growthRate = config?.custom_growth_rate ?? defaultGrowthRate
         const loanInterestRate = isLiability
-          ? (asset.interest_rate ?? getGrowthRateForCategory(category))
+          ? (config?.custom_growth_rate ?? getGrowthRateForCategory(category))
           : growthRate
 
         const loanTermYears = isLiability
-          ? (asset.loan_term_years ?? getLoanTermForCategory(category))
+          ? (config?.custom_loan_term_years ?? getLoanTermForCategory(category))
           : null
+
+        // Determine which projection formula to use
+        const useAmortization = isLiability && loanTermYears !== null && loanTermYears !== undefined && loanTermYears > 0
 
         const projection: AccountProjection = {
           id: asset.id,
@@ -209,7 +259,9 @@ export async function GET(request: Request) {
           accountType: asset.asset_type, // Add manual asset type
           currentBalance: Math.abs(balance),
           growthRate: growthRate,
-          projectedValues: isLiability && loanTermYears !== null
+          loanTermYears: isLiability ? loanTermYears ?? undefined : undefined,
+          monthlyContribution: config?.monthly_contribution ?? undefined,
+          projectedValues: useAmortization
             ? {
                 // For liabilities with payments: balance DECREASES over time
                 oneYear: calculateLiabilityProjection(Math.abs(balance), loanInterestRate, loanTermYears, 1),
@@ -261,7 +313,14 @@ export async function GET(request: Request) {
       // Create projections for each wallet
       for (const [walletId, wallet] of walletTotals.entries()) {
         const category = wallet.chain.toLowerCase()
-        const growthRate = getGrowthRate(category)
+        const defaultGrowthRate = getGrowthRate(category)
+
+        // Get custom config if it exists
+        const configKey = `crypto_wallets:${walletId}`
+        const config = configMap.get(configKey)
+
+        // Use custom growth rate if set, otherwise use default
+        const growthRate = config?.custom_growth_rate ?? defaultGrowthRate
 
         const projection: AccountProjection = {
           id: walletId,
@@ -270,6 +329,7 @@ export async function GET(request: Request) {
           accountType: 'crypto', // Add crypto type
           currentBalance: wallet.total,
           growthRate: growthRate,
+          monthlyContribution: config?.monthly_contribution ?? undefined,
           projectedValues: {
             oneYear: calculateFutureValue(wallet.total, growthRate, 1),
             fiveYears: calculateFutureValue(wallet.total, growthRate, 5),
@@ -317,47 +377,84 @@ export async function GET(request: Request) {
       totalProjections.thirtyYears -= liability.projectedValues.thirtyYears
     }
 
-    console.log('DEBUG - Projection Calculation:', {
-      actualTotalAssets,
-      actualTotalLiabilities,
-      actualNetWorth,
-      assetsOneYear: assetProjections.reduce((sum, a) => sum + a.projectedValues.oneYear, 0),
-      liabilitiesOneYear: liabilityProjections.reduce((sum, l) => sum + l.currentBalance, 0),
-      netWorthOneYear: totalProjections.oneYear,
-    })
-
     // Calculate milestones
     const milestones: any = {}
 
     // Years to reach $1M
     if (actualNetWorth < 1000000 && actualNetWorth > 0) {
-      // Account for constant liabilities: Future NW = Future Assets - Current Liabilities
-      // Future Assets = Current Assets * (1 + r)^t
-      // Target: Future Assets - Current Liabilities = 1,000,000
-      // So: Future Assets = 1,000,000 + Current Liabilities
-      const avgGrowthRate = assetProjections.length > 0
-        ? assetProjections.reduce((sum, a) => sum + a.growthRate, 0) / assetProjections.length
-        : 0.07
+      // Use actual projected net worth values (which account for liability paydown)
+      const targetNetWorth = 1000000
 
-      const targetAssets = 1000000 + actualTotalLiabilities
-      if (actualTotalAssets > 0 && targetAssets > actualTotalAssets) {
-        const yearsToMillion = Math.log(targetAssets / actualTotalAssets) / Math.log(1 + avgGrowthRate)
-        milestones.reachMillionaire = Math.max(0, yearsToMillion)
+      // Find which projection year bracket we're in
+      if (totalProjections.oneYear >= targetNetWorth) {
+        // Reached in < 1 year - interpolate
+        const ratio = Math.log(targetNetWorth / actualNetWorth) / Math.log(totalProjections.oneYear / actualNetWorth)
+        milestones.reachMillionaire = Math.max(0, ratio)
+      } else if (totalProjections.fiveYears >= targetNetWorth) {
+        // Between 1-5 years
+        const ratio = (targetNetWorth - totalProjections.oneYear) / (totalProjections.fiveYears - totalProjections.oneYear)
+        milestones.reachMillionaire = 1 + (4 * ratio)
+      } else if (totalProjections.tenYears >= targetNetWorth) {
+        // Between 5-10 years
+        const ratio = (targetNetWorth - totalProjections.fiveYears) / (totalProjections.tenYears - totalProjections.fiveYears)
+        milestones.reachMillionaire = 5 + (5 * ratio)
+      } else if (totalProjections.twentyYears >= targetNetWorth) {
+        // Between 10-20 years
+        const ratio = (targetNetWorth - totalProjections.tenYears) / (totalProjections.twentyYears - totalProjections.tenYears)
+        milestones.reachMillionaire = 10 + (10 * ratio)
+      } else if (totalProjections.thirtyYears >= targetNetWorth) {
+        // Between 20-30 years
+        const ratio = (targetNetWorth - totalProjections.twentyYears) / (totalProjections.thirtyYears - totalProjections.twentyYears)
+        milestones.reachMillionaire = 20 + (10 * ratio)
+      } else {
+        // Target not reached within 30 years
+        const avgGrowthRate = assetProjections.length > 0
+          ? assetProjections.reduce((sum, a) => sum + a.growthRate, 0) / assetProjections.length
+          : 0.07
+        const impliedRate = Math.pow(totalProjections.thirtyYears / actualNetWorth, 1/30) - 1
+        if (impliedRate > 0) {
+          milestones.reachMillionaire = Math.log(targetNetWorth / actualNetWorth) / Math.log(1 + impliedRate)
+        }
       }
     }
 
     // Years to double
     if (actualNetWorth > 0) {
-      // Target: Assets * (1 + r)^t - Liabilities = 2 * Current Net Worth
-      // So: Assets * (1 + r)^t = 2 * Current Net Worth + Liabilities
-      const avgGrowthRate = assetProjections.length > 0
-        ? assetProjections.reduce((sum, a) => sum + a.growthRate, 0) / assetProjections.length
-        : 0.07
+      // Use actual projected net worth values (which account for liability paydown)
+      // Target: 2x current net worth
+      const targetNetWorth = 2 * actualNetWorth
 
-      const targetAssets = 2 * actualNetWorth + actualTotalLiabilities
-      if (actualTotalAssets > 0 && targetAssets > actualTotalAssets) {
-        const yearsToDouble = Math.log(targetAssets / actualTotalAssets) / Math.log(1 + avgGrowthRate)
-        milestones.double = Math.max(0, yearsToDouble)
+      // Find which projection year bracket we're in
+      if (totalProjections.oneYear >= targetNetWorth) {
+        // Reached in < 1 year - interpolate between 0 and 1 year
+        const ratio = Math.log(targetNetWorth / actualNetWorth) / Math.log(totalProjections.oneYear / actualNetWorth)
+        milestones.double = Math.max(0, ratio)
+      } else if (totalProjections.fiveYears >= targetNetWorth) {
+        // Between 1-5 years - linear interpolation
+        const ratio = (targetNetWorth - totalProjections.oneYear) / (totalProjections.fiveYears - totalProjections.oneYear)
+        milestones.double = 1 + (4 * ratio)
+      } else if (totalProjections.tenYears >= targetNetWorth) {
+        // Between 5-10 years
+        const ratio = (targetNetWorth - totalProjections.fiveYears) / (totalProjections.tenYears - totalProjections.fiveYears)
+        milestones.double = 5 + (5 * ratio)
+      } else if (totalProjections.twentyYears >= targetNetWorth) {
+        // Between 10-20 years
+        const ratio = (targetNetWorth - totalProjections.tenYears) / (totalProjections.twentyYears - totalProjections.tenYears)
+        milestones.double = 10 + (10 * ratio)
+      } else if (totalProjections.thirtyYears >= targetNetWorth) {
+        // Between 20-30 years
+        const ratio = (targetNetWorth - totalProjections.twentyYears) / (totalProjections.thirtyYears - totalProjections.twentyYears)
+        milestones.double = 20 + (10 * ratio)
+      } else {
+        // Target not reached within 30 years
+        // Use compound growth formula to estimate beyond 30 years
+        const avgGrowthRate = assetProjections.length > 0
+          ? assetProjections.reduce((sum, a) => sum + a.growthRate, 0) / assetProjections.length
+          : 0.07
+        const impliedRate = Math.pow(totalProjections.thirtyYears / actualNetWorth, 1/30) - 1
+        if (impliedRate > 0) {
+          milestones.double = Math.log(targetNetWorth / actualNetWorth) / Math.log(1 + impliedRate)
+        }
       }
     }
 

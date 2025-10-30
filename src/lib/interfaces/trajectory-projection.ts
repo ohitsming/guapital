@@ -25,6 +25,8 @@ export interface AccountProjection {
   accountType?: string // High-level type (e.g., "depository", "investment", "credit", "asset", "liability")
   currentBalance: number
   growthRate: number
+  loanTermYears?: number // Loan term in years (for liabilities only)
+  monthlyContribution?: number // Monthly contribution (assets) or payment override (liabilities)
   projectedValues: {
     oneYear: number
     fiveYears: number

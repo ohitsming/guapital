@@ -4,12 +4,12 @@ export default function PrivacyPolicy() {
     return (
         <div className="max-w-3xl mx-auto px-4 py-10 text-base text-gray-800">
             <h1 className="text-5xl font-bold mb-4">Privacy Policy</h1>
-            <p className="text-sm text-gray-500 mb-8">Last updated: October 18, 2025</p>
+            <p className="text-sm text-gray-500 mb-8">Last updated: October 29, 2025</p>
             <p className="text-md mb-8 font-semibold">Welcome to Guapital!</p>
 
             <div className="privacy-policy">
                 <p className="mb-6">
-                    At Guapital, we understand that you&apos;re trusting us with your most sensitive financial information. This Privacy Policy explains how we collect, use, protect, and share your data when you use our net worth tracking platform and related services (the &quot;Services&quot;). We believe in transparency and your right to privacy—we will never sell your personal data to third parties.
+                    Guapital is operated by LocalMoco LLC (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;). We understand that you&apos;re trusting us with your most sensitive financial information. This Privacy Policy explains how we collect, use, protect, and share your data when you use our net worth tracking platform and related services (the &quot;Services&quot;). We believe in transparency and your right to privacy—we will never sell your personal data to third parties.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">1. Information We Collect</h2>
@@ -40,12 +40,16 @@ export default function PrivacyPolicy() {
                     <li className="mb-2">Calculate and display your net worth across all asset types</li>
                     <li className="mb-2">Sync and update account balances and transaction data</li>
                     <li className="mb-2">Provide trend analysis and financial insights</li>
+                    <li className="mb-2">Generate hypothetical net worth projections using our Trajectory feature (based on historical market averages and your inputs)</li>
                     <li className="mb-2">Display your anonymized percentile ranking compared to other users (if you opt in)</li>
                     <li className="mb-2">Process subscription payments and manage your account</li>
                     <li className="mb-2">Send you service updates, security alerts, and support communications</li>
                     <li className="mb-2">Improve our platform through usage analytics and bug detection</li>
                     <li className="mb-2">Prevent fraud and maintain platform security</li>
                 </ul>
+                <p className="mb-4 text-sm text-gray-600">
+                    <strong>Important:</strong> We use your financial data only to provide our Services. We are not a registered investment advisor and do not provide personalized investment advice. All projections and calculators are for educational purposes only.
+                </p>
 
                 <h2 className="text-2xl font-semibold mt-10 mb-4">3. Third-Party Service Providers</h2>
                 <p className="mb-4">We work with trusted third-party services to provide our platform:</p>

@@ -31,10 +31,10 @@ export async function GET(request: Request) {
       .eq('is_active', true) // Only show active Plaid accounts
       .order('created_at', { ascending: false });
 
-    console.log('🔍 Plaid accounts API - User ID:', user.id);
-    console.log('🔍 Plaid accounts API - Accounts found:', accounts?.length || 0);
-    console.log('🔍 Plaid accounts API - Error:', error);
-    console.log('🔍 Plaid accounts API - Data:', JSON.stringify(accounts, null, 2));
+    console.log('Plaid accounts API - User ID:', user.id);
+    console.log('Plaid accounts API - Accounts found:', accounts?.length || 0);
+    console.log('Plaid accounts API - Error:', error);
+    console.log('Plaid accounts API - Data:', JSON.stringify(accounts, null, 2));
 
     if (error) {
       console.error('Error fetching accounts:', error);
@@ -72,18 +72,28 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Missing account ID' }, { status: 400 });
     }
 
-    // Get the plaid_item_id and access_token for this account
+    // Get the account and check how many accounts exist for this plaid_item
     const { data: account, error: fetchError } = await supabase
       .from('plaid_accounts')
-      .select('plaid_item_id, plaid_items(id, access_token, institution_name)')
+      .select('plaid_item_id, account_name, plaid_items(id, access_token, institution_name)')
       .eq('id', accountId)
       .eq('user_id', user.id)
-      .single();
+      .eq('is_active', true)
+      .maybeSingle();
 
-    if (fetchError || !account) {
-      console.error('Error fetching account:', fetchError);
+    // Handle case where account doesn't exist (already deleted or never existed)
+    if (fetchError) {
+      console.error('Error fetching account for deletion:', fetchError);
       return NextResponse.json(
-        { error: 'Account not found', details: fetchError?.message },
+        { error: 'Failed to fetch account', details: fetchError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!account) {
+      console.log('Account not found, may have been already deleted:', accountId);
+      return NextResponse.json(
+        { error: 'Account not found. It may have already been deleted.' },
         { status: 404 }
       );
     }
@@ -91,47 +101,95 @@ export async function DELETE(request: Request) {
     const plaidItem = account.plaid_items as any;
 
     if (!plaidItem) {
-      console.error('No plaid_items found for account');
+      console.error('No plaid_items found for account:', accountId);
       return NextResponse.json(
-        { error: 'Plaid item not found' },
+        { error: 'Associated Plaid connection not found' },
         { status: 404 }
       );
     }
 
-    // HARD DELETE: Call Plaid API to remove item (stops subscription charges)
-    try {
-      console.log(`🗑️ Calling Plaid itemRemove for institution: ${plaidItem.institution_name}`);
-      const plaidClient = getPlaidClient();
-      await plaidClient.itemRemove({
-        access_token: plaidItem.access_token,
-      });
-      console.log('✅ Successfully removed Plaid item');
-    } catch (plaidError: any) {
-      // Log error but continue with database deletion
-      // This ensures we clean up even if Plaid API fails
-      console.error('⚠️ Plaid itemRemove failed (continuing with database deletion):', plaidError.message);
-    }
+    // Check how many ACTIVE accounts exist for this plaid_item
+    const { data: siblingAccounts, error: countError } = await supabase
+      .from('plaid_accounts')
+      .select('id')
+      .eq('plaid_item_id', account.plaid_item_id)
+      .eq('user_id', user.id)
+      .eq('is_active', true);
 
-    // Delete the plaid_items record (CASCADE will delete all accounts and transactions)
-    const { error: deleteError } = await supabase
-      .from('plaid_items')
-      .delete()
-      .eq('id', plaidItem.id)
-      .eq('user_id', user.id);
-
-    if (deleteError) {
-      console.error('Error deleting plaid_items:', deleteError);
+    if (countError) {
+      console.error('Error counting sibling accounts:', countError);
       return NextResponse.json(
-        { error: 'Failed to delete Plaid item', details: deleteError.message },
+        { error: 'Failed to check related accounts', details: countError.message },
         { status: 500 }
       );
     }
 
-    console.log(`✅ Hard deleted Plaid item and all associated accounts/transactions`);
+    const accountCount = siblingAccounts?.length || 0;
+    console.log(`Found ${accountCount} active account(s) for ${plaidItem.institution_name}`);
+
+    // If this is the LAST active account, remove the entire plaid_item
+    if (accountCount === 1) {
+      console.log(`Last account - removing entire Plaid connection for ${plaidItem.institution_name}`);
+
+      // Call Plaid API to remove item (stops subscription charges)
+      try {
+        const plaidClient = getPlaidClient();
+        await plaidClient.itemRemove({
+          access_token: plaidItem.access_token,
+        });
+        console.log('Successfully removed Plaid item via API');
+      } catch (plaidError: any) {
+        // Log error but continue with database deletion
+        console.error('Plaid itemRemove failed (continuing with database deletion):', plaidError.message);
+      }
+
+      // Delete the plaid_items record (CASCADE will delete all accounts and transactions)
+      const { error: deleteError } = await supabase
+        .from('plaid_items')
+        .delete()
+        .eq('id', plaidItem.id)
+        .eq('user_id', user.id);
+
+      if (deleteError) {
+        console.error('Error deleting plaid_items:', deleteError);
+        return NextResponse.json(
+          { error: 'Failed to delete Plaid connection', details: deleteError.message },
+          { status: 500 }
+        );
+      }
+
+      console.log(`Removed ${plaidItem.institution_name} and all associated accounts`);
+
+      return NextResponse.json({
+        success: true,
+        message: `Removed ${plaidItem.institution_name} connection and all accounts`,
+        removed_item: true
+      });
+    }
+
+    // If there are other accounts, just soft-delete this specific account
+    console.log(`Soft-deleting account "${account.account_name}" (${accountCount - 1} other account(s) remain)`);
+
+    const { error: softDeleteError } = await supabase
+      .from('plaid_accounts')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', accountId)
+      .eq('user_id', user.id);
+
+    if (softDeleteError) {
+      console.error('Error soft-deleting account:', softDeleteError);
+      return NextResponse.json(
+        { error: 'Failed to remove account', details: softDeleteError.message },
+        { status: 500 }
+      );
+    }
+
+    console.log(`Soft-deleted account "${account.account_name}"`);
 
     return NextResponse.json({
       success: true,
-      message: 'Plaid account permanently removed. Subscription charges stopped.'
+      message: `Removed "${account.account_name}" (${accountCount - 1} account(s) remaining)`,
+      removed_item: false
     });
   } catch (error: any) {
     console.error('Error in delete account route:', error);

@@ -30,17 +30,110 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
 
     const { hasAccess, getLimit, isLoading: subscriptionLoading } = useSubscription()
 
-    // Responsive limit: 3 on mobile, 5 on desktop
+    // Responsive limit: 3 on mobile, 3 on desktop
     const isDesktop = useMediaQuery('(min-width: 1024px)')
-    const accountLimit = isDesktop ? 5 : 3
+    const accountLimit = 3
 
     // Get history limit based on subscription tier
     const historyDays = hasAccess('history365Days') ? 365 : 30
 
+    // SessionStorage cache helper (same as AccountsPageContent for consistency)
+    const CACHE_KEY = 'guapital_dashboard_cache'
+    const CACHE_DURATION = 30000 // 30 seconds
+
+    const getCachedData = () => {
+        try {
+            const cached = sessionStorage.getItem(CACHE_KEY)
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached)
+                if (Date.now() - timestamp < CACHE_DURATION) {
+                    return data
+                }
+            }
+        } catch (err) {
+            console.error('Error reading cache:', err)
+        }
+        return null
+    }
+
+    const setCachedData = (data: any) => {
+        try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                data,
+                timestamp: Date.now()
+            }))
+        } catch (err) {
+            console.error('Error setting cache:', err)
+        }
+    }
+
+    // Parallel data fetching with caching
     useEffect(() => {
-        fetchNetWorth()
-        fetchTrendData(historyDays)
-        fetchPercentileData()
+        const fetchAllData = async () => {
+            try {
+                // Try cache first
+                const cached = getCachedData()
+                if (cached && cached.historyDays === historyDays) {
+                    setNetWorth(cached.netWorth)
+                    setTrendData(cached.trendData)
+                    setPercentileData(cached.percentileData)
+                    setLoading(false)
+                    setPercentileLoading(false)
+                    return
+                }
+
+                setLoading(true)
+                setPercentileLoading(true)
+                setError(null)
+
+                // Fetch all data in parallel
+                const [netWorthResult, trendResult, percentileResult] = await Promise.allSettled([
+                    fetch('/api/networth').then(res => res.ok ? res.json() : Promise.reject(res)),
+                    fetch(`/api/networth/history?days=${historyDays}`).then(res => res.ok ? res.json() : Promise.reject(res)),
+                    fetch('/api/percentile').then(res => res.ok ? res.json() : Promise.reject(res))
+                ])
+
+                // Process net worth
+                if (netWorthResult.status === 'fulfilled') {
+                    setNetWorth(netWorthResult.value)
+                } else {
+                    console.error('Error fetching net worth:', netWorthResult.reason)
+                    setError('Failed to fetch net worth')
+                }
+
+                // Process trend data
+                if (trendResult.status === 'fulfilled') {
+                    setTrendData(trendResult.value.trendData || [])
+                } else {
+                    console.error('Error fetching trend data:', trendResult.reason)
+                    setTrendData([])
+                }
+
+                // Process percentile data
+                if (percentileResult.status === 'fulfilled') {
+                    setPercentileData(percentileResult.value)
+                } else {
+                    console.error('Error fetching percentile data:', percentileResult.reason)
+                }
+
+                // Cache the results
+                setCachedData({
+                    netWorth: netWorthResult.status === 'fulfilled' ? netWorthResult.value : null,
+                    trendData: trendResult.status === 'fulfilled' ? trendResult.value.trendData || [] : [],
+                    percentileData: percentileResult.status === 'fulfilled' ? percentileResult.value : null,
+                    historyDays
+                })
+
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err)
+                setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+            } finally {
+                setLoading(false)
+                setPercentileLoading(false)
+            }
+        }
+
+        fetchAllData()
     }, [historyDays])
 
     // Add today's net worth to trend data if it's not already there
@@ -64,47 +157,81 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                 // Double-check we haven't already added today's point
                 const lastPoint = prevData[prevData.length - 1]
                 if (lastPoint && lastPoint.date.split('T')[0] === today) {
-                    console.log('⚠️ Today\'s point already exists, skipping')
                     return prevData
                 }
-                console.log('🎯 Successfully added today\'s point')
                 return [...prevData, todayDataPoint]
             })
         }
     }, [netWorth, trendData])
 
-    const fetchNetWorth = async () => {
+    const clearCache = () => {
         try {
-            setLoading(true)
-            setError(null) // Clear previous errors
-            const response = await fetch('/api/networth')
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Failed to fetch net worth')
-            }
-            const data = await response.json()
-            setNetWorth(data)
+            sessionStorage.removeItem(CACHE_KEY)
         } catch (err) {
-            console.error('Error fetching net worth:', err)
-            setError(err instanceof Error ? err.message : 'Failed to fetch net worth')
-        } finally {
-            setLoading(false)
+            console.error('Error clearing cache:', err)
         }
     }
 
-    const fetchTrendData = async (days: number) => {
+    const refetchData = async () => {
+        clearCache()
         try {
-            const response = await fetch(`/api/networth/history?days=${days}`)
-            if (!response.ok) {
-                throw new Error('Failed to fetch trend data')
+            setLoading(true)
+            setPercentileLoading(true)
+            setError(null)
+
+            // Fetch all data in parallel
+            const [netWorthResult, trendResult, percentileResult] = await Promise.allSettled([
+                fetch('/api/networth').then(res => res.ok ? res.json() : Promise.reject(res)),
+                fetch(`/api/networth/history?days=${historyDays}`).then(res => res.ok ? res.json() : Promise.reject(res)),
+                fetch('/api/percentile').then(res => res.ok ? res.json() : Promise.reject(res))
+            ])
+
+            // Process net worth
+            if (netWorthResult.status === 'fulfilled') {
+                setNetWorth(netWorthResult.value)
+            } else {
+                console.error('Error fetching net worth:', netWorthResult.reason)
+                setError('Failed to fetch net worth')
             }
-            const data = await response.json()
-            setTrendData(data.trendData || [])
+
+            // Process trend data
+            if (trendResult.status === 'fulfilled') {
+                setTrendData(trendResult.value.trendData || [])
+            } else {
+                console.error('Error fetching trend data:', trendResult.reason)
+                setTrendData([])
+            }
+
+            // Process percentile data
+            if (percentileResult.status === 'fulfilled') {
+                setPercentileData(percentileResult.value)
+            } else {
+                console.error('Error fetching percentile data:', percentileResult.reason)
+            }
+
+            // Cache the results
+            setCachedData({
+                netWorth: netWorthResult.status === 'fulfilled' ? netWorthResult.value : null,
+                trendData: trendResult.status === 'fulfilled' ? trendResult.value.trendData || [] : [],
+                percentileData: percentileResult.status === 'fulfilled' ? percentileResult.value : null,
+                historyDays
+            })
+
         } catch (err) {
-            console.error('Error fetching trend data:', err)
-            // Don't set error state - just log it, trend data is optional
-            setTrendData([])
+            console.error('Error fetching dashboard data:', err)
+            setError(err instanceof Error ? err.message : 'Failed to load dashboard')
+        } finally {
+            setLoading(false)
+            setPercentileLoading(false)
         }
+    }
+
+    // Combined handler for net worth updates - also recalculates percentile
+    const handleNetWorthUpdate = async () => {
+        clearCache()
+        await refetchData()
+        // Recalculate percentile (utility handles opt-in check automatically)
+        await recalculatePercentile()
     }
 
     const fetchPercentileData = async () => {
@@ -117,22 +244,11 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
             }
             const data: PercentileResponse = await response.json()
             setPercentileData(data)
-            // Note: Removed automatic modal trigger - now user-initiated via button
         } catch (err) {
             console.error('Error fetching percentile data:', err)
-            // Don't block dashboard on percentile errors
         } finally {
             setPercentileLoading(false)
         }
-    }
-
-    // Combined handler for net worth updates - also recalculates percentile
-    const handleNetWorthUpdate = async () => {
-        await fetchNetWorth()
-        // Recalculate percentile (utility handles opt-in check automatically)
-        await recalculatePercentile()
-        // Refresh percentile display data
-        await fetchPercentileData()
     }
 
     const handleOptIn = async (ageBracket: AgeBracket) => {
@@ -194,9 +310,10 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                     />
 
                     {/* Recent Transactions - Premium+ only */}
-                    {hasAccess('transactionHistory') && (
+                    {/* Temporarily hidden */}
+                    {/* {hasAccess('transactionHistory') && (
                         <RecentTransactionsPanel />
-                    )}
+                    )} */}
                 </div>
 
                 {/* Right Column - 1/3 width */}
@@ -220,9 +337,10 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
                     )}
 
                     {/* Monthly Cash Flow - Premium+ only */}
-                    {hasAccess('transactionHistory') && (
+                    {/* Temporarily hidden */}
+                    {/* {hasAccess('transactionHistory') && (
                         <MonthlyCashFlowPanel />
-                    )}
+                    )} */}
                 </div>
             </div>
 
