@@ -30,7 +30,7 @@ export default function DashboardLayoutClient({ user, children }: DashboardLayou
             />
 
             {/* Main Content */}
-            <div className="pt-24 lg:pt-0 lg:ml-64 px-4 md:px-8 lg:px-12">
+            <div className="pt-24 lg:pt-0 lg:ml-64 px-2 md:px-4 md:px-8 lg:px-12">
                 {children}
             </div>
         </div>

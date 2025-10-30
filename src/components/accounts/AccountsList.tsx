@@ -16,7 +16,6 @@ interface AccountWithInstitution extends PlaidAccount {
 export default function AccountsList() {
     const [accounts, setAccounts] = useState<AccountWithInstitution[]>([])
     const [loading, setLoading] = useState(true)
-    const [syncing, setSyncing] = useState(false)
 
     useEffect(() => {
         fetchAccounts()
@@ -34,42 +33,6 @@ export default function AccountsList() {
             console.error('Error fetching accounts:', error)
         } finally {
             setLoading(false)
-        }
-    }
-
-    const syncPlaidAccounts = async () => {
-        setSyncing(true)
-        try {
-            const response = await fetch('/api/plaid/sync-accounts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-            })
-
-            const data = await response.json()
-
-            if (!response.ok) {
-                // Handle quota exceeded error
-                if (response.status === 429) {
-                    alert(data.message || 'Daily sync quota exceeded. Please try again tomorrow or upgrade to Premium.')
-                    return
-                }
-                throw new Error(data.error || 'Failed to sync accounts')
-            }
-
-            // Show appropriate message based on cached vs fresh sync
-            if (data.cached) {
-                alert(`✓ Using cached data (last synced ${new Date(data.last_sync_at).toLocaleString()})`)
-            } else {
-                alert(`✓ Successfully synced ${data.accounts_synced} account(s)`)
-            }
-
-            await fetchAccounts()
-        } catch (error) {
-            console.error('Error syncing accounts:', error)
-            alert('Failed to sync accounts. Please try again.')
-        } finally {
-            setSyncing(false)
         }
     }
 
@@ -158,19 +121,6 @@ export default function AccountsList() {
 
     return (
         <div className="space-y-4">
-            {/* Sync button */}
-            {accounts.length > 0 && (
-                <div className="flex justify-end">
-                    <button
-                        onClick={syncPlaidAccounts}
-                        disabled={syncing}
-                        className="px-3 py-1.5 bg-[#004D40] text-white text-xs font-medium rounded-md hover:bg-[#00695C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {syncing ? 'Syncing...' : '🔄 Sync All'}
-                    </button>
-                </div>
-            )}
-
             {Object.entries(accountsByInstitution).map(([institution, institutionAccounts]) => (
                 <div key={institution} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">

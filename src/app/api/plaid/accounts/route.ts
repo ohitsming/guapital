@@ -31,11 +31,6 @@ export async function GET(request: Request) {
       .eq('is_active', true) // Only show active Plaid accounts
       .order('created_at', { ascending: false });
 
-    console.log('Plaid accounts API - User ID:', user.id);
-    console.log('Plaid accounts API - Accounts found:', accounts?.length || 0);
-    console.log('Plaid accounts API - Error:', error);
-    console.log('Plaid accounts API - Data:', JSON.stringify(accounts, null, 2));
-
     if (error) {
       console.error('Error fetching accounts:', error);
       return NextResponse.json(

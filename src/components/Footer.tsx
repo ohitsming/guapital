@@ -102,17 +102,23 @@ export function Footer() {
                         {/* <NewsletterForm /> */}
                     </div>
                 </div>
-                <div className="mt-24 mb-20 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-t border-neutral-950/10 pt-12">
-                    <Link href="/" aria-label="Home">
-                        <Logo className="h-8" fillOnHover />
-                    </Link>
-                   
-                    <div className='flex justify-between gap-x-6'>
-                        <p><Link href={"/privacy"}>Privacy</Link></p>
-                        <p><Link href={"/terms"}>Terms</Link></p>
-                        <p className="text-sm text-neutral-700">
-                            © {new Date().getFullYear()} LocalMoco LLC. All rights reserved. 
-                        </p>
+                <div className="mt-24 mb-20 border-t border-neutral-950/10 pt-12">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+                        <Link href="/" aria-label="Home" className="flex-shrink-0">
+                            <Logo className="h-8" fillOnHover />
+                        </Link>
+
+                        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm">
+                            <Link href="/privacy" className="text-neutral-700 hover:text-neutral-950 transition-colors">
+                                Privacy
+                            </Link>
+                            <Link href="/terms" className="text-neutral-700 hover:text-neutral-950 transition-colors">
+                                Terms
+                            </Link>
+                            <p className="text-neutral-700">
+                                © {new Date().getFullYear()} LocalMoco LLC. All rights reserved.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </FadeIn>

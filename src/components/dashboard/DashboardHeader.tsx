@@ -85,7 +85,7 @@ export function DashboardHeader({ onMenuClick, user }: DashboardHeaderProps) {
                                 <Logo className="h-10" />
                             </Link>
                             {isPremium && (
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-[#FFC107] to-[#FFD54F] rounded-full shadow-md">
+                                <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-[#FFC107] to-[#FFD54F] rounded-full shadow-md">
                                     <SparklesIcon className="h-3 w-3 text-[#004D40]" />
                                     <span className="text-xs font-bold text-[#004D40] tracking-wide">PREMIUM</span>
                                 </div>

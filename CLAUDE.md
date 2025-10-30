@@ -2,9 +2,11 @@
 
 
 # TODO
-* ~~FIRE calculator create user input income calculator, add accuracy to the forecast~~ ✅ DONE (Oct 2025 - implemented per-account monthly contributions instead, better for privacy)
-* remove manual sync for plaid api
+* analytics
+* robot.txt
 * mdx markup to create social content
+  * research
+    * can server side stored contents be used for seo?
   * make sure it has sharable links to twitter / facebook / and copy link method for sharing
   * create a library of blog posts and store it in a master content md
   * find trending reddit and create blog post specifically answer their questions
@@ -642,7 +644,7 @@ Before submitting code, verify:
 **Categories:**
 - **auth:** 5 req/15min (login, signup)
 - **api:** 300 req/min (dashboard = ~7-9 calls, React Strict Mode 2x)
-- **expensive:** 10 req/hour (Plaid/crypto sync)
+- **expensive:** 10 req/hour (crypto sync only - Plaid manual sync endpoints removed)
 
 **How:** Middleware intercepts `/api/*`, checks `user:{id}` or `ip:{addr}`, returns 429 with `X-RateLimit-*` headers. Fails open if Supabase down.
 
@@ -656,7 +658,9 @@ X-Frame-Options (DENY), HSTS (1yr), CSP (whitelisted: Plaid, Stripe, Supabase, A
 
 **Net Worth:** `/api/networth`, `/api/networth/history`, `/api/networth/snapshot`, `/api/assets`, `/api/assets/[id]`
 
-**Plaid:** `/api/plaid/create-link-token`, `/api/plaid/exchange-token`, `/api/plaid/accounts`, `/api/plaid/sync-accounts`, `/api/plaid/transactions`, `/api/plaid/sync-transactions`, `/api/plaid/webhook` (webhook receiver), `/api/plaid/convert-to-manual` (downgrade handler)
+**Plaid:** `/api/plaid/create-link-token`, `/api/plaid/exchange-token`, `/api/plaid/accounts`, `/api/plaid/transactions`, `/api/plaid/webhook` (webhook receiver - handles all syncing), `/api/plaid/convert-to-manual` (downgrade handler)
+
+**Note:** Manual sync endpoints (`/api/plaid/sync-accounts` and `/api/plaid/sync-transactions`) have been permanently removed for security reasons. All syncing is now handled exclusively via webhooks.
 
 **Crypto:** `/api/crypto/wallets`, `/api/crypto/sync-wallet`
 

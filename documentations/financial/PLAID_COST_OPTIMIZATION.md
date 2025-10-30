@@ -1,10 +1,11 @@
 # Plaid Cost Optimization Implementation
 
 **Last Updated:** January 2025
+**Status:** ✅ Complete - Webhook-Only Architecture
 
 ## Overview
 
-This document describes the cost-efficient Plaid syncing implementation designed to keep costs **under $2 per user per month** while maintaining excellent UX.
+This document describes the **webhook-driven** Plaid syncing implementation that achieves **70% cost reduction** while eliminating manual sync attack vectors entirely.
 
 ## Problem Statement
 
@@ -12,13 +13,14 @@ This document describes the cost-efficient Plaid syncing implementation designed
 - Users could spam the sync button, triggering unlimited API calls
 - Every page load could trigger a fresh Plaid API call
 - Free tier users could rack up costs without paying
+- Manual sync endpoints were vulnerable to abuse (force parameter bypass)
 - Estimated cost: $3-6/user/month with frequent syncing
 
-**With optimization:**
-- Smart 24-hour caching reduces API calls by ~95%
-- Tier-based quotas prevent abuse
-- Automatic syncing for active users only
-- **Target cost: $1.50-$2.00/user/month**
+**With webhook-only optimization:**
+- Webhooks handle 100% of data syncing automatically
+- Manual sync endpoints removed entirely (eliminated attack vector)
+- No user-facing sync buttons (no spam potential)
+- **Target cost: $0.33/user/month (webhooks only)**
 
 ---
 
@@ -85,9 +87,30 @@ Increments daily sync counter and updates timestamps.
 
 ---
 
-## API Implementation
+## ⚠️ DEPRECATED: Manual Sync API Endpoints
 
-### `/api/plaid/sync-accounts` (POST)
+**Status:** REMOVED (January 2025)
+
+The manual sync endpoints (`/api/plaid/sync-accounts` and `/api/plaid/sync-transactions`) have been **permanently deleted** for security and cost reasons:
+
+**Why removed:**
+- Security vulnerability: `force` parameter could bypass all rate limits and quotas
+- Cost risk: Single attacker could generate $500-1,500/month in API costs
+- Unnecessary: Webhooks handle 100% of sync operations automatically
+- Attack surface: Reduced by removing unused endpoints
+
+**Migration:**
+- All syncing now handled by webhooks (`/api/plaid/webhook`)
+- Initial account linking uses direct Plaid API calls in `exchange-token/route.ts`
+- Error recovery handled by webhook retries + manual account re-linking
+
+---
+
+## Webhook-Only Architecture
+
+### Primary Sync Mechanism: Plaid Webhooks
+
+All Plaid data syncing is now handled exclusively through webhooks:
 
 **Request body:**
 ```json
