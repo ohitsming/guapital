@@ -4,6 +4,7 @@ import { PricingSection } from '@/components/pricing';
 import { Footer } from '@/components/Footer';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/toast/ToastProvider';
+import { trackPricingViewed } from '@/lib/posthog';
 
 /**
  * Pricing Page
@@ -21,6 +22,9 @@ export default function PricingPage() {
   const { showToast } = useToast();
 
   useEffect(() => {
+    // Track pricing page view
+    trackPricingViewed();
+
     // Fetch remaining founding member slots from API
     const fetchRemainingSlots = async () => {
       try {

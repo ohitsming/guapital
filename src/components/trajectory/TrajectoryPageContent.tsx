@@ -129,6 +129,8 @@ export function TrajectoryPageContent() {
   const [customMonthlyContributions, setCustomMonthlyContributions] = useState<Record<string, number>>({})
   const [originalProjections, setOriginalProjections] = useState<Record<string, AccountProjection>>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [showAssetsTipsModal, setShowAssetsTipsModal] = useState(false)
+  const [showLiabilitiesTipsModal, setShowLiabilitiesTipsModal] = useState(false)
 
   useEffect(() => {
     fetchProjections()
@@ -917,7 +919,16 @@ export function TrajectoryPageContent() {
             <div className="space-y-6">
               {projections.projections.breakdown.assets.length > 0 && (
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Assets</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    Assets
+                    <button
+                      onClick={() => setShowAssetsTipsModal(true)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Asset projection tips"
+                    >
+                      <InformationCircleIcon className="h-5 w-5" />
+                    </button>
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projections.projections.breakdown.assets
                       .sort((a, b) => b.currentBalance - a.currentBalance)
@@ -930,7 +941,16 @@ export function TrajectoryPageContent() {
 
               {projections.projections.breakdown.liabilities.length > 0 && (
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Liabilities</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    Liabilities
+                    <button
+                      onClick={() => setShowLiabilitiesTipsModal(true)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label="Liability projection tips"
+                    >
+                      <InformationCircleIcon className="h-5 w-5" />
+                    </button>
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {projections.projections.breakdown.liabilities
                       .sort((a, b) => b.currentBalance - a.currentBalance)
@@ -1179,7 +1199,7 @@ export function TrajectoryPageContent() {
                         {shouldShowContribution && (
                   <div>
                     <label htmlFor="monthly-contribution" className="block text-sm font-medium text-gray-700 mb-2">
-                      {isLiability ? 'Monthly Payment Override (Optional)' : 'Monthly Contribution (Optional)'}
+                      {isLiability ? 'Extra Monthly Payment (Optional)' : 'Monthly Contribution (Optional)'}
                     </label>
                     <input
                       id="monthly-contribution"
@@ -1386,6 +1406,51 @@ export function TrajectoryPageContent() {
                 </div>
               )
             })()}
+          </Modal>
+
+          {/* Assets Tips Modal */}
+          <Modal
+            isOpen={showAssetsTipsModal}
+            onClose={() => setShowAssetsTipsModal(false)}
+            title="Asset Projection Tips"
+          >
+            <div className="text-sm text-gray-700 space-y-4">
+              <p className="leading-relaxed">
+                <strong>Add monthly contributions to see compound growth.</strong>
+              </p>
+              <p>
+                Click the edit icon on any account to allocate funds. This is especially powerful for retirement and investment accounts where compound interest accelerates wealth over time.
+              </p>
+
+              <ul className="space-y-2 text-gray-600">
+                <li>• Contributions are most powerful over 10+ years due to compound interest</li>
+                <li>• All projections assume constant rates - real returns will vary with market conditions</li>
+              </ul>
+            </div>
+          </Modal>
+
+          {/* Liabilities Tips Modal */}
+          <Modal
+            isOpen={showLiabilitiesTipsModal}
+            onClose={() => setShowLiabilitiesTipsModal(false)}
+            title="Liability Projection Tips"
+          >
+            <div className="text-sm text-gray-700 space-y-4">
+              <p className="leading-relaxed">
+                <strong>Enter accurate interest rates for realistic payoff timelines.</strong>
+              </p>
+              <p>
+                Add your actual APR (annual percentage rate) and loan terms to see when you&apos;ll be debt-free.
+              </p>
+
+              <ul className="space-y-2 text-gray-600">
+                <li>• Set loan term in years: 30 for mortgages, 0 for revolving credit like credit cards</li>
+                <li>• Override monthly payments to see the impact of paying extra principal</li>
+                <li>• Extra payments save thousands in interest and shorten payoff time significantly</li>
+                <li>• Prioritize high-interest debt first: credit cards (15-25% APR) cost far more than mortgages (3-7%)</li>
+                <li>• Loans show $0 when fully paid off based on your term and payment schedule</li>
+              </ul>
+            </div>
           </Modal>
         </>
       ) : (

@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import GetStartedView from '@/components/dashboard/GetStartedView'
 import DashboardContent from '@/components/dashboard/DashboardContent'
 import { useSubscription } from '@/lib/context/SubscriptionContext'
+import { identifyUser, trackDashboardViewed } from '@/lib/posthog'
 
-export default function Dashboard() {
+function DashboardPage() {
     const [hasAnyData, setHasAnyData] = useState<boolean | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
@@ -23,6 +24,12 @@ export default function Dashboard() {
                 router.push('/login')
                 return
             }
+
+            // Identify user in PostHog
+            identifyUser(user.id, { email: user.email })
+
+            // Track dashboard view
+            trackDashboardViewed()
 
             // Check if user has any data to determine which view to show
             const [plaidAccountsResult, manualAssetsResult, cryptoWalletsResult] = await Promise.all([
@@ -87,4 +94,19 @@ export default function Dashboard() {
     // Show full dashboard for users with data
     // Note: SubscriptionProvider is already wrapped in layout.tsx
     return <DashboardContent onAllDataDeleted={checkForData} />
+}
+
+export default function Dashboard() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-[#004D40]/20 border-t-[#FFC107] rounded-full animate-spin mb-3"></div>
+                    <p className="text-base font-semibold text-[#004D40]">Loading...</p>
+                </div>
+            </div>
+        }>
+            <DashboardPage />
+        </Suspense>
+    )
 }

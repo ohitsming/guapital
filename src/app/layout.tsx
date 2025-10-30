@@ -3,7 +3,9 @@ import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google'
 import '@/styles/tailwind.css'
 import { RootLayout } from '@/components/RootLayout'
 import { ToastProvider } from '@/components/toast/ToastProvider'
+import { PostHogProvider } from '@/lib/posthog'
 import { WEB_NAME, WEB_DESC, WEB_LONG_DESC, URL } from '@/lib/constant'
+import { StructuredData } from '@/components/seo/StructuredData'
 
 // Optimized Google Fonts
 const dmSans = DM_Sans({
@@ -21,12 +23,38 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new globalThis.URL(URL),
   title: {
     default: `${WEB_NAME}: ${WEB_DESC}`,
     template: `%s | ${WEB_NAME}`,
   },
   description: WEB_LONG_DESC,
-  keywords: ['net worth', 'financial tracking', 'wealth management', 'personal finance', 'assets', 'liabilities', 'financial independence', 'young adults finance'],
+  keywords: [
+    'net worth tracker',
+    'net worth percentile by age',
+    'financial tracking',
+    'wealth management',
+    'personal finance app',
+    'crypto net worth tracker',
+    'plaid integration',
+    'assets and liabilities',
+    'financial independence',
+    'FIRE calculator',
+    'young adults finance',
+    'wealth building',
+    'net worth calculator',
+    'financial dashboard',
+    'percentile ranking',
+    'am i wealthy for my age',
+  ],
+  authors: [{ name: 'Guapital Team' }],
+  creator: 'Guapital',
+  publisher: 'Guapital',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     title: `${WEB_NAME}: ${WEB_DESC}`,
     description: WEB_LONG_DESC,
@@ -49,6 +77,26 @@ export const metadata: Metadata = {
     description: WEB_LONG_DESC,
     creator: '@guapital',
     images: [`${URL}/twitter-image.jpg`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: '8bhBdOKxqe-V-Fi52GXd9v69zwOpwTAfJ_LGKVn1-aI',
+    other: {
+      'msvalidate.01': '6EAAFF46B793D414F944DDC0F2487DAD',  // Bing verification
+    },
+  },
+  alternates: {
+    canonical: URL,
   },
   manifest: '/manifest.json',
   icons: {
@@ -77,12 +125,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
     return (
         <html lang="en" className={`h-full text-base antialiased ${dmSans.variable} ${plusJakartaSans.variable}`}>
+            <head>
+                <StructuredData />
+            </head>
             <body className="flex min-h-full flex-col font-sans">
-                <ToastProvider>
-                    <RootLayout>
-                        {children}
-                    </RootLayout>
-                </ToastProvider>
+                <PostHogProvider>
+                    <ToastProvider>
+                        <RootLayout>
+                            {children}
+                        </RootLayout>
+                    </ToastProvider>
+                </PostHogProvider>
             </body>
         </html>
     )

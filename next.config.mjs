@@ -76,8 +76,8 @@ const nextConfig = {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.plaid.com https://js.stripe.com https://*.sentry.io",
-          "connect-src 'self' https://*.supabase.co https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://api.stripe.com https://*.alchemy.com https://api.coingecko.com https://*.sentry.io",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.plaid.com https://js.stripe.com https://*.sentry.io https://*.posthog.com",
+          "connect-src 'self' https://*.supabase.co https://cdn.plaid.com https://production.plaid.com https://sandbox.plaid.com https://api.stripe.com https://*.alchemy.com https://api.coingecko.com https://*.sentry.io https://*.posthog.com",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: https: blob:",
           "font-src 'self' data:",

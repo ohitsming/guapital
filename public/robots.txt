@@ -1,0 +1,43 @@
+# robots.txt for Guapital
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /pricing
+Allow: /about
+
+# Block authenticated areas
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /monitoring
+
+# Block search from indexing user-specific pages
+Disallow: /dashboard/*
+
+# Sitemap location
+Sitemap: https://guapital.com/sitemap.xml
+
+# Crawl-delay (optional, helps prevent server overload)
+Crawl-delay: 1
+
+# Allow major search engines full access
+User-agent: Googlebot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /auth/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /auth/
+
+User-agent: Slurp
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /auth/

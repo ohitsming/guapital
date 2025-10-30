@@ -2,8 +2,6 @@
 
 
 # TODO
-* analytics
-* robot.txt
 * mdx markup to create social content
   * research
     * can server side stored contents be used for seo?
@@ -33,6 +31,7 @@
 - **Database/Auth:** Supabase (RLS enabled), pg_cron
 - **Deployment:** AWS Amplify
 - **Integrations:** Plaid (Transactions only), Alchemy (crypto), Stripe, Sentry
+- **Analytics:** PostHog (product analytics, session replay, feature flags)
 - **Charting:** Recharts
 
 ```bash
@@ -112,7 +111,6 @@ Before creating any new tables or modifying schema:
 | **webhook_event_log** | Plaid webhook audit trail | webhook_type, webhook_code, item_id, payload (JSONB), received_at, processed_at, error_message, event_id, retry_count, status | 30-day retention, service role only |
 | **rate_limit_attempts** | Request throttling | identifier (IP or user_id), endpoint_category (auth/api/expensive), request_count, window_start, last_request_at | 24-hour retention, service role only |
 | **support_requests** | User feedback/support | user_id, email, type (bug/feature/account/question/other), description, status (open/in_progress/resolved/closed) | User-owned with RLS |
-| **share_events** | Social sharing analytics | user_id, event_type (initiated/completed/clicked), share_type (static/progress/annual/milestone/streak), platform (twitter/linkedin/instagram/reddit/copy_link), percentile, anonymous | Anonymous sharing supported |
 
 **Database Functions (Business Logic)**
 - `calculate_current_net_worth(user_id)` - Sums Plaid + crypto + manual assets/liabilities
@@ -169,8 +167,9 @@ PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV
 ALCHEMY_API_KEY
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
 
-# Monitoring
+# Monitoring & Analytics
 NEXT_PUBLIC_SENTRY_DSN, SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN
+NEXT_PUBLIC_POSTHOG_KEY, NEXT_PUBLIC_POSTHOG_HOST
 ```
 
 ### Design System
@@ -267,6 +266,7 @@ All features shipped: Plaid integration (Transactions product only), crypto trac
 | Service | Monthly Cost | Per User | Notes |
 |---------|--------------|----------|-------|
 | Plaid | $1,656 | $0.33 | **70% reduction via webhooks** ✅ |
+| PostHog | $0 | $0 | Free tier (1M events/month) |
 | Alchemy/CoinGecko | $0 | $0 | Free tier |
 | Supabase Pro | $25 | $0.005 | |
 | Claude Max | $351 | $0.07 | |
@@ -306,7 +306,7 @@ Monarch has feature parity: net worth dashboard, Plaid, crypto, transactions, hi
 
 **Competitive moat:** First-mover advantage + data advantage. Monarch would need 6-12 months to build. By then, we have SEO authority, backlinks, and user trust.
 
-**Reality check on virality:** Financial data is THE most private info. Don't expect organic social sharing. Instead, percentiles drive value through: (1) SEO content unique to us, (2) private word-of-mouth ("I finally know where I stand"), (3) retention (users check back to see progress).
+**Privacy-first approach:** Financial data is THE most private info. Social sharing functionality has been removed to align with our privacy-first positioning. Instead, percentiles drive value through: (1) SEO content unique to us, (2) private word-of-mouth ("I finally know where I stand"), (3) retention (users check back to see progress).
 
 ### Launch Positioning
 
@@ -639,6 +639,35 @@ Before submitting code, verify:
 
 ## Security & Monitoring
 
+### PostHog Analytics (Privacy-First Product Analytics)
+
+**Why PostHog:**
+- Privacy-first (GDPR compliant, EU hosting option)
+- Product analytics (funnels, cohorts, retention)
+- Session replay (debug UX issues)
+- Feature flags (A/B testing)
+- Free up to 1M events/month (covers first 2,000-5,000 users)
+
+**Key Events Tracked:**
+- User lifecycle: `signup_completed`, `login_completed`, `dashboard_viewed`
+- Account connections: `plaid_account_linked`, `crypto_wallet_added`, `manual_asset_added`
+- Subscription: `premium_upgrade`, `subscription_cancelled`
+- Percentile ranking: `percentile_opt_in`, `percentile_viewed`
+- Feature usage: `transactions_viewed`, `reports_viewed`, `net_worth_updated`
+- Marketing: `pricing_viewed`, `founding_member_banner_clicked`
+
+**Note:** Social sharing events have been removed to align with privacy-first positioning.
+
+**Implementation:**
+- Provider: `src/lib/posthog/provider.tsx` (wraps app with PostHogProvider)
+- Events: `src/lib/posthog/events.ts` (typed event tracking functions)
+- Usage: Import `track*` functions in components
+
+**Cost Projection:**
+- 0-2,000 users: $0/month (free tier)
+- 2,000-5,000 users: $0-50/month
+- 5,000-10,000 users: $50-200/month
+
 ### Rate Limiting (Supabase-based)
 
 **Categories:**
@@ -650,7 +679,7 @@ Before submitting code, verify:
 
 ### Security Headers (next.config.mjs)
 
-X-Frame-Options (DENY), HSTS (1yr), CSP (whitelisted: Plaid, Stripe, Supabase, Alchemy, Sentry), Permissions-Policy (camera for Plaid only)
+X-Frame-Options (DENY), HSTS (1yr), CSP (whitelisted: Plaid, Stripe, Supabase, Alchemy, Sentry, PostHog), Permissions-Policy (camera for Plaid only)
 
 **Pending:** Plaid token encryption, audit logging, Zod validation, GDPR export
 

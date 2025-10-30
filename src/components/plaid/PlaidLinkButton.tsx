@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
+import { trackPlaidAccountLinked, trackPlaidLinkFailed } from '@/lib/posthog';
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
@@ -98,6 +99,13 @@ export default function PlaidLinkButton({
         const data = await response.json();
         console.log('Account connected successfully:', data);
 
+        // Track Plaid account linked in PostHog
+        trackPlaidAccountLinked({
+          institution: metadata?.institution?.name || 'Unknown',
+          account_type: metadata?.accounts?.[0]?.subtype || 'Unknown',
+          account_count: metadata?.accounts?.length || 1,
+        });
+
         // NOTE: Transaction sync is now handled by Plaid webhooks (INITIAL_UPDATE)
         // This reduces API refresh calls by ~70% and saves $3,540/month at 5K users
         // Initial sync happens server-side in exchange-token route
@@ -110,6 +118,13 @@ export default function PlaidLinkButton({
         }
       } catch (error) {
         console.error('Error exchanging token:', error);
+
+        // Track Plaid link failure
+        trackPlaidLinkFailed({
+          institution: metadata?.institution?.name,
+          error_message: error instanceof Error ? error.message : 'Unknown error',
+        });
+
         alert('Failed to connect account. Please try again.');
       } finally {
         setLoading(false);
