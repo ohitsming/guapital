@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { formatDate } from '@/utils/formatters'
 import RevalidateButton from '@/components/blog/RevalidateButton'
+import { redirect } from 'next/navigation'
 
 export const metadata = {
   title: 'Blog Admin | Guapital',
@@ -9,10 +10,26 @@ export const metadata = {
 }
 
 // Force dynamic rendering - always fetch fresh data
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function AdminBlogPage() {
   const supabase = createClient()
+
+  // Check authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Check if user is admin
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
+  if (!adminEmails.includes(user.email || '')) {
+    redirect('/dashboard')
+  }
 
   const { data: posts, error } = await supabase
     .from('blog_posts')

@@ -28,11 +28,14 @@ export function ArticleLayout({
 }) {
   const [tocItems, setTocItems] = useState<TableOfContentsItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
+  const [keyTakeaways, setKeyTakeaways] = useState<string[]>([])
+  const [showKeyTakeaways, setShowKeyTakeaways] = useState(false)
+  const [readingProgress, setReadingProgress] = useState(0)
 
   useEffect(() => {
     // Wait for next tick to ensure DOM is ready
     const timer = setTimeout(() => {
-      const headings = document.querySelectorAll('article h2, article h3')
+      const headings = document.querySelectorAll('article h2')
       const items: TableOfContentsItem[] = []
 
       headings.forEach((heading, index) => {
@@ -43,11 +46,44 @@ export function ArticleLayout({
         items.push({
           id,
           title: heading.textContent || '',
-          level: heading.tagName === 'H2' ? 2 : 3,
+          level: 2,
         })
       })
 
       setTocItems(items)
+
+      // Extract Key Takeaways from MDX content
+      const keyTakeawaysSection = Array.from(headings).find(
+        (h) => h.textContent?.toLowerCase().includes('key takeaways')
+      )
+
+      if (keyTakeawaysSection) {
+        // Find the next sibling element (should be a ul)
+        let nextElement = keyTakeawaysSection.nextElementSibling
+
+        // Skip any non-list elements
+        while (nextElement && nextElement.tagName !== 'UL') {
+          nextElement = nextElement.nextElementSibling
+        }
+
+        if (nextElement && nextElement.tagName === 'UL') {
+          const listItems = nextElement.querySelectorAll('li')
+          const takeaways = Array.from(listItems).map((li) => li.textContent || '')
+
+          if (takeaways.length > 0) {
+            setKeyTakeaways(takeaways)
+            setShowKeyTakeaways(true)
+
+            // Hide the original Key Takeaways section in the content
+            if (keyTakeawaysSection instanceof HTMLElement) {
+              keyTakeawaysSection.style.display = 'none'
+            }
+            if (nextElement instanceof HTMLElement) {
+              nextElement.style.display = 'none'
+            }
+          }
+        }
+      }
 
       if (headings.length === 0) return
 
@@ -70,6 +106,19 @@ export function ArticleLayout({
     }, 100)
 
     return () => clearTimeout(timer)
+  }, [])
+
+  // Reading progress indicator
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollTop = window.scrollY
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      const progress = (scrollTop / docHeight) * 100
+      setReadingProgress(Math.min(progress, 100))
+    }
+
+    window.addEventListener('scroll', updateProgress)
+    return () => window.removeEventListener('scroll', updateProgress)
   }, [])
 
   return (
@@ -101,12 +150,19 @@ export function ArticleLayout({
             )}
 
             {/* Title */}
-            <h1 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-900 dark:text-white">
+            <h1 className="mb-4 sm:mb-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-gray-900 dark:text-white">
               {article.title}
             </h1>
 
+            {/* Description */}
+            {article.description && (
+              <p className="mb-4 sm:mb-6 text-base sm:text-lg lg:text-xl text-gray-700 dark:text-gray-300 leading-relaxed">
+                {article.description}
+              </p>
+            )}
+
             {/* Metadata Bar */}
-            <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 pb-3 sm:pb-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+            <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-teal-600 text-xs sm:text-sm font-semibold text-white flex-shrink-0">
                   {article.author.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -141,54 +197,60 @@ export function ArticleLayout({
               )}
             </div>
 
-            {/* Key Takeaways Box */}
-            <div className="mb-6 sm:mb-8 rounded-lg border-l-4 border-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:border-teal-500 p-4 sm:p-6">
-              <h2 className="mb-2 sm:mb-3 text-base sm:text-lg font-bold text-gray-900 dark:text-white">Key Takeaways</h2>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                <li className="flex items-start">
-                  <svg
-                    className="mr-1.5 sm:mr-2 mt-0.5 sm:mt-1 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 text-teal-600 dark:text-teal-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Net worth is your total assets minus liabilities, the best metric for overall financial health</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="mr-1.5 sm:mr-2 mt-0.5 sm:mt-1 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 text-teal-600 dark:text-teal-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Percentile rankings show where you stand compared to peers in your age bracket</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="mr-1.5 sm:mr-2 mt-0.5 sm:mt-1 h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 text-teal-600 dark:text-teal-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Consistent tracking and high savings rates are key to reaching top percentiles</span>
-                </li>
-              </ul>
-            </div>
+            {/* Key Takeaways Box - Dynamically extracted from MDX */}
+            {showKeyTakeaways && keyTakeaways.length > 0 && (
+              <div className="mb-8 sm:mb-10 rounded-xl border-2 border-teal-600 bg-gradient-to-br from-teal-50 via-teal-50 to-emerald-50 dark:from-teal-900/30 dark:via-teal-900/20 dark:to-emerald-900/20 dark:border-teal-600 p-6 sm:p-8 shadow-lg">
+                <div className="flex items-start gap-3 mb-5 sm:mb-6">
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-teal-600 dark:bg-teal-500 shadow-md">
+                      <svg
+                        className="h-5 w-5 sm:h-6 sm:w-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                      Key Takeaways
+                    </h2>
+                    <p className="mt-1 text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                      Quick insights you&apos;ll learn from this article
+                    </p>
+                  </div>
+                </div>
+                <ul className="space-y-3 sm:space-y-4">
+                  {keyTakeaways.map((takeaway, index) => (
+                    <li key={index} className="flex items-start">
+                      <div className="flex-shrink-0 mt-1 mr-3 sm:mr-4">
+                        <svg
+                          className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600 dark:text-teal-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <span className="flex-1 text-base sm:text-lg text-gray-800 dark:text-gray-200 leading-relaxed">
+                        {takeaway}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Article Content */}
             <article className="blog-prose max-w-none">
@@ -212,25 +274,27 @@ export function ArticleLayout({
               </div>
             )}
 
-            {/* CTA Section */}
-            <div className="mt-8 sm:mt-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#004D40] to-teal-700 p-6 sm:p-8 text-white">
-              <div className="flex flex-col items-center text-center">
-                <h2 className="mb-2 sm:mb-3 text-xl sm:text-2xl font-bold">Start Tracking Your Net Worth Today</h2>
-                <p className="mb-4 sm:mb-6 max-w-2xl text-sm sm:text-base lg:text-lg text-teal-50">
-                  Join thousands building wealth with Guapital. See your percentile ranking, track all your assets, and achieve financial independence.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            {/* CTA Section - Educational, not pushy */}
+            <div className="mt-8 sm:mt-12 rounded-xl border-2 border-teal-100 dark:border-teal-800 bg-gradient-to-br from-gray-50 via-teal-50/30 to-emerald-50/30 dark:from-gray-800 dark:via-teal-900/20 dark:to-emerald-900/20 p-6 sm:p-8">
+              <div className="flex flex-col items-start text-left max-w-3xl">
+                <div className="mb-4">
+                  <h3 className="mb-2 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Ready to track your net worth and see where you stand?</h3>
+                  <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                    Guapital helps you track all your assets and liabilities in one place. See your percentile ranking, understand your financial progress, and work toward financial independence.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                   <a
                     href="/signup"
-                    className="inline-flex items-center justify-center rounded-lg bg-[#FFC107] px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-gray-900 transition hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-lg bg-teal-600 dark:bg-teal-500 px-6 py-2.5 text-sm sm:text-base font-semibold text-white transition hover:bg-teal-700 dark:hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
                   >
                     Get Started Free
                   </a>
                   <a
                     href="/pricing"
-                    className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white transition hover:bg-white hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-2.5 text-sm sm:text-base font-semibold text-gray-900 dark:text-white transition hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                   >
-                    View Pricing
+                    Learn More
                   </a>
                 </div>
               </div>
@@ -267,33 +331,54 @@ export function ArticleLayout({
 
           {/* Table of Contents Sidebar (Desktop) */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-8">
-              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-900 dark:text-white">
-                  Table of Contents
-                </h3>
-                <nav>
-                  <ul className="space-y-2 text-sm">
-                    {tocItems.map((item) => (
-                      <li
-                        key={item.id}
-                        className={item.level === 3 ? 'ml-4' : ''}
-                      >
-                        <a
-                          href={`#${item.id}`}
-                          className={`block py-1 transition-colors ${
-                            activeId === item.id
-                              ? 'font-semibold text-teal-600 dark:text-teal-400'
-                              : 'text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400'
-                          }`}
-                        >
-                          {item.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
+            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto space-y-6 pr-2">
+              {/* Progress indicator */}
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+                    Reading Progress
+                  </span>
+                  <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
+                    {Math.round(readingProgress)}%
+                  </span>
+                </div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-teal-600 to-emerald-500 transition-all duration-150"
+                    style={{ width: `${readingProgress}%` }}
+                  />
+                </div>
               </div>
+
+              {/* Table of Contents */}
+              {tocItems.length > 0 && (
+                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+                  <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg className="h-4 w-4 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                    </svg>
+                    In This Article
+                  </h3>
+                  <nav>
+                    <ul className="space-y-2 text-sm">
+                      {tocItems.map((item) => (
+                        <li key={item.id}>
+                          <a
+                            href={`#${item.id}`}
+                            className={`block py-1 transition-colors ${
+                              activeId === item.id
+                                ? 'font-semibold text-teal-600 dark:text-teal-400'
+                                : 'text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400'
+                            }`}
+                          >
+                            {item.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                </div>
+              )}
 
               {/* Quick Links */}
               <div className="mt-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">

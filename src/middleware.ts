@@ -121,7 +121,7 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin')) {
     if (!user) {
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/auth/login'
+      redirectUrl.pathname = '/login'
       redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
       return NextResponse.redirect(redirectUrl)
     }

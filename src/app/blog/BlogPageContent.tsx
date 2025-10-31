@@ -9,9 +9,14 @@ interface BlogPageContentProps {
 }
 
 export function BlogPageContent({ initialArticles }: BlogPageContentProps) {
-  // Split articles: first one is featured, rest are regular posts
-  const featuredPost = initialArticles[0]
-  const posts = initialArticles.slice(1, 4) // Show 3 posts after featured
+  // Always feature the 'welcome-to-guapital' post on the left
+  const welcomePost = initialArticles.find(article => article.slug === 'welcome-to-guapital')
+  const featuredPost = welcomePost || initialArticles[0]
+
+  // Get remaining posts (exclude featured post, show up to 3)
+  const posts = initialArticles
+    .filter(article => article.slug !== featuredPost?.slug)
+    .slice(0, 3)
 
   if (!featuredPost) {
     return (
