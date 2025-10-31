@@ -1,0 +1,373 @@
+/* Investopedia-style Blog Prose Styles */
+.blog-prose {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #1a1a1a;
+}
+
+@media (min-width: 640px) {
+  .blog-prose {
+    font-size: 18px;
+  }
+}
+
+/* Headings */
+.blog-prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  scroll-margin-top: 80px;
+}
+
+@media (min-width: 640px) {
+  .blog-prose h2 {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .blog-prose h2 {
+    font-size: 2rem;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    scroll-margin-top: 100px;
+  }
+}
+
+.blog-prose h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  scroll-margin-top: 80px;
+}
+
+@media (min-width: 640px) {
+  .blog-prose h3 {
+    font-size: 1.375rem;
+    margin-top: 2rem;
+    margin-bottom: 0.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .blog-prose h3 {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    scroll-margin-top: 100px;
+  }
+}
+
+.blog-prose h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .blog-prose h4 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Paragraphs */
+.blog-prose p {
+  margin-bottom: 1.25rem;
+  color: #374151;
+}
+
+@media (min-width: 640px) {
+  .blog-prose p {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.blog-prose p:first-of-type {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #1f2937;
+}
+
+@media (min-width: 640px) {
+  .blog-prose p:first-of-type {
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+}
+
+/* Links */
+.blog-prose a {
+  color: #0d9488;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.blog-prose a:hover {
+  color: #0f766e;
+}
+
+/* Lists */
+.blog-prose ul,
+.blog-prose ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.blog-prose ul {
+  list-style-type: none;
+}
+
+.blog-prose ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.blog-prose ol {
+  list-style-type: decimal;
+}
+
+.blog-prose ol li {
+  margin-bottom: 0.75rem;
+}
+
+.blog-prose li {
+  color: #374151;
+}
+
+/* Strong and emphasis */
+.blog-prose strong {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.blog-prose em {
+  font-style: italic;
+}
+
+/* Code */
+.blog-prose code {
+  background-color: #f3f4f6;
+  color: #0d9488;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'Courier New', monospace;
+  word-wrap: break-word;
+}
+
+@media (min-width: 640px) {
+  .blog-prose code {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9em;
+  }
+}
+
+.blog-prose pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  -webkit-overflow-scrolling: touch;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .blog-prose pre {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+.blog-prose pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Tables */
+.blog-prose table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .blog-prose table {
+    font-size: 1rem;
+    display: table;
+  }
+}
+
+.blog-prose th {
+  background-color: #004d40;
+  color: white;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .blog-prose th {
+    padding: 0.75rem 1rem;
+  }
+}
+
+.blog-prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+}
+
+@media (min-width: 640px) {
+  .blog-prose td {
+    padding: 0.75rem 1rem;
+  }
+}
+
+.blog-prose tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.blog-prose tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+/* Blockquotes */
+.blog-prose blockquote {
+  border-left: 3px solid #0d9488;
+  padding-left: 1rem;
+  margin: 1.25rem 0;
+  font-style: italic;
+  color: #6b7280;
+  font-size: 0.95em;
+}
+
+@media (min-width: 640px) {
+  .blog-prose blockquote {
+    border-left: 4px solid #0d9488;
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-size: 1em;
+  }
+}
+
+/* Horizontal rules */
+.blog-prose hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+@media (min-width: 640px) {
+  .blog-prose hr {
+    margin: 3rem 0;
+  }
+}
+
+/* Images */
+.blog-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .blog-prose img {
+    margin: 2rem 0;
+  }
+}
+
+/* First letter drop cap (optional, for featured posts) */
+.blog-prose.drop-cap > p:first-of-type::first-letter {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  float: left;
+  margin-right: 0.4rem;
+  color: #004d40;
+}
+
+@media (min-width: 640px) {
+  .blog-prose.drop-cap > p:first-of-type::first-letter {
+    font-size: 3.5rem;
+    margin-right: 0.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .blog-prose {
+    color: #e5e7eb;
+  }
+
+  .blog-prose h2,
+  .blog-prose h3,
+  .blog-prose h4 {
+    color: #f9fafb;
+  }
+
+  .blog-prose p {
+    color: #d1d5db;
+  }
+
+  .blog-prose p:first-of-type {
+    color: #e5e7eb;
+  }
+
+  .blog-prose strong {
+    color: #f9fafb;
+  }
+
+  .blog-prose code {
+    background-color: #374151;
+    color: #34d399;
+  }
+
+  .blog-prose th {
+    background-color: #064e3b;
+  }
+
+  .blog-prose td {
+    border-color: #4b5563;
+  }
+
+  .blog-prose tbody tr:nth-child(even) {
+    background-color: #1f2937;
+  }
+
+  .blog-prose tbody tr:hover {
+    background-color: #374151;
+  }
+
+  .blog-prose blockquote {
+    border-left-color: #14b8a6;
+    color: #9ca3af;
+  }
+
+  .blog-prose hr {
+    border-top-color: #374151;
+  }
+}

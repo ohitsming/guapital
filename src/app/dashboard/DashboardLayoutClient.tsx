@@ -14,7 +14,7 @@ export default function DashboardLayoutClient({ user, children }: DashboardLayou
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen">
             {/* Sidebar Navigation */}
             <DashboardNav
                 isOpen={isSidebarOpen}

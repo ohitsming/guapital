@@ -1,175 +1,141 @@
 'use client'
 
-import { useState, useMemo } from 'react'
 import { formatDate } from '@/utils/formatters'
-import { BlogArticle } from '@/lib/blog-articles'
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { BlogArticle } from '@/lib/blog-database'
 
 interface BlogPageContentProps {
   initialArticles: BlogArticle[]
   categories: string[]
 }
 
-const ARTICLES_PER_PAGE = 9
+export function BlogPageContent({ initialArticles }: BlogPageContentProps) {
+  // Split articles: first one is featured, rest are regular posts
+  const featuredPost = initialArticles[0]
+  const posts = initialArticles.slice(1, 4) // Show 3 posts after featured
 
-export function BlogPageContent({ initialArticles, categories }: BlogPageContentProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [currentPage, setCurrentPage] = useState(1)
-
-  // Filter and search articles
-  const filteredArticles = useMemo(() => {
-    let result = initialArticles
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      result = result.filter((article) => article.category === selectedCategory)
-    }
-
-    // Search by query
-    if (searchQuery.trim()) {
-      const searchTerm = searchQuery.toLowerCase().trim()
-      result = result.filter((article) => {
-        return (
-          article.title.toLowerCase().includes(searchTerm) ||
-          article.description.toLowerCase().includes(searchTerm) ||
-          article.category.toLowerCase().includes(searchTerm) ||
-          article.author.toLowerCase().includes(searchTerm)
-        )
-      })
-    }
-
-    return result
-  }, [initialArticles, searchQuery, selectedCategory])
-
-  // Pagination
-  const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE)
-  const paginatedArticles = useMemo(() => {
-    const start = (currentPage - 1) * ARTICLES_PER_PAGE
-    const end = start + ARTICLES_PER_PAGE
-    return filteredArticles.slice(start, end)
-  }, [filteredArticles, currentPage])
-
-  // Reset to page 1 when filters change
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    setCurrentPage(1)
+  if (!featuredPost) {
+    return (
+      <div className="py-24 sm:py-32 ">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl lg:mx-0">
+            <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
+              Wealth Building Insights
+            </h2>
+            <p className="mt-2 text-lg/8 text-gray-600 dark:text-gray-400">
+              Expert guidance on net worth tracking, percentile rankings, and achieving financial independence.
+            </p>
+            <p className="mt-6 text-base text-gray-600 dark:text-gray-400">
+              No articles published yet. Check back soon!
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category)
-    setCurrentPage(1)
+  // Generate author initials for avatar
+  const getAuthorInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase()
   }
 
   return (
-    <div className="bg-white py-12 px-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl lg:mx-0">
-          <h2 className="text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-            Wealth Building Insights
+    <div className="bg-white py-12 sm:py-16 md:py-24 lg:py-32 dark:bg-gray-900">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-x-8 gap-y-8 px-4 sm:px-6 sm:gap-y-12 lg:grid-cols-2 lg:px-8">
+        {/* Featured Post - Always on the left */}
+        <article className="mx-auto w-full max-w-2xl lg:mx-0 lg:max-w-lg lg:order-1">
+          <time
+            dateTime={featuredPost.date}
+            className="block text-xs sm:text-sm/6 text-gray-600 dark:text-gray-400"
+          >
+            {formatDate(featuredPost.date)}
+          </time>
+          <h2
+            id="featured-post"
+            className="mt-3 sm:mt-4 text-pretty text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white leading-tight"
+          >
+            {featuredPost.title}
           </h2>
-          <p className="mt-2 text-lg/8 text-gray-600">
-            Expert guidance on net worth tracking, percentile rankings, and achieving financial independence.
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg/8 text-gray-600 dark:text-gray-400">
+            {featuredPost.description}
           </p>
-
-          {/* Search Bar */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <div className="mt-4 sm:mt-6 flex flex-col gap-4 sm:gap-6 lg:mt-4">
+            <div className="flex">
+              <a
+                href={`/blog/${featuredPost.slug}`}
+                aria-describedby="featured-post"
+                className="text-sm sm:text-sm/6 font-semibold text-teal-600 hover:text-teal-500 dark:text-teal-400 dark:hover:text-teal-300 inline-flex items-center gap-1"
+              >
+                Continue reading <span aria-hidden="true">&rarr;</span>
+              </a>
+            </div>
+            <div className="flex border-t border-gray-900/10 pt-4 dark:border-white/10 lg:pt-8">
+              <div className="flex gap-x-2 sm:gap-x-2.5 text-sm sm:text-sm/6 font-semibold text-gray-900 dark:text-white items-center">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-600 text-white text-xs flex-shrink-0">
+                  {getAuthorInitials(featuredPost.author)}
+                </div>
+                <span className="truncate">{featuredPost.author}</span>
               </div>
-              <input
-                type="text"
-                placeholder="Search articles..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="block w-full rounded-md border-0 bg-white py-2.5 pl-10 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-teal-600 sm:text-sm/6"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => handleSearch('')}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 hover:opacity-70"
-                  aria-label="Clear search"
-                >
-                  <XMarkIcon className="h-5 w-5 text-gray-400" />
-                </button>
-              )}
             </div>
           </div>
-        </div>
+        </article>
 
-        <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {paginatedArticles.map((post) => (
-            <article key={post.slug} className="flex max-w-xl flex-col items-start justify-between">
-              <div className="flex items-center gap-x-4 text-xs">
-                <time dateTime={post.date} className="text-gray-500">
-                  {formatDate(post.date)}
-                </time>
-                <span className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">
-                  {post.category}
-                </span>
+        {/* Recent Posts - Always on the right */}
+        <div className="mx-auto w-full max-w-2xl border-t border-gray-900/10 pt-8 sm:pt-12 lg:mx-0 lg:max-w-none lg:border-t-0 lg:pt-0 lg:order-2 dark:border-white/10">
+          <div className="-my-8 sm:-my-12 divide-y divide-gray-900/10 dark:divide-white/10">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <article key={post.slug} className="py-8 sm:py-12">
+                  <div className="group relative max-w-xl">
+                    <time
+                      dateTime={post.date}
+                      className="block text-xs sm:text-sm/6 text-gray-600 dark:text-gray-400"
+                    >
+                      {formatDate(post.date)}
+                    </time>
+                    <h2 className="mt-2 text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-gray-600 dark:text-white dark:group-hover:text-gray-300 leading-tight">
+                      <a href={`/blog/${post.slug}`}>
+                        <span className="absolute inset-0" />
+                        {post.title}
+                      </a>
+                    </h2>
+                    <p className="mt-3 sm:mt-4 text-sm sm:text-sm/6 text-gray-600 dark:text-gray-400 line-clamp-3">
+                      {post.description}
+                    </p>
+                  </div>
+                  <div className="mt-3 sm:mt-4 flex">
+                    <div className="relative flex gap-x-2 sm:gap-x-2.5 text-sm sm:text-sm/6 font-semibold text-gray-900 dark:text-white items-center">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-600 text-white text-xs flex-shrink-0">
+                        {getAuthorInitials(post.author)}
+                      </div>
+                      <span className="truncate">{post.author}</span>
+                    </div>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div className="py-8 sm:py-12">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  More articles coming soon!
+                </p>
               </div>
-              <div className="group relative grow">
-                <h3 className="mt-3 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600">
-                  <a href={`/blog/${post.slug}`}>
-                    <span className="absolute inset-0" />
-                    {post.title}
-                  </a>
-                </h3>
-                <p className="mt-5 line-clamp-3 text-sm/6 text-gray-600">{post.description}</p>
-              </div>
-              <div className="relative mt-8 flex items-center gap-x-4 justify-self-end">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-600 font-semibold text-sm">
-                  {post.author.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div className="text-sm/6">
-                  <p className="font-semibold text-gray-900">
-                    {post.author}
-                  </p>
-                  <p className="text-gray-600">{post.readingTime}</p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-16 flex items-center justify-center gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`h-10 w-10 rounded-md text-sm font-semibold ${
-                    page === currentPage
-                      ? 'bg-teal-600 text-white'
-                      : 'bg-white text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
+
+      {/* View All Articles Link */}
+      {initialArticles.length > 4 && (
+        <div className="mx-auto mt-12 sm:mt-16 max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center">
+            <a
+              href="/blog/archive"
+              className="rounded-md bg-teal-600 px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 transition-colors"
+            >
+              View all articles
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

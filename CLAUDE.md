@@ -3,12 +3,121 @@
 
 # TODO
 * mdx markup to create social content
-  * research
-    * can server side stored contents be used for seo?
   * make sure it has sharable links to twitter / facebook / and copy link method for sharing
   * create a library of blog posts and store it in a master content md
   * find trending reddit and create blog post specifically answer their questions
   * post comment to the reddit, create backlink effect when user shares or click on the link
+
+## Blog Content Workflow
+
+**IMPORTANT: How to Create and Publish Blog Posts**
+
+1. **Create Content:** Write blog posts as MDX files in `/content/` folder
+   - Use filename pattern: `[slug].mdx` (e.g., `welcome-to-guapital.mdx`)
+   - Follow Investopedia-style structure (see guidelines below)
+   - 2,000+ words with proper formatting
+
+2. **Review:** Human manually reviews the MDX content in `/content/` folder
+
+3. **Publish:** Use `/admin/blog` tool to edit and save MDX content to Supabase
+   - DO NOT update SQL migrations to add blog content
+   - DO NOT directly insert into database via SQL
+   - Admin tool handles database insertion/updates
+
+4. **Verify:** Check `/blog/[slug]` to see rendered post
+
+**Why this workflow:**
+- Separation of concerns (content creation vs. database management)
+- Content review before publishing
+- Admin tool provides UI for managing posts
+- Avoids migration file bloat with large text content
+
+## Blog Content Guidelines
+
+When creating blog posts, follow a professional financial content layout style (similar to major financial publications) for maximum trust and readability:
+
+**Content Structure:**
+1. **Hook paragraph** (2-3 sentences): Direct answer to the title question
+2. **Key Takeaways box** (3-5 bullet points): Summary of main insights
+3. **Table of Contents**: H2 sections as jump links
+4. **Body sections**: H2 for main topics, H3 for subtopics
+5. **FAQ section**: Common questions with concise answers
+6. **The Bottom Line**: 2-3 paragraph conclusion summarizing key points
+
+**Writing Style:**
+- Educational, authoritative tone (not salesy)
+- Short paragraphs (2-4 sentences max)
+- Use transition phrases between sections
+- Define technical terms on first use
+- Cite authoritative sources (Federal Reserve, Pew Research, etc.)
+- Use "you" to address reader directly
+- Avoid jargon, explain complex concepts simply
+
+**Visual Elements:**
+- Data tables with clear headers
+- Charts/graphs for percentile data
+- Callout boxes for important facts
+- Example calculations in highlighted boxes
+- Comparison tables (e.g., percentiles by age)
+
+**SEO Optimization:**
+- H1 title includes target keyword
+- First paragraph includes keyword naturally
+- Internal links to related blog posts
+- External links to authoritative sources (Federal Reserve, .gov sites)
+- Meta description 150-160 characters
+- Alt text for images/charts
+
+**Quality Checklist:**
+- [ ] 2,000+ words
+- [ ] Key Takeaways box at top
+- [ ] FAQ section at bottom
+- [ ] The Bottom Line conclusion
+- [ ] At least 1 data table or chart
+- [ ] 3+ authoritative citations
+- [ ] Clear CTA to Guapital (not overly promotional)
+- [ ] Mobile-friendly formatting
+- [ ] Passes Grammarly review
+
+**Example Structure:**
+```markdown
+# [Title with Target Keyword]
+
+[Hook paragraph: Direct answer in 2-3 sentences]
+
+## Key Takeaways
+- Point 1
+- Point 2
+- Point 3
+
+## Table of Contents
+1. [Section 1]
+2. [Section 2]
+...
+
+## [H2 Section 1]
+[Content with H3 subsections as needed]
+
+## [H2 Section 2]
+[Content...]
+
+## Frequently Asked Questions (FAQs)
+
+### [Question 1]?
+[Answer]
+
+### [Question 2]?
+[Answer]
+
+## The Bottom Line
+[2-3 paragraph conclusion]
+
+---
+
+*Ready to track your net worth and see where you rank? [Get started with Guapital](https://guapital.com/signup) (free).*
+```
+
+**Reference:** Study major financial publication articles for layout inspiration (authoritative tone, clear structure, data-driven).
 
 
 ## Project Overview

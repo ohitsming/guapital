@@ -274,7 +274,7 @@ export default function DashboardContent({ onAllDataDeleted }: DashboardContentP
     }
 
     return (
-        <div className="px-2 sm:px-4 lg:px-6 py-2 sm:py-6 lg:py-10 min-h-screen" style={{ background: '#F7F9F9' }}>
+        <div className="px-2 py-2 sm:py-6 lg:py-10 min-h-screen">
             {/* Hero Net Worth Card - Always shown with skeleton during loading */}
             <HeroNetWorthCard
                 netWorth={netWorth}

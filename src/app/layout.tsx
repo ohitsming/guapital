@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google'
 import '@/styles/tailwind.css'
+import '@/styles/blog-prose.css'
 import { RootLayout } from '@/components/RootLayout'
 import { ToastProvider } from '@/components/toast/ToastProvider'
 import { PostHogProvider } from '@/lib/posthog'

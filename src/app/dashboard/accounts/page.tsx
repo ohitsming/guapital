@@ -11,7 +11,7 @@ export default async function AccountsPage() {
     }
 
     return (
-        <div className="min-h-screen" style={{ background: '#F7F9F9' }}>
+        <div className="min-h-screen">
             <AccountsPageContent />
         </div>
     )

@@ -11,11 +11,13 @@ Allow: /about
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /admin
 Disallow: /_next/
 Disallow: /monitoring
 
 # Block search from indexing user-specific pages
 Disallow: /dashboard/*
+Disallow: /admin/*
 
 # Sitemap location
 Sitemap: https://guapital.com/sitemap.xml
@@ -29,15 +31,18 @@ Allow: /
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /admin
 
 User-agent: Bingbot
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /admin
 
 User-agent: Slurp
 Allow: /
 Disallow: /dashboard
 Disallow: /api/
 Disallow: /auth/
+Disallow: /admin

@@ -76,12 +76,12 @@ function Header({
         const fetchUserTier = async () => {
             try {
                 const { data } = await supabase
-                    .from('user_profiles')
-                    .select('tier')
+                    .from('user_settings')
+                    .select('subscription_tier')
                     .eq('user_id', user.id)
                     .single();
 
-                setIsPremium(data?.tier === 'premium');
+                setIsPremium(data?.subscription_tier === 'premium');
             } catch (error) {
                 console.error('Error fetching user tier:', error);
                 setIsPremium(false);

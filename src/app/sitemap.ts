@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next'
 import { URL } from '@/lib/constant'
-import { getArticlesSortedByDate } from '@/lib/blog-articles'
+import { getAllArticles } from '@/lib/blog-database'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = URL
 
   // Static pages with priority and change frequency
@@ -45,10 +45,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  // Dynamic blog articles
+  // Dynamic blog articles from database
   let blogPages: MetadataRoute.Sitemap = []
   try {
-    const articles = getArticlesSortedByDate()
+    const articles = await getAllArticles()
     blogPages = articles.map((article) => ({
       url: `${baseUrl}/blog/${article.slug}`,
       lastModified: article.date ? new Date(article.date) : new Date(),

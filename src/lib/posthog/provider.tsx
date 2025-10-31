@@ -17,12 +17,6 @@ if (typeof window !== 'undefined') {
         maskAllInputs: true, // Mask sensitive input fields
         maskTextSelector: '[data-sensitive]', // Additional masking
       },
-      loaded: (posthog) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ PostHog initialized successfully');
-          console.log('PostHog API Host:', process.env.NEXT_PUBLIC_POSTHOG_HOST);
-        }
-      },
     });
   } else {
     console.error('❌ PostHog not initialized - missing environment variables');
