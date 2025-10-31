@@ -3,8 +3,6 @@
 
 # TODO
 * mdx markup to create social content
-  * make sure it has sharable links to twitter / facebook / and copy link method for sharing
-  * create a library of blog posts and store it in a master content md
   * find trending reddit and create blog post specifically answer their questions
   * post comment to the reddit, create backlink effect when user shares or click on the link
 
@@ -37,6 +35,8 @@
 When creating blog posts, follow proven patterns from top financial content sites (NerdWallet, Mr. Money Mustache, Ramit Sethi, Financial Samurai) for maximum engagement and trust with everyday readers.
 
 **Target Audience:** Tech workers (24-35) with varying financial literacy levels. High intelligence, time-constrained, skeptical of marketing, data-driven. Write for Grade 6-9 reading level to maximize accessibility.
+
+**SEO Optimized** Use few keywords that are highly SEO optimized within the article. The article should be educational focus. And if there's an opening, tie the post on how Guapital feature would help them succeed.
 
 ---
 

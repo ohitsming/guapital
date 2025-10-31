@@ -82,7 +82,7 @@ export const GROWTH_RATE_CONFIG = {
   // The trajectory calculation logic uses Math.abs() to ensure proper handling,
   // but we store them as positive values for consistency.
 
-  credit_card: 0.20,    // 20% APR - High interest credit card debt
+  credit_card: 0.00,    // 20% APR - High interest credit card debt
   mortgage: 0.06,       // 6% APR - Typical mortgage interest rate
   auto_loan: 0.06,      // 6% APR - Auto loan interest rate
   student_loan: 0.05,   // 5% APR - Student loan interest rate

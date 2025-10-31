@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 import matter from 'gray-matter'
+import { revalidatePath } from 'next/cache'
 
 // Force dynamic rendering (uses cookies for auth)
 export const dynamic = 'force-dynamic'
@@ -81,19 +82,21 @@ export async function POST(request: Request) {
       )
     }
 
-    // Trigger revalidation (always revalidate since we auto-publish)
+    // Trigger revalidation (direct, more reliable than HTTP fetch)
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/blog/${frontmatter.slug}`,
-        { method: 'POST' }
-      )
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/blog`,
-        { method: 'POST' }
-      )
+      revalidatePath(`/blog/${frontmatter.slug}`, 'page')
+      revalidatePath('/blog', 'page')
+      revalidatePath('/admin/blog', 'page')
+      console.log('Revalidated blog paths after upload:', frontmatter.slug)
     } catch (revalidateError) {
+      // Log to Sentry but don't fail the request
+      const { captureException } = await import('@/utils/sentry')
+      captureException(revalidateError, {
+        operation: 'blog-revalidation',
+        slug: frontmatter.slug,
+        action: 'upload'
+      }, 'warning')
       console.error('Revalidation error:', revalidateError)
-      // Don't fail the upload if revalidation fails
     }
 
     return NextResponse.json({

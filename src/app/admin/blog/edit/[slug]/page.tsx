@@ -74,9 +74,7 @@ export default function EditBlogPostPage({ params }: { params: { slug: string } 
         throw new Error(data.error || 'Save failed')
       }
 
-      // Revalidate
-      await fetch(`/api/revalidate?path=/blog/${params.slug}`, { method: 'POST' })
-
+      // Revalidation is handled automatically by the API
       router.push('/admin/blog')
     } catch (err: any) {
       setError(err.message)

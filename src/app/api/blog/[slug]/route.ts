@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 // Force dynamic rendering (uses cookies for auth)
 export const dynamic = 'force-dynamic'
@@ -70,21 +71,20 @@ export async function PATCH(request: Request, { params }: { params: { slug: stri
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    // Trigger revalidation
+    // Trigger revalidation (direct, more reliable than HTTP fetch)
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/blog/${params.slug}`,
-        { method: 'POST' }
-      )
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/blog`,
-        { method: 'POST' }
-      )
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/admin/blog`,
-        { method: 'POST' }
-      )
+      revalidatePath(`/blog/${params.slug}`, 'page')
+      revalidatePath('/blog', 'page')
+      revalidatePath('/admin/blog', 'page')
+      console.log('Revalidated blog paths after update:', params.slug)
     } catch (revalidateError) {
+      // Log to Sentry but don't fail the request
+      const { captureException } = await import('@/utils/sentry')
+      captureException(revalidateError, {
+        operation: 'blog-revalidation',
+        slug: params.slug,
+        action: 'update'
+      }, 'warning')
       console.error('Revalidation error:', revalidateError)
     }
 
@@ -121,17 +121,20 @@ export async function DELETE(request: Request, { params }: { params: { slug: str
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Trigger revalidation
+    // Trigger revalidation (direct, more reliable than HTTP fetch)
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/blog`,
-        { method: 'POST' }
-      )
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate?path=/admin/blog`,
-        { method: 'POST' }
-      )
+      revalidatePath(`/blog/${params.slug}`, 'page')
+      revalidatePath('/blog', 'page')
+      revalidatePath('/admin/blog', 'page')
+      console.log('Revalidated blog paths after deletion:', params.slug)
     } catch (revalidateError) {
+      // Log to Sentry but don't fail the request
+      const { captureException } = await import('@/utils/sentry')
+      captureException(revalidateError, {
+        operation: 'blog-revalidation',
+        slug: params.slug,
+        action: 'delete'
+      }, 'warning')
       console.error('Revalidation error:', revalidateError)
     }
 

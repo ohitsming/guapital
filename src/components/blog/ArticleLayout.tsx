@@ -162,7 +162,7 @@ export function ArticleLayout({
             )}
 
             {/* Metadata Bar */}
-            <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+            <div className="mb-4 sm:mb-5 flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-teal-600 text-xs sm:text-sm font-semibold text-white flex-shrink-0">
                   {article.author.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -195,6 +195,12 @@ export function ArticleLayout({
                   </div>
                 </>
               )}
+            </div>
+
+            {/* Share Buttons */}
+            <div className="mb-6 sm:mb-8 flex items-center gap-2 sm:gap-3 border-b border-gray-200 dark:border-gray-700 pb-4 sm:pb-5">
+              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">Share:</span>
+              <ShareButtons title={article.title} />
             </div>
 
             {/* Key Takeaways Box - Dynamically extracted from MDX */}
@@ -300,8 +306,8 @@ export function ArticleLayout({
               </div>
             </div>
 
-            {/* Share Section */}
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-gray-200 dark:border-gray-700 pt-4 sm:pt-6">
+            {/* Back to Blog Link */}
+            <div className="mt-6 sm:mt-8 border-t border-gray-200 dark:border-gray-700 pt-4 sm:pt-6">
               <a
                 href="/blog"
                 className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
@@ -321,11 +327,6 @@ export function ArticleLayout({
                 </svg>
                 Back to Blog
               </a>
-
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Share:</span>
-                <ShareButtons title={article.title} />
-              </div>
             </div>
           </main>
 
